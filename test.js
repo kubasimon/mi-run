@@ -338,6 +338,18 @@ describe('PEG', function () {
             assert.equal('Variable', output.elements[0].expression.type);
             assert.equal('a', output.elements[0].expression.name);
         });
+        it('should parse unary expression with operator !', function(){
+            var program = 'not a';
+            var output = parser.parse(program);
+            //output is program
+            assert.equal('Program', output.type);
+            // containing one literal
+            assert.equal(1, output.elements.length);
+            assert.equal('UnaryExpression', output.elements[0].type);
+            assert.equal('!', output.elements[0].operator);
+            assert.equal('Variable', output.elements[0].expression.type);
+            assert.equal('a', output.elements[0].expression.name);
+        });
         it('should parse binary expression with operator ==', function(){
             var program = '1 == 1';
             var output = parser.parse(program);
@@ -846,7 +858,7 @@ describe('PEG', function () {
             assert.equal('Variable', output.elements[0].elseExpression.type);
             assert.equal('c', output.elements[0].elseExpression.name);
         });
-        //todo conditional assignment - mood = singing if true
+        //todo conditional assignment(posfix) - mood = singing if true
         //todo unless - negated if
 
 

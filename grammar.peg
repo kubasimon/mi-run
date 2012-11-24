@@ -182,6 +182,7 @@ UnaryExpression
 
 UnaryOperator
   = "!"
+  / NotToken { return "!"}
 
 
 PostfixExpression
@@ -360,13 +361,14 @@ LineTerminatorSequence "end of line"
 EOF
   = !.
 
-AndToken        = "and"             !IdentifierPart
+AndToken        = "and"              !IdentifierPart
 ElseToken       = "else"             !IdentifierPart
 FalseToken      = "false"            !IdentifierPart
 IfToken         = "if"               !IdentifierPart
 IsToken         = "is"               !IdentifierPart
 IsntToken       = "isnt"             !IdentifierPart
 NullToken       = "null"             !IdentifierPart
+NotToken        = "not"              !IdentifierPart
 OrToken         = "or"               !IdentifierPart
 ThenToken       = "then"             !IdentifierPart
 TrueToken       = "true"             !IdentifierPart
@@ -396,6 +398,7 @@ Keyword
       / "instanceof"
       / "in"
       / "new"
+      / "not"
       / "or"
       / "return"
       / "switch"
