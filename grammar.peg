@@ -1,0 +1,361 @@
+/* before and after source code can be whitespace */
+start
+  = _ program:Program _ { return program; }
+
+/* program consists of source elements */
+Program
+  = elements:SourceElements? {
+        return {
+          type:     "Program",
+          elements: elements !== "" ? elements : []
+        };
+  }
+
+/* support for multiple source elements */
+SourceElements
+  = head:SourceElement tail:(_ SourceElement)* {
+      var result = [head];
+      for (var i = 0; i < tail.length; i++) {
+        result.push(tail[i][1]);
+      }
+      return result;
+   }
+
+/* every is statement */
+SourceElement
+  = Statement
+
+Statement
+  = EmptyStatement
+  / ExpressionStatement
+
+EmptyStatement
+  = ";" { return { type: "EmptyStatement" }; }
+
+ExpressionStatement
+  = expression:Expression EOS { return expression; }
+
+Expression
+  = head:AssignmentExpression
+     /* TODO tail!! tail:(_ "," _ AssignmentExpression)*   */ {
+        var result = head;
+        /* TODO for (var i = 0; i < tail.length; i++) {
+          result = {
+            type:     "BinaryExpression",
+            operator: tail[i][1],
+            left:     result,
+            right:    tail[i][3]
+          };
+        } */
+
+        return result;
+      }
+
+
+AssignmentExpression
+  = left:LeftHandSideExpression _
+    operator:AssignmentOperator _
+    right:AssignmentExpression {
+      return {
+        type:     "AssignmentExpression",
+        operator: operator,
+        left:     left,
+        right:    right
+      };
+    }
+    / ConditionalExpression
+
+
+AssignmentOperator
+  = "=" (!"=") { return "="; }
+
+
+ConditionalExpression
+  = IfExpression
+
+IfExpression
+  = IfToken _
+    condition:Expression _
+    ThenToken _
+    ifExpression:Expression
+    elseExpression:(_ ElseToken _ Expression)?
+     {
+      return {
+        type:          "IfExpression",
+        condition:     condition,
+        ifExpression:   ifExpression,
+        elseExpression: elseExpression !== "" ? elseExpression[3] : null
+      };
+    }
+    / EqualityExpression
+
+AdditiveExpression
+  = head:MultiplicativeExpression
+    tail:(_ AdditiveOperator _ MultiplicativeExpression)* {
+      var result = head;
+      for (var i = 0; i < tail.length; i++) {
+        result = {
+          type:     "BinaryExpression",
+          operator: tail[i][1],
+          left:     result,
+          right:    tail[i][3]
+        };
+      }
+      return result;
+    }
+
+
+AdditiveOperator
+  = "+" !("+" / "=") { return "+"; }
+  / "-" !("-" / "=") { return "-"; }
+
+
+MultiplicativeExpression
+  = head:UnaryExpression
+    tail:(_ MultiplicativeOperator _ UnaryExpression)* {
+      var result = head;
+      for (var i = 0; i < tail.length; i++) {
+        result = {
+          type:     "BinaryExpression",
+          operator: tail[i][1],
+          left:     result,
+          right:    tail[i][3]
+        };
+      }
+      return result;
+    }
+
+
+MultiplicativeOperator
+  = operator:("*" / "/") !"=" { return operator; }
+
+
+UnaryExpression
+  = PostfixExpression
+
+
+PostfixExpression
+  = LeftHandSideExpression
+
+
+LeftHandSideExpression
+  = NewExpression
+   /* TODO!! CallExpression */
+
+NewExpression
+  = MemberExpression
+
+MemberExpression
+  = PrimaryExpression
+
+PrimaryExpression
+  = name:Identifier { return { type: "Variable", name: name }; }
+  / Literal
+  / ArrayLiteral
+
+ArrayLiteral
+  = "[" _ elements:ElementList? _ (Elision _)? "]" {
+      return {
+        type:     "ArrayLiteral",
+        elements: elements !== "" ? elements : []
+      };
+    }
+
+ElementList
+  = (Elision _)?
+    head:AssignmentExpression
+    tail:(_ "," _ Elision? _ AssignmentExpression)* {
+      var result = [head];
+      for (var i = 0; i < tail.length; i++) {
+        result.push(tail[i][5]);
+      }
+      return result;
+    }
+
+Elision
+  = "," (_ ",")*
+
+Literal
+  =
+    NullLiteral
+    / BooleanLiteral
+    / value:NumericLiteral {
+      return {
+        type:  "NumericLiteral",
+        value: value
+      };
+    }
+    / value:StringLiteral {
+      return {
+        type:  "StringLiteral",
+        value: value
+      };
+    }
+
+NullLiteral
+  = NullToken { return { type: "NullLiteral" }; }
+
+BooleanLiteral
+  = TrueToken  { return { type: "BooleanLiteral", value: true  }; }
+  / FalseToken { return { type: "BooleanLiteral", value: false }; }
+
+
+NumericLiteral "number"
+  = integer
+
+StringLiteral "string"
+  = string
+
+
+Identifier "identifier"
+  = !ReservedWord name:IdentifierName { return name; }
+
+IdentifierName "identifier"
+  = start:IdentifierStart parts:IdentifierPart* {
+      return start + parts.join("");
+    }
+
+IdentifierStart
+  = [a-zA-Z]
+  / "$"
+  / "_"
+
+IdentifierPart
+  = [a-zA-Z]
+  / [0-9]
+  / "$"
+  / "_"
+  / "-"
+
+EqualityExpression
+  = head:RelationalExpression
+    tail:(_ EqualityOperator _ RelationalExpression)* {
+      var result = head;
+      for (var i = 0; i < tail.length; i++) {
+        result = {
+          type:     "BinaryExpression",
+          operator: tail[i][1],
+          left:     result,
+          right:    tail[i][3]
+        };
+      }
+      return result;
+    }
+
+EqualityOperator
+  = "=="
+  / "!="
+  / IsToken { return "==" }
+  / IsntToken { return "!=" }
+
+RelationalExpression
+  = head:AdditiveExpression
+    tail:(_ RelationalOperator _ AdditiveExpression)* {
+      var result = head;
+      for (var i = 0; i < tail.length; i++) {
+        result = {
+          type:     "BinaryExpression",
+          operator: tail[i][1],
+          left:     result,
+          right:    tail[i][3]
+        };
+      }
+      return result;
+    }
+
+RelationalOperator
+  = "<="
+  / ">="
+  / "<"
+  / ">"
+
+/* ===== Integer ===== */
+integer "integer"
+  = digits:[0-9]+ { return parseInt(digits.join(""), 10); }
+
+/* ===== String ===== */
+string "string"
+  = '"' '"' _             { return "";    }
+  / '"' chars:chars '"' _ { return chars; }
+
+chars
+  = chars:char+ { return chars.join(""); }
+
+char
+  // We don't care about escaping characters
+  = [^"\\\0-\x1F\x7f]
+
+/* ===== Whitespace ===== */
+
+_ "whitespace"
+  = whitespace*
+
+// Whitespace is undefined in the original JSON grammar, so I assume a simple
+// conventional definition consistent with ECMA-262, 5th ed.
+whitespace
+  = [ \t\n\r]
+
+/* Automatic Semicolon Insertion */
+EOS
+  = _ ";"
+  / _ LineTerminatorSequence
+  / _ &"}"
+  / _ EOF
+
+LineTerminatorSequence "end of line"
+  = "\n"
+  / "\r\n"
+  / "\r"
+
+EOF
+  = !.
+
+ElseToken       = "else"             !IdentifierPart
+FalseToken      = "false"            !IdentifierPart
+IfToken         = "if"               !IdentifierPart
+IsToken         = "is"               !IdentifierPart
+IsntToken       = "isnt"             !IdentifierPart
+NullToken       = "null"             !IdentifierPart
+ThenToken       = "then"             !IdentifierPart
+TrueToken       = "true"             !IdentifierPart
+
+
+ReservedWord
+  = Keyword
+  / NullLiteral
+  / BooleanLiteral
+
+Keyword
+  = (
+        "break"
+      / "case"
+      / "catch"
+      / "continue"
+      / "debugger"
+      / "default"
+      / "delete"
+      / "do"
+      / "else"
+      / "finally"
+      / "for"
+      / "function"
+      / "if"
+      / "instanceof"
+      / "in"
+      / "new"
+      / "return"
+      / "switch"
+      / "this"
+      / "throw"
+      / "try"
+      / "typeof"
+      / "then"
+      / "var"
+      / "void"
+      / "while"
+      / "with"
+    )
+    !IdentifierPart
+
+
+
