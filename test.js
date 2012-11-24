@@ -522,6 +522,62 @@ describe('PEG', function () {
             assert.equal('NumericLiteral', output.elements[0].right.type);
             assert.equal(1, output.elements[0].right.value);
         });
+        it("should parse binary expression with operator && ", function(){
+            var program = 'x && 1';
+            var output = parser.parse(program);
+            //output is program
+            assert.equal('Program', output.type);
+            // containing one literal
+            assert.equal(1, output.elements.length);
+            assert.equal('BinaryExpression', output.elements[0].type);
+            assert.equal('&&', output.elements[0].operator);
+            assert.equal('Variable', output.elements[0].left.type);
+            assert.equal("x", output.elements[0].left.name);
+            assert.equal('NumericLiteral', output.elements[0].right.type);
+            assert.equal(1, output.elements[0].right.value);
+        });
+        it("should parse binary expression with operator and ", function(){
+            var program = 'x and 1';
+            var output = parser.parse(program);
+            //output is program
+            assert.equal('Program', output.type);
+            // containing one literal
+            assert.equal(1, output.elements.length);
+            assert.equal('BinaryExpression', output.elements[0].type);
+            assert.equal('&&', output.elements[0].operator);
+            assert.equal('Variable', output.elements[0].left.type);
+            assert.equal("x", output.elements[0].left.name);
+            assert.equal('NumericLiteral', output.elements[0].right.type);
+            assert.equal(1, output.elements[0].right.value);
+        });
+        it("should parse binary expression with operator || ", function(){
+            var program = 'x || 1';
+            var output = parser.parse(program);
+            //output is program
+            assert.equal('Program', output.type);
+            // containing one literal
+            assert.equal(1, output.elements.length);
+            assert.equal('BinaryExpression', output.elements[0].type);
+            assert.equal('||', output.elements[0].operator);
+            assert.equal('Variable', output.elements[0].left.type);
+            assert.equal("x", output.elements[0].left.name);
+            assert.equal('NumericLiteral', output.elements[0].right.type);
+            assert.equal(1, output.elements[0].right.value);
+        });
+        it("should parse binary expression with operator or ", function(){
+            var program = 'x or 1';
+            var output = parser.parse(program);
+            //output is program
+            assert.equal('Program', output.type);
+            // containing one literal
+            assert.equal(1, output.elements.length);
+            assert.equal('BinaryExpression', output.elements[0].type);
+            assert.equal('||', output.elements[0].operator);
+            assert.equal('Variable', output.elements[0].left.type);
+            assert.equal("x", output.elements[0].left.name);
+            assert.equal('NumericLiteral', output.elements[0].right.type);
+            assert.equal(1, output.elements[0].right.value);
+        });
         it("should parse binary expression with multiple operator + + ", function(){
             var program = '1 + 2 + 3';
             var output = parser.parse(program);
@@ -763,7 +819,7 @@ describe('PEG', function () {
             assert.equal('c', output.elements[0].ifExpression.name);
             assert.equal(null, output.elements[0].elseExpression);
         });
-        it("should parse if expression", function(){
+        it("should parse if expression with else part", function(){
             var program = 'if a then b else c';
             var output = parser.parse(program);
             //output is program

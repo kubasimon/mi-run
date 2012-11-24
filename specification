@@ -1,0 +1,25 @@
+
+operators:
+    == is equal 'is'
+    != is equal 'isnt'
+
+
+operators precedence
+ 1 + 2 + 3 = (1 + 2) + 3
+ 1 - 2 - 3 = (1 - 2) - 3
+ 1 * 2 * 3 = (1 * 2) * 3
+ 1 / 2 / 3 = (1 / 2) / 3
+
+ operators priority
+   from highest:
+     ||
+     &&
+     ==, !=
+     =>, >, <, <=
+     *,/
+     +,-
+
+
+If expression:
+
+    if condition then expression else expression
