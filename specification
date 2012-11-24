@@ -18,6 +18,7 @@ operators precedence
      =>, >, <, <=
      *,/
      +,-
+     ! - unary
 
 
 If expression:

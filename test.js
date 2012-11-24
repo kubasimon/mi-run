@@ -326,6 +326,18 @@ describe('PEG', function () {
             assert.equal('ArrayLiteral', output.elements[0].right.type);
             assert.equal(2, output.elements[0].right.elements.length);
         });
+        it('should parse unary expression with operator !', function(){
+            var program = '!a';
+            var output = parser.parse(program);
+            //output is program
+            assert.equal('Program', output.type);
+            // containing one literal
+            assert.equal(1, output.elements.length);
+            assert.equal('UnaryExpression', output.elements[0].type);
+            assert.equal('!', output.elements[0].operator);
+            assert.equal('Variable', output.elements[0].expression.type);
+            assert.equal('a', output.elements[0].expression.name);
+        });
         it('should parse binary expression with operator ==', function(){
             var program = '1 == 1';
             var output = parser.parse(program);
@@ -743,7 +755,7 @@ describe('PEG', function () {
             assert.equal('NumericLiteral', output.elements[0].right.type);
             assert.equal(3, output.elements[0].right.value);
         });
-        //todo priority of equal operators and rational operators
+        //todo priority of equality operators and rational operators
         it("should parse if expression", function(){
             var program = 'if a then b';
             var output = parser.parse(program);
@@ -834,6 +846,8 @@ describe('PEG', function () {
             assert.equal('Variable', output.elements[0].elseExpression.type);
             assert.equal('c', output.elements[0].elseExpression.name);
         });
+        //todo conditional assignment - mood = singing if true
+        //todo unless - negated if
 
 
 

@@ -172,6 +172,16 @@ MultiplicativeOperator
 
 UnaryExpression
   = PostfixExpression
+  / operator:UnaryOperator _ expression:UnaryExpression {
+      return {
+        type:       "UnaryExpression",
+        operator:   operator,
+        expression: expression
+      };
+    }
+
+UnaryOperator
+  = "!"
 
 
 PostfixExpression
