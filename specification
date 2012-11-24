@@ -3,6 +3,9 @@ operators:
     == is equal 'is'
     != is equal 'isnt'
 
+boolean
+    true == yes == on
+    false == no == off
 
 operators precedence
  1 + 2 + 3 = (1 + 2) + 3

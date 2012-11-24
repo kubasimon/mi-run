@@ -86,8 +86,52 @@ describe('PEG', function () {
             assert.equal('BooleanLiteral', output.elements[0].type);
             assert.equal(true, output.elements[0].value);
         });
+        it('should parse bool true literal alias yes', function(){
+            var program = 'yes';
+            var output = parser.parse(program);
+            //output is program
+            assert.equal('Program', output.type);
+            // containing one literal
+
+            assert.equal(1, output.elements.length);
+            assert.equal('BooleanLiteral', output.elements[0].type);
+            assert.equal(true, output.elements[0].value);
+        });
+        it('should parse bool true literal alias on', function(){
+            var program = 'on';
+            var output = parser.parse(program);
+            //output is program
+            assert.equal('Program', output.type);
+            // containing one literal
+
+            assert.equal(1, output.elements.length);
+            assert.equal('BooleanLiteral', output.elements[0].type);
+            assert.equal(true, output.elements[0].value);
+        });
         it('should parse bool false literal', function(){
             var program = 'false';
+            var output = parser.parse(program);
+            //output is program
+            assert.equal('Program', output.type);
+            // containing one literal
+
+            assert.equal(1, output.elements.length);
+            assert.equal('BooleanLiteral', output.elements[0].type);
+            assert.equal(false, output.elements[0].value);
+        });
+        it('should parse bool false literal alias no', function(){
+            var program = 'no';
+            var output = parser.parse(program);
+            //output is program
+            assert.equal('Program', output.type);
+            // containing one literal
+
+            assert.equal(1, output.elements.length);
+            assert.equal('BooleanLiteral', output.elements[0].type);
+            assert.equal(false, output.elements[0].value);
+        });
+        it('should parse bool false literal alias off', function(){
+            var program = 'off';
             var output = parser.parse(program);
             //output is program
             assert.equal('Program', output.type);

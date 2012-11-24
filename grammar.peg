@@ -248,7 +248,11 @@ NullLiteral
 
 BooleanLiteral
   = TrueToken  { return { type: "BooleanLiteral", value: true  }; }
+  / YesToken  { return { type: "BooleanLiteral", value: true  }; }
+  / OnToken  { return { type: "BooleanLiteral", value: true  }; }
   / FalseToken { return { type: "BooleanLiteral", value: false }; }
+  / NoToken { return { type: "BooleanLiteral", value: false }; }
+  / OffToken { return { type: "BooleanLiteral", value: false }; }
 
 
 NumericLiteral "number"
@@ -369,9 +373,13 @@ IsToken         = "is"               !IdentifierPart
 IsntToken       = "isnt"             !IdentifierPart
 NullToken       = "null"             !IdentifierPart
 NotToken        = "not"              !IdentifierPart
+NoToken         = "no"               !IdentifierPart
+OffToken        = "off"              !IdentifierPart
+OnToken         = "on"               !IdentifierPart
 OrToken         = "or"               !IdentifierPart
 ThenToken       = "then"             !IdentifierPart
 TrueToken       = "true"             !IdentifierPart
+YesToken        = "yes"              !IdentifierPart
 
 
 ReservedWord
@@ -399,6 +407,9 @@ Keyword
       / "in"
       / "new"
       / "not"
+      / "no"
+      / "off"
+      / "on"
       / "or"
       / "return"
       / "switch"
@@ -411,6 +422,7 @@ Keyword
       / "void"
       / "while"
       / "with"
+      / "yes"
     )
     !IdentifierPart
 
