@@ -922,6 +922,23 @@ describe('PEG', function () {
             assert.equal('NumericLiteral', output.elements[0].elements[0].type);
             assert.equal(8, output.elements[0].elements[0].value);
         });
+        it("should parse anonymous function declaration with param", function(){
+            var program = '(x) -> 8';
+            var output = parser.parse(program);
+            //output is program
+            assert.equal('Program', output.type);
+            assert.equal(1, output.elements.length);
+            assert.equal('Function', output.elements[0].type);
+            // no name
+            assert.equal(null, output.elements[0].name);
+            // no params
+            assert.equal(1, output.elements[0].params.length);
+            assert.equal('x', output.elements[0].params[0]);
+
+            assert.equal(1, output.elements[0].elements.length);
+            assert.equal('NumericLiteral', output.elements[0].elements[0].type);
+            assert.equal(8, output.elements[0].elements[0].value);
+        });
         //todo function call
 
 

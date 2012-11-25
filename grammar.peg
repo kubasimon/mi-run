@@ -201,12 +201,13 @@ MemberExpression
   / FunctionExpression
 
 FunctionExpression
-  = FunctionOperator _
+  = _ params:FormalParameterList? _
+    FunctionOperator _
     _ elements:FunctionBody _ {
       return {
         type:     "Function",
         name:     /*name !== "" ? name :*/ null,
-        params:   /*params !== "" ? params :*/ [],
+        params:   params !== "" ? params : [],
         elements: elements
       };
     }
@@ -216,6 +217,15 @@ FunctionOperator
 
 FunctionBody
   = elements:SourceElements? { return elements !== "" ? elements : []; }
+
+FormalParameterList
+  = "(" _ head:Identifier tail:(_ "," _ Identifier)* ")" {
+      var result = [head];
+      for (var i = 0; i < tail.length; i++) {
+        result.push(tail[i][3]);
+      }
+      return result;
+    }
 
 PrimaryExpression
   = name:Identifier { return { type: "Variable", name: name }; }
