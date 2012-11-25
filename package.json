@@ -1,0 +1,19 @@
+{
+    "name": "simonja3-mi-run",
+    "version": "0.0.1",
+    "author": "Jakub Simon <simonja3@fit.cvut.cz>",
+    "scripts" : {
+        "test": "mocha test.js"
+    },
+    "repository" : {
+        "type": "git",
+        "url": "https://github.com/tenerd/mi-run.git"
+    },
+    "dependencies": {
+        "mocha" : "*",
+        "pegjs" : "*"
+    }
+
+
+
+}
