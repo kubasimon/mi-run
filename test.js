@@ -904,8 +904,7 @@ describe('PEG', function () {
         });
         //todo conditional assignment(posfix) - mood = singing if true
         //todo unless - negated if
-        //todo if with indetation
-        //todo function declaration
+        //todo if with indentation
         it("should parse anonymous function declaration without params", function(){
             var program = '-> 8';
             var output = parser.parse(program);
