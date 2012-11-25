@@ -1041,6 +1041,30 @@ describe('PEG', function () {
             assert.equal('NumericLiteral', output.elements[0].elements[0].type);
             assert.equal(8, output.elements[0].elements[0].value);
         });
+        it("should parse assigning function to variable", function(){
+            var program = 'a = (x = "ahoj") -> 8';
+            var output = parser.parse(program);
+            //output is program
+            assert.equal('Program', output.type);
+            assert.equal(1, output.elements.length);
+
+            assert.equal('AssignmentExpression', output.elements[0].type);
+
+            assert.equal('Variable', output.elements[0].left.type);
+            assert.equal('a', output.elements[0].left.name);
+            assert.equal('Function', output.elements[0].right.type);
+            // no name
+            assert.equal(null, output.elements[0].right.name);
+            // params
+            assert.equal(1, output.elements[0].right.params.length);
+            assert.equal('x', output.elements[0].right.params[0].name);
+            assert.equal('StringLiteral', output.elements[0].right.params[0].default.type);
+            assert.equal("ahoj", output.elements[0].right.params[0].default.value);
+
+            assert.equal(1, output.elements[0].right.elements.length);
+            assert.equal('NumericLiteral', output.elements[0].right.elements[0].type);
+            assert.equal(8, output.elements[0].right.elements[0].value);
+        });
         //todo function call
 
 
