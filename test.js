@@ -1065,7 +1065,148 @@ describe('PEG', function () {
             assert.equal('NumericLiteral', output.elements[0].right.elements[0].type);
             assert.equal(8, output.elements[0].right.elements[0].value);
         });
-        //todo function call
+        it("should parse assigning function without params to variable", function(){
+            var program = 'a = -> 8';
+            var output = parser.parse(program);
+            //output is program
+            assert.equal('Program', output.type);
+            assert.equal(1, output.elements.length);
+
+            assert.equal('AssignmentExpression', output.elements[0].type);
+
+            assert.equal('Variable', output.elements[0].left.type);
+            assert.equal('a', output.elements[0].left.name);
+            assert.equal('Function', output.elements[0].right.type);
+            // no name
+            assert.equal(null, output.elements[0].right.name);
+            // params
+            assert.equal(0, output.elements[0].right.params.length);
+
+            assert.equal(1, output.elements[0].right.elements.length);
+            assert.equal('NumericLiteral', output.elements[0].right.elements[0].type);
+            assert.equal(8, output.elements[0].right.elements[0].value);
+        });
+        it("should parse function call without params", function(){
+            var program = 'a()';
+            var output = parser.parse(program);
+            //output is program
+            assert.equal('Program', output.type);
+            assert.equal(1, output.elements.length);
+
+            assert.equal('FunctionCall', output.elements[0].type);
+            assert.equal('Variable', output.elements[0].name.type);
+            assert.equal('a', output.elements[0].name.name);
+            assert.equal(0, output.elements[0].arguments.length);
+        });
+        it("should parse function call without params, whitespace before and inside parenthesis", function(){
+            var program = 'a (  )';
+            var output = parser.parse(program);
+            //output is program
+            assert.equal('Program', output.type);
+            assert.equal(1, output.elements.length);
+
+            assert.equal('FunctionCall', output.elements[0].type);
+            assert.equal('Variable', output.elements[0].name.type);
+            assert.equal('a', output.elements[0].name.name);
+            assert.equal(0, output.elements[0].arguments.length);
+        });
+        it("should parse function call with one param", function(){
+            var program = 'a 8';
+            var output = parser.parse(program);
+            //output is program
+            assert.equal('Program', output.type);
+            assert.equal(1, output.elements.length);
+
+            assert.equal('FunctionCall', output.elements[0].type);
+            assert.equal('Variable', output.elements[0].name.type);
+            assert.equal('a', output.elements[0].name.name);
+            assert.equal(1, output.elements[0].arguments.length);
+            assert.equal('NumericLiteral', output.elements[0].arguments[0].type);
+            assert.equal(8, output.elements[0].arguments[0].value);
+
+        });
+        it("should parse function call with two params - numeric and string", function(){
+            var program = 'a 8, "a"';
+            var output = parser.parse(program);
+            //output is program
+            assert.equal('Program', output.type);
+            assert.equal(1, output.elements.length);
+
+            assert.equal('FunctionCall', output.elements[0].type);
+            assert.equal('Variable', output.elements[0].name.type);
+            assert.equal('a', output.elements[0].name.name);
+            assert.equal(2, output.elements[0].arguments.length);
+            assert.equal('NumericLiteral', output.elements[0].arguments[0].type);
+            assert.equal(8, output.elements[0].arguments[0].value);
+            assert.equal('StringLiteral', output.elements[0].arguments[1].type);
+            assert.equal("a", output.elements[0].arguments[1].value);
+        });
+        it("should parse function call with param - array", function(){
+            var program = 'a []';
+            var output = parser.parse(program);
+            //output is program
+            assert.equal('Program', output.type);
+            assert.equal(1, output.elements.length);
+
+            assert.equal('FunctionCall', output.elements[0].type);
+            assert.equal('Variable', output.elements[0].name.type);
+            assert.equal('a', output.elements[0].name.name);
+            assert.equal(1, output.elements[0].arguments.length);
+            assert.equal('ArrayLiteral', output.elements[0].arguments[0].type);
+            assert.equal(0, output.elements[0].arguments[0].elements.length);
+        });
+        it("should parse function call with param function without params", function(){
+            var program = 'a b()';
+            var output = parser.parse(program);
+            //output is program
+            assert.equal('Program', output.type);
+            assert.equal(1, output.elements.length);
+
+            assert.equal('FunctionCall', output.elements[0].type);
+            assert.equal('Variable', output.elements[0].name.type);
+            assert.equal('a', output.elements[0].name.name);
+            assert.equal(1, output.elements[0].arguments.length);
+            assert.equal('FunctionCall', output.elements[0].arguments[0].type);
+            assert.equal('Variable', output.elements[0].arguments[0].name.type);
+            assert.equal('b', output.elements[0].arguments[0].name.name);
+            assert.equal(0, output.elements[0].arguments[0].arguments.length);
+        });
+        it("should parse function call with param function without params and with whitespace", function(){
+            var program = 'a b ()';
+            var output = parser.parse(program);
+            //output is program
+            assert.equal('Program', output.type);
+            assert.equal(1, output.elements.length);
+
+            assert.equal('FunctionCall', output.elements[0].type);
+            assert.equal('Variable', output.elements[0].name.type);
+            assert.equal('a', output.elements[0].name.name);
+            assert.equal(1, output.elements[0].arguments.length);
+            assert.equal('FunctionCall', output.elements[0].arguments[0].type);
+            assert.equal('Variable', output.elements[0].arguments[0].name.type);
+            assert.equal('b', output.elements[0].arguments[0].name.name);
+            assert.equal(0, output.elements[0].arguments[0].arguments.length);
+        });
+        it("should parse function call with param function with param function ", function(){
+            var program = 'a b c()';
+            var output = parser.parse(program);
+            //output is program
+            assert.equal('Program', output.type);
+            assert.equal(1, output.elements.length);
+
+            assert.equal('FunctionCall', output.elements[0].type);
+            assert.equal('Variable', output.elements[0].name.type);
+            assert.equal('a', output.elements[0].name.name);
+            assert.equal(1, output.elements[0].arguments.length);
+            assert.equal('FunctionCall', output.elements[0].arguments[0].type);
+            assert.equal('Variable', output.elements[0].arguments[0].name.type);
+            assert.equal('b', output.elements[0].arguments[0].name.name);
+            assert.equal(1, output.elements[0].arguments[0].arguments.length);
+            assert.equal('FunctionCall', output.elements[0].arguments[0].arguments[0].type);
+            assert.equal('Variable', output.elements[0].arguments[0].arguments[0].name.type);
+            assert.equal('c', output.elements[0].arguments[0].arguments[0].name.name);
+            assert.equal(0, output.elements[0].arguments[0].arguments[0].arguments.length);
+        });
 
 
 
@@ -1073,4 +1214,4 @@ describe('PEG', function () {
 
 
     })
-})
+});

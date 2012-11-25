@@ -190,8 +190,8 @@ PostfixExpression
 
 
 LeftHandSideExpression
-  = NewExpression
-   /* TODO!! CallExpression */
+  = CallExpression
+  / NewExpression
 
 NewExpression
   = MemberExpression
@@ -199,6 +199,38 @@ NewExpression
 MemberExpression
   = PrimaryExpression
   / FunctionExpression
+
+CallExpression
+  = base:(
+      name:MemberExpression args:Arguments {
+        return {
+          type:      "FunctionCall",
+          name:      name,
+          arguments: args
+        };
+      }
+    )
+    {
+      var result = base;
+      return result;
+    }
+
+Arguments
+  = _ "(" _ ")" {
+    return []; /* empty arguments*/
+  }
+  / _ args:ArgumentList {
+    return args !== "" ? args : [];
+  }
+
+ArgumentList
+  = head:AssignmentExpression tail:(_ "," _ AssignmentExpression)* {
+      var result = [head];
+      for (var i = 0; i < tail.length; i++) {
+        result.push(tail[i][3]);
+      }
+      return result;
+    }
 
 FunctionExpression
   = _ params:FormalParameterList? _
@@ -448,6 +480,8 @@ Keyword
       / "if"
       / "instanceof"
       / "in"
+      / "isnt"
+      / "is"
       / "new"
       / "not"
       / "no"
