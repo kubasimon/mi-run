@@ -198,6 +198,24 @@ NewExpression
 
 MemberExpression
   = PrimaryExpression
+  / FunctionExpression
+
+FunctionExpression
+  = FunctionOperator _
+    _ elements:FunctionBody _ {
+      return {
+        type:     "Function",
+        name:     /*name !== "" ? name :*/ null,
+        params:   /*params !== "" ? params :*/ [],
+        elements: elements
+      };
+    }
+
+FunctionOperator
+  = "->"
+
+FunctionBody
+  = elements:SourceElements? { return elements !== "" ? elements : []; }
 
 PrimaryExpression
   = name:Identifier { return { type: "Variable", name: name }; }

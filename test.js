@@ -382,7 +382,7 @@ describe('PEG', function () {
             assert.equal('Variable', output.elements[0].expression.type);
             assert.equal('a', output.elements[0].expression.name);
         });
-        it('should parse unary expression with operator !', function(){
+        it('should parse unary expression with operator ! alias not', function(){
             var program = 'not a';
             var output = parser.parse(program);
             //output is program
@@ -904,6 +904,26 @@ describe('PEG', function () {
         });
         //todo conditional assignment(posfix) - mood = singing if true
         //todo unless - negated if
+        //todo if with indetation
+        //todo function declaration
+        it("should parse anonymous function declaration without params", function(){
+            var program = '-> 8';
+            var output = parser.parse(program);
+            //output is program
+            assert.equal('Program', output.type);
+            assert.equal(1, output.elements.length);
+            assert.equal('Function', output.elements[0].type);
+            // no name
+            assert.equal(null, output.elements[0].name);
+            // no params
+            assert.equal(0, output.elements[0].params.length);
+
+            assert.equal(1, output.elements[0].elements.length);
+            assert.equal('NumericLiteral', output.elements[0].elements[0].type);
+            assert.equal(8, output.elements[0].elements[0].value);
+        });
+        //todo function call
+
 
 
 
