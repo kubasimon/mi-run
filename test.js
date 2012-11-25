@@ -933,7 +933,8 @@ describe('PEG', function () {
             assert.equal(null, output.elements[0].name);
             // params
             assert.equal(1, output.elements[0].params.length);
-            assert.equal('x', output.elements[0].params[0]);
+            assert.equal('x', output.elements[0].params[0].name);
+            assert.equal(null, output.elements[0].params[0].default);
 
             assert.equal(1, output.elements[0].elements.length);
             assert.equal('NumericLiteral', output.elements[0].elements[0].type);
@@ -950,8 +951,91 @@ describe('PEG', function () {
             assert.equal(null, output.elements[0].name);
             // params
             assert.equal(2, output.elements[0].params.length);
-            assert.equal('x', output.elements[0].params[0]);
-            assert.equal('y', output.elements[0].params[1]);
+            assert.equal('x', output.elements[0].params[0].name);
+            assert.equal(null, output.elements[0].params[0].default);
+            assert.equal('y', output.elements[0].params[1].name);
+            assert.equal(null, output.elements[0].params[1].default);
+
+            assert.equal(1, output.elements[0].elements.length);
+            assert.equal('NumericLiteral', output.elements[0].elements[0].type);
+            assert.equal(8, output.elements[0].elements[0].value);
+        });
+        it("should parse anonymous function declaration with param with default value", function(){
+            var program = '(x, y = 1) -> 8';
+            var output = parser.parse(program);
+            //output is program
+            assert.equal('Program', output.type);
+            assert.equal(1, output.elements.length);
+            assert.equal('Function', output.elements[0].type);
+            // no name
+            assert.equal(null, output.elements[0].name);
+            // params
+            assert.equal(2, output.elements[0].params.length);
+            assert.equal('x', output.elements[0].params[0].name);
+            assert.equal(null, output.elements[0].params[0].default);
+            assert.equal('y', output.elements[0].params[1].name);
+            assert.equal('NumericLiteral', output.elements[0].params[1].default.type);
+            assert.equal(1, output.elements[0].params[1].default.value);
+
+            assert.equal(1, output.elements[0].elements.length);
+            assert.equal('NumericLiteral', output.elements[0].elements[0].type);
+            assert.equal(8, output.elements[0].elements[0].value);
+        });
+        it("should parse anonymous function declaration with param with default value", function(){
+            var program = '(x = 2, y = 1) -> 8';
+            var output = parser.parse(program);
+            //output is program
+            assert.equal('Program', output.type);
+            assert.equal(1, output.elements.length);
+            assert.equal('Function', output.elements[0].type);
+            // no name
+            assert.equal(null, output.elements[0].name);
+            // params
+            assert.equal(2, output.elements[0].params.length);
+            assert.equal('x', output.elements[0].params[0].name);
+            assert.equal('NumericLiteral', output.elements[0].params[0].default.type);
+            assert.equal(2, output.elements[0].params[0].default.value);
+            assert.equal('y', output.elements[0].params[1].name);
+            assert.equal('NumericLiteral', output.elements[0].params[1].default.type);
+            assert.equal(1, output.elements[0].params[1].default.value);
+
+            assert.equal(1, output.elements[0].elements.length);
+            assert.equal('NumericLiteral', output.elements[0].elements[0].type);
+            assert.equal(8, output.elements[0].elements[0].value);
+        });
+        it("should parse anonymous function declaration with param with default value array", function(){
+            var program = '(x = []) -> 8';
+            var output = parser.parse(program);
+            //output is program
+            assert.equal('Program', output.type);
+            assert.equal(1, output.elements.length);
+            assert.equal('Function', output.elements[0].type);
+            // no name
+            assert.equal(null, output.elements[0].name);
+            // params
+            assert.equal(1, output.elements[0].params.length);
+            assert.equal('x', output.elements[0].params[0].name);
+            assert.equal('ArrayLiteral', output.elements[0].params[0].default.type);
+            assert.equal(0, output.elements[0].params[0].default.elements.length);
+
+            assert.equal(1, output.elements[0].elements.length);
+            assert.equal('NumericLiteral', output.elements[0].elements[0].type);
+            assert.equal(8, output.elements[0].elements[0].value);
+        });
+        it("should parse anonymous function declaration with param with default value string", function(){
+            var program = '(x = "ahoj") -> 8';
+            var output = parser.parse(program);
+            //output is program
+            assert.equal('Program', output.type);
+            assert.equal(1, output.elements.length);
+            assert.equal('Function', output.elements[0].type);
+            // no name
+            assert.equal(null, output.elements[0].name);
+            // params
+            assert.equal(1, output.elements[0].params.length);
+            assert.equal('x', output.elements[0].params[0].name);
+            assert.equal('StringLiteral', output.elements[0].params[0].default.type);
+            assert.equal("ahoj", output.elements[0].params[0].default.value);
 
             assert.equal(1, output.elements[0].elements.length);
             assert.equal('NumericLiteral', output.elements[0].elements[0].type);

@@ -219,13 +219,28 @@ FunctionBody
   = elements:SourceElements? { return elements !== "" ? elements : []; }
 
 FormalParameterList
-  = "(" _ head:Identifier tail:(_ "," _ Identifier)* ")" {
-      var result = [head];
+  = "(" _ head:Identifier def:DefaultParameter? tail:(_ "," _ Identifier DefaultParameter?)* ")" {
+      var defaultVal = null
+      if (def[3]) {
+        defaultVal = def[3];
+      }
+      var result = [{name: head, default: defaultVal}];
       for (var i = 0; i < tail.length; i++) {
-        result.push(tail[i][3]);
+        defaultVal = null;
+        var def2 = tail[i][4][3];
+        if (def2 !== "") {
+           defaultVal = def2;
+        }
+        result.push({
+            name: tail[i][3],
+            default: defaultVal
+            });
       }
       return result;
     }
+
+DefaultParameter
+  = _ "=" _ expr:PrimaryExpression
 
 PrimaryExpression
   = name:Identifier { return { type: "Variable", name: name }; }

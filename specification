@@ -27,3 +27,7 @@ operators precedence
 If expression:
 
     if condition then expression else expression
+
+functions:
+    (arguments = defaultValue, arg2) -> functionBody    default values = Numeric, String, Array
+    () -> body          - function without params
