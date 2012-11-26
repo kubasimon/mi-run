@@ -1307,5 +1307,32 @@ describe('interpreter', function(){
             assert.equal(8, output[0][0][1]);
             assert.equal(6, output[0][1]);
         });
+        it('should interpret assignment numeric literal and retrieving variable', function(){
+            var program = 'a = 8; a';
+            var ast = parser.parse(program);
+            var output = interpreter.evaluate(ast);
+            assert.equal(2, output.length);
+            assert.equal(8, output[0]);
+            assert.equal(8, output[1]);
+        });
+        it('should interpret assignment string, array literal and retrieving variable', function(){
+            var program = 'a = "x"; a; b = []; b';
+            var ast = parser.parse(program);
+            var output = interpreter.evaluate(ast);
+            assert.equal(4, output.length);
+            assert.equal("x", output[0]);
+            assert.equal("x", output[1]);
+            assert.equal(0, output[2].length);
+            assert.equal(0, output[3].length);
+        });
+        it('should interpret assignment string and another variable', function(){
+            var program = 'a = "x"; b = a; b';
+            var ast = parser.parse(program);
+            var output = interpreter.evaluate(ast);
+            assert.equal(3, output.length);
+            assert.equal("x", output[0]);
+            assert.equal("x", output[1]);
+            assert.equal("x", output[2]);
+        });
     });
 });
