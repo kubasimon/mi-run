@@ -3,12 +3,13 @@
 
 var assert = require("assert");
 
-var PEG, grammar, parser;
+var PEG, grammar, parser, interpreter;
 
 
 PEG = require("pegjs");
 fs = require('fs');
 grammar = fs.readFileSync('grammar.peg', "utf-8");
+interpreter = require('./interpreter.js');
 
 parser = PEG.buildParser (grammar);
 
@@ -905,6 +906,21 @@ describe('PEG', function () {
         //todo conditional assignment(posfix) - mood = singing if true
         //todo unless - negated if
         //todo if with indentation
+        it("should parse if expression with indentation TODO", function(){
+            var program = "if a\n" +
+                " b \n";
+//            var output = parser.parse(program);
+            //output is program
+//            assert.equal('Program', output.type);
+//            // containing one literal
+//            assert.equal(1, output.elements.length);
+//            assert.equal('IfExpression', output.elements[0].type);
+//            assert.equal('Variable', output.elements[0].condition.type);
+//            assert.equal('a', output.elements[0].condition.name);
+//            assert.equal('Variable', output.elements[0].ifExpression.type);
+//            assert.equal('b', output.elements[0].ifExpression.name);
+//            assert.equal(null, output.elements[0].elseExpression);
+        });
         it("should parse anonymous function declaration without params", function(){
             var program = '-> 8';
             var output = parser.parse(program);
@@ -1207,10 +1223,89 @@ describe('PEG', function () {
             assert.equal(0, output.elements[0].arguments[0].arguments[0].arguments.length);
         });
 
-
-
-
-
-
     })
+});
+
+
+describe('interpreter', function(){
+    describe('evaluate', function(){
+        it('should interpret empty', function(){
+            var program = ';';
+            var ast = parser.parse(program);
+            var output = interpreter.evaluate(ast);
+            assert.equal(1, output.length);
+            assert.equal('', output[0]);
+        });
+        it('should interpret integer literal', function(){
+            var program = '10';
+            var ast = parser.parse(program);
+            var output = interpreter.evaluate(ast);
+            assert.equal(1, output.length);
+            assert.equal(10, output[0]);
+        });
+        it('should interpret null literal', function(){
+            var program = 'null';
+            var ast = parser.parse(program);
+            var output = interpreter.evaluate(ast);
+            assert.equal(1, output.length);
+            assert.equal(null, output[0]);
+        });
+        it('should interpret bool literals', function(){
+            var program = 'true;yes;on;false;no;off';
+            var ast = parser.parse(program);
+            var output = interpreter.evaluate(ast);
+            assert.equal(6, output.length);
+            assert.equal(true, output[0]);
+            assert.equal(true, output[1]);
+            assert.equal(true, output[2]);
+            assert.equal(false, output[3]);
+            assert.equal(false, output[4]);
+            assert.equal(false, output[5]);
+        });
+        it('should interpret string literals', function(){
+            var program = '""; "ahoj"';
+            var ast = parser.parse(program);
+            var output = interpreter.evaluate(ast);
+            assert.equal(2, output.length);
+            assert.equal("", output[0]);
+            assert.equal("ahoj", output[1]);
+        });
+        it('should interpret undefined variable', function(){
+            var program = 'a';
+            var ast = parser.parse(program);
+            var output = interpreter.evaluate(ast);
+            assert.equal(1, output.length);
+            assert.equal(undefined, output[0]);
+        });
+        it('should interpret empty array', function(){
+            var program = '[]';
+            var ast = parser.parse(program);
+            var output = interpreter.evaluate(ast);
+            assert.equal(1, output.length);
+            assert.equal(0, output[0].length);
+        });
+        it('should interpret not empty array', function(){
+            var program = '[8];[a,"b",9]';
+            var ast = parser.parse(program);
+            var output = interpreter.evaluate(ast);
+            assert.equal(2, output.length);
+            assert.equal(1, output[0].length);
+            assert.equal(8, output[0][0]);
+            assert.equal(3, output[1].length);
+            assert.equal(undefined, output[1][0]);
+            assert.equal("b", output[1][1]);
+            assert.equal(9, output[1][2]);
+        });
+        it('should interpret multi array', function(){
+            var program = '[ [5, 8], 6 ]';
+            var ast = parser.parse(program);
+            var output = interpreter.evaluate(ast);
+            assert.equal(1, output.length);
+            assert.equal(2, output[0].length);
+            assert.equal(2, output[0][0].length);
+            assert.equal(5, output[0][0][0]);
+            assert.equal(8, output[0][0][1]);
+            assert.equal(6, output[0][1]);
+        });
+    });
 });
