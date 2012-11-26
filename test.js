@@ -1334,5 +1334,15 @@ describe('interpreter', function(){
             assert.equal("x", output[1]);
             assert.equal("x", output[2]);
         });
+        it('should interpret unary expression !', function(){
+            var program = '!true; !false; !!false;not true';
+            var ast = parser.parse(program);
+            var output = interpreter.evaluate(ast);
+            assert.equal(4, output.length);
+            assert.equal(false, output[0]);
+            assert.equal(true, output[1]);
+            assert.equal(false, output[2]);
+            assert.equal(false, output[3]);
+        });
     });
 });

@@ -43,6 +43,10 @@ interpreter.evaluateStatement = function(statement, environment) {
                 return this.evaluateArrayLiteral(statement.elements, environment);
             case 'AssignmentExpression':
                 return this.evaluateAssignmentExpression(statement, environment);
+            case 'UnaryExpression':
+                return this.evaluateUnaryExpression(statement, environment);
+            default:
+                throw new Error('Not supported statement type' + statement.type);
         }
     } else {
       throw new Error('Unknown statement ' + statement);
@@ -61,21 +65,31 @@ interpreter.evaluateArrayLiteral = function(elements, environment) {
     return result;
 };
 
-interpreter.evaluateAssignmentExpression = function(statement, environment) {
-    if (statement.left.type === 'Variable') {
-        if (statement.operator === '=') {
-            var variableName = statement.left.name;
-            var evaluatedRight = this.evaluateStatement(statement.right, environment);
+interpreter.evaluateAssignmentExpression = function(expression, environment) {
+    if (expression.left.type === 'Variable') {
+        if (expression.operator === '=') {
+            var variableName = expression.left.name;
+            var evaluatedRight = this.evaluateStatement(expression.right, environment);
             //save variable to environment
             environment.variableName = evaluatedRight;
             return evaluatedRight;
         } else {
-            throw new Error('Not supported operator: ' + statement.operator);
+            throw new Error('Not supported operator: ' + expression.operator);
         }
     } else {
-        throw new Error('Not supported left side: ' + statement.left);
+        throw new Error('Not supported left side: ' + expression.left);
     }
-}
+};
+
+interpreter.evaluateUnaryExpression = function(expression, environment) {
+    if (expression.operator === '!') {
+        var expression = this.evaluateStatement(expression.expression, environment);
+        //todo better converting??
+        return !expression;
+    } else {
+        throw new Error('Not supported operator: ' + expression.operator);
+    }
+};
 
 return interpreter;
 })();
