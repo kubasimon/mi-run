@@ -45,8 +45,10 @@ interpreter.evaluateStatement = function(statement, environment) {
                 return this.evaluateAssignmentExpression(statement, environment);
             case 'UnaryExpression':
                 return this.evaluateUnaryExpression(statement, environment);
+            case 'BinaryExpression':
+                return this.evaluateBinaryExpression(statement, environment);
             default:
-                throw new Error('Not supported statement type' + statement.type);
+                throw new Error('Not supported statement type: ' + statement.type);
         }
     } else {
       throw new Error('Unknown statement ' + statement);
@@ -83,13 +85,41 @@ interpreter.evaluateAssignmentExpression = function(expression, environment) {
 
 interpreter.evaluateUnaryExpression = function(expression, environment) {
     if (expression.operator === '!') {
-        var expression = this.evaluateStatement(expression.expression, environment);
+        var expr = this.evaluateStatement(expression.expression, environment);
         //todo better converting??
-        return !expression;
+        return !expr;
     } else {
         throw new Error('Not supported operator: ' + expression.operator);
     }
 };
+
+interpreter.evaluateBinaryExpression = function(expression, environment) {
+    var left = this.evaluateStatement(expression.left, environment);
+    var right = this.evaluateStatement(expression.right, environment);
+    switch (expression.operator) {
+        case '==':
+            return left === right;
+        case '!=':
+            return left !== right;
+        case '>':
+            return left > right;
+        case '<':
+            return left < right;
+        case '>=':
+            return left >= right;
+        case '<=':
+            return left <= right;
+        case '+':
+            return left + right;
+        case '-':
+            return left - right;
+        default:
+            throw new Error('Not supported operator: ' + expression.operator);
+    }
+
+};
+
+
 
 return interpreter;
 })();

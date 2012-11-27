@@ -395,7 +395,8 @@ describe('PEG', function () {
             assert.equal('Variable', output.elements[0].expression.type);
             assert.equal('a', output.elements[0].expression.name);
         });
-        it('should parse binary expression with operator ==', function(){
+        // todo unary - !!
+        it('should parse binary expression with operator !=', function(){
             var program = '1 == 1';
             var output = parser.parse(program);
             //output is program
@@ -1343,6 +1344,136 @@ describe('interpreter', function(){
             assert.equal(true, output[1]);
             assert.equal(false, output[2]);
             assert.equal(false, output[3]);
+        });
+        it('should interpret binary expression ==', function(){
+            var program = 'true == true; "1" == "1"; [] == []; a = []; a == a; true == false; false == false; false == true; 1 == 1; 1 == 2';
+            var ast = parser.parse(program);
+            var output = interpreter.evaluate(ast);
+            assert.equal(10, output.length);
+            assert.equal(true, output[0]);
+            assert.equal(true, output[1]);
+            assert.equal(false, output[2]);
+            assert.equal(0, output[3].length);
+            assert.equal(true, output[4]); //output of the assignment
+            assert.equal(false, output[5]);
+            assert.equal(true, output[6]);
+            assert.equal(false, output[7]);
+            assert.equal(true, output[8]);
+            assert.equal(false, output[9]);
+        });
+        it('should interpret binary expression == alias is', function(){
+            var program = 'true is true; "1" is "1"; [] is []; a = []; a is a; true is false; false is false; false is true; 1 is 1; 1 is 2;';
+            var ast = parser.parse(program);
+            var output = interpreter.evaluate(ast);
+            assert.equal(10, output.length);
+            assert.equal(true, output[0]);
+            assert.equal(true, output[1]);
+            assert.equal(false, output[2]);
+            assert.equal(0, output[3].length); //output of the assignment
+            assert.equal(true, output[4]);
+            assert.equal(false, output[5]);
+            assert.equal(true, output[6]);
+            assert.equal(false, output[7]);
+            assert.equal(true, output[8]);
+            assert.equal(false, output[9]);
+        });
+        it('should interpret binary expression !=', function(){
+            var program = 'true != true; "1" != "1"; [] != []; a = []; a != a; true != false; false != false; false != true; 1 != 1; 1 != 2';
+            var ast = parser.parse(program);
+            var output = interpreter.evaluate(ast);
+            assert.equal(10, output.length);
+            assert.equal(false, output[0]);
+            assert.equal(false, output[1]);
+            assert.equal(true, output[2]);
+            assert.equal(0, output[3].length); //output of the assignment
+            assert.equal(false, output[4]);
+            assert.equal(true, output[5]);
+            assert.equal(false, output[6]);
+            assert.equal(true, output[7]);
+            assert.equal(false, output[8]);
+            assert.equal(true, output[9]);
+        });
+        it('should interpret binary expression != alias isnt', function(){
+            var program = 'true isnt true; "1" isnt "1"; [] isnt []; a = []; a isnt a; true isnt false; false isnt false; false isnt true; 1 isnt 1; 1 isnt 2';
+            var ast = parser.parse(program);
+            var output = interpreter.evaluate(ast);
+            assert.equal(10, output.length);
+            assert.equal(false, output[0]);
+            assert.equal(false, output[1]);
+            assert.equal(true, output[2]);
+            assert.equal(0, output[3].length); //output of the assignment
+            assert.equal(false, output[4]);
+            assert.equal(true, output[5]);
+            assert.equal(false, output[6]);
+            assert.equal(true, output[7]);
+            assert.equal(false, output[8]);
+            assert.equal(true, output[9]);
+        });
+        it('should interpret binary expression >', function(){
+            var program = 'true > true; "1" > "1"; [] > []; 1 > 1; 1 > 2; 2 > 1';
+            var ast = parser.parse(program);
+            var output = interpreter.evaluate(ast);
+            assert.equal(6, output.length);
+            assert.equal(false, output[0]);
+            assert.equal(false, output[1]);
+            assert.equal(false, output[2]);
+            assert.equal(false, output[3]);
+            assert.equal(false, output[4]);
+            assert.equal(true, output[5]);
+        });
+        it('should interpret binary expression <', function(){
+            var program = 'true < true; "1" < "1"; [] < []; 1 < 1; 1 < 2; 2 < 1';
+            var ast = parser.parse(program);
+            var output = interpreter.evaluate(ast);
+            assert.equal(6, output.length);
+            assert.equal(false, output[0]);
+            assert.equal(false, output[1]);
+            assert.equal(false, output[2]);
+            assert.equal(false, output[3]);
+            assert.equal(true, output[4]);
+            assert.equal(false, output[5]);
+        });
+        it('should interpret binary expression <=', function(){
+            var program = 'true <= true; "1" <= "1"; [] <= []; 1 <= 1; 1 <= 2; 2 <= 1';
+            var ast = parser.parse(program);
+            var output = interpreter.evaluate(ast);
+            assert.equal(6, output.length);
+            assert.equal(true, output[0]);
+            assert.equal(true, output[1]);
+            assert.equal(true, output[2]);
+            assert.equal(true, output[3]);
+            assert.equal(true, output[4]);
+            assert.equal(false, output[5]);
+        });
+        it('should interpret binary expression >=', function(){
+            var program = 'true >= true; "1" >= "1"; [] >= []; 1 >= 1; 1 >= 2; 2 >= 1';
+            var ast = parser.parse(program);
+            var output = interpreter.evaluate(ast);
+            assert.equal(6, output.length);
+            assert.equal(true, output[0]);
+            assert.equal(true, output[1]);
+            assert.equal(true, output[2]);
+            assert.equal(true, output[3]);
+            assert.equal(false, output[4]);
+            assert.equal(true, output[5]);
+        });
+        it('should interpret binary expression +', function(){
+            var program = '1+1; 2+2; "a" + "b";';
+            var ast = parser.parse(program);
+            var output = interpreter.evaluate(ast);
+            assert.equal(3, output.length);
+            assert.equal(2, output[0]);
+            assert.equal(4, output[1]);
+            assert.equal("ab", output[2]);
+        });
+        it('should interpret binary expression +', function(){
+            var program = '1-1; 2-2; 3-4';
+            var ast = parser.parse(program);
+            var output = interpreter.evaluate(ast);
+            assert.equal(3, output.length);
+            assert.equal(0, output[0]);
+            assert.equal(0, output[1]);
+            assert.equal(-1, output[2]);
         });
     });
 });
