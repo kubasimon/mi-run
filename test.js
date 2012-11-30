@@ -1539,5 +1539,63 @@ describe('interpreter', function(){
             assert.equal(false, output[6]);
             assert.equal(true, output[7]);
         });
+        it('should interpret if expression', function(){
+            var program = 'if true then 1';
+            var ast = parser.parse(program);
+            var output = interpreter.evaluate(ast);
+            assert.equal(1, output.length);
+            assert.equal(1, output[0]);
+        });
+        it('should interpret if expression', function(){
+            var program = 'if true then 1 + 1';
+            var ast = parser.parse(program);
+            var output = interpreter.evaluate(ast);
+            assert.equal(1, output.length);
+            assert.equal(2, output[0]);
+        });
+        it('should interpret if expression', function(){
+            var program = 'if 1 == 1 then 1 + 1';
+            var ast = parser.parse(program);
+            var output = interpreter.evaluate(ast);
+            assert.equal(1, output.length);
+            assert.equal(2, output[0]);
+        });
+        it('should interpret if expression with else ', function(){
+            var program = 'if 1 == 1 then 1 + 1 else 8';
+            var ast = parser.parse(program);
+            var output = interpreter.evaluate(ast);
+            assert.equal(1, output.length);
+            assert.equal(2, output[0]);
+        });
+        it('should interpret if expression with else ', function(){
+            var program = 'if false then 1 + 1 else 8';
+            var ast = parser.parse(program);
+            var output = interpreter.evaluate(ast);
+            assert.equal(1, output.length);
+            assert.equal(8, output[0]);
+        });
+        it('should interpret if expression with else ', function(){
+            var program = 'if false then 1 + 1 else 8*5';
+            var ast = parser.parse(program);
+            var output = interpreter.evaluate(ast);
+            assert.equal(1, output.length);
+            assert.equal(40, output[0]);
+        });
+        it('should interpret assignment of if expression with else ', function(){
+            var program = 'a = if false then 1 + 1 else 8*5; a';
+            var ast = parser.parse(program);
+            var output = interpreter.evaluate(ast);
+            assert.equal(2, output.length);
+            assert.equal(40, output[0]);
+            assert.equal(40, output[1]);
+        });
+        it('should interpret assignment of if expression with else ', function(){
+            var program = 'a = if true then 1 + 1 else 8*5; a';
+            var ast = parser.parse(program);
+            var output = interpreter.evaluate(ast);
+            assert.equal(2, output.length);
+            assert.equal(2, output[0]);
+            assert.equal(2, output[1]);
+        });
     });
 });

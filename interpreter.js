@@ -47,6 +47,8 @@ interpreter.evaluateStatement = function(statement, environment) {
                 return this.evaluateUnaryExpression(statement, environment);
             case 'BinaryExpression':
                 return this.evaluateBinaryExpression(statement, environment);
+            case 'IfExpression':
+                return this.evaluateIfExpression(statement, environment);
             default:
                 throw new Error('Not supported statement type: ' + statement.type);
         }
@@ -127,6 +129,21 @@ interpreter.evaluateBinaryExpression = function(expression, environment) {
 
 };
 
+interpreter.evaluateIfExpression = function(expression, environment) {
+    var condition = this.evaluateStatement(expression.condition, environment);
+    if (condition) {
+        return this.evaluateStatement(expression.ifExpression, environment);
+    } else {
+        if (expression.elseExpression) {
+            if (expression.elseExpression === null) {
+                return null;
+            } else {
+                return this.evaluateStatement(expression.elseExpression, environment);
+            }
+        }
+        throw new Error('Else part is missing: ' + expression);
+    }
+};
 
 
 return interpreter;
