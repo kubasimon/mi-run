@@ -49,6 +49,12 @@ interpreter.evaluateStatement = function(statement, environment) {
                 return this.evaluateBinaryExpression(statement, environment);
             case 'IfExpression':
                 return this.evaluateIfExpression(statement, environment);
+            case 'Function':
+                // no effect, only anonymous function declaration
+                return null;
+            case 'FunctionCall':
+                return this.evaluateFunctionCallExpression(statement, environment);
+                return null;
             default:
                 throw new Error('Not supported statement type: ' + statement.type);
         }
@@ -58,7 +64,13 @@ interpreter.evaluateStatement = function(statement, environment) {
 };
 
 interpreter.evaluateVariable = function(variableName, environment) {
-    return environment.variableName;
+//    if (environment.variableName) {
+//        if (environment.variableName.type === 'Function') {
+//            // todo return Function??
+//            return null;
+//        }
+//    }
+    return environment[variableName];
 };
 
 interpreter.evaluateArrayLiteral = function(elements, environment) {
@@ -71,12 +83,19 @@ interpreter.evaluateArrayLiteral = function(elements, environment) {
 
 interpreter.evaluateAssignmentExpression = function(expression, environment) {
     if (expression.left.type === 'Variable') {
+        var variableName = expression.left.name;
         if (expression.operator === '=') {
-            var variableName = expression.left.name;
-            var evaluatedRight = this.evaluateStatement(expression.right, environment);
-            //save variable to environment
-            environment.variableName = evaluatedRight;
-            return evaluatedRight;
+            if (expression.right.type === 'Function') {
+                //store whole function and do do anything
+                // todo assign current envirnoment?
+                environment[variableName] = expression.right;
+                return null;
+            } else {
+                var evaluatedRight = this.evaluateStatement(expression.right, environment);
+                //save variable to environment
+                environment[variableName] = evaluatedRight;
+                return evaluatedRight;
+            }
         } else {
             throw new Error('Not supported operator: ' + expression.operator);
         }
@@ -143,6 +162,26 @@ interpreter.evaluateIfExpression = function(expression, environment) {
         }
         throw new Error('Else part is missing: ' + expression);
     }
+};
+
+interpreter.evaluateFunctionCallExpression = function(expression, environment) {
+    //todo evaluate name??
+    var name = expression.name.name;
+    var functionBody = environment[name];
+    if (functionBody && functionBody.type === 'Function') {
+
+        //todo create function environment
+        //todo add params to enviroment
+        //evaluate all elements inside function
+        var i = 0, length = functionBody.elements.length, result = [];
+        for(; i < length; i++) {
+            result.push(this.evaluateStatement(functionBody.elements[i], environment));
+        }
+        return result;
+    } else {
+        throw new Error('"variable ' + name + '" is not a function: %j', functionBody);
+    }
+
 };
 
 

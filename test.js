@@ -907,6 +907,7 @@ describe('PEG', function () {
         //todo conditional assignment(posfix) - mood = singing if true
         //todo unless - negated if
         //todo if with indentation
+        //todo if with multiple statements(expressions !)
         it("should parse if expression with indentation TODO", function(){
             var program = "if a\n" +
                 " b \n";
@@ -1113,6 +1114,27 @@ describe('PEG', function () {
             assert.equal('Variable', output.elements[0].name.type);
             assert.equal('a', output.elements[0].name.name);
             assert.equal(0, output.elements[0].arguments.length);
+        });
+        it("should parse assigning function without params to variable and function call", function(){
+            var program = 'a = -> 8; a()';
+            var output = parser.parse(program);
+            //output is program
+            assert.equal('Program', output.type);
+            assert.equal(2, output.elements.length);
+
+            assert.equal('AssignmentExpression', output.elements[0].type);
+
+            assert.equal('Variable', output.elements[0].left.type);
+            assert.equal('a', output.elements[0].left.name);
+            assert.equal('Function', output.elements[0].right.type);
+            // no name
+            assert.equal(null, output.elements[0].right.name);
+            // params
+            assert.equal(0, output.elements[0].right.params.length);
+
+            assert.equal(1, output.elements[0].right.elements.length);
+            assert.equal('NumericLiteral', output.elements[0].right.elements[0].type);
+            assert.equal(8, output.elements[0].right.elements[0].value);
         });
         it("should parse function call without params, whitespace before and inside parenthesis", function(){
             var program = 'a (  )';
@@ -1596,6 +1618,15 @@ describe('interpreter', function(){
             assert.equal(2, output.length);
             assert.equal(2, output[0]);
             assert.equal(2, output[1]);
+        });
+        it('should interpret assigment of function and call ', function(){
+            var program = 'a = -> 8; a()';
+            var ast = parser.parse(program);
+            var output = interpreter.evaluate(ast);
+            assert.equal(2, output.length);
+            assert.equal(null, output[0]);
+            assert.equal(1, output[1].length);
+            assert.equal(8, output[1][0]);
         });
     });
 });

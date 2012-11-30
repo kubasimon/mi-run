@@ -33,7 +33,7 @@ EmptyStatement
   = ";" { return { type: "EmptyStatement" }; }
 
 ExpressionStatement
-  = expression:Expression EOS { return expression; }
+  = expression:Expression ";"? { return expression; }
 
 Expression
   = head:AssignmentExpression
@@ -202,7 +202,7 @@ MemberExpression
 
 CallExpression
   = base:(
-      name:MemberExpression args:Arguments {
+      name:PrimaryExpression args:Arguments {
         return {
           type:      "FunctionCall",
           name:      name,
@@ -248,7 +248,8 @@ FunctionOperator
   = "->"
 
 FunctionBody
-  = elements:SourceElements? { return elements !== "" ? elements : []; }
+  = elements:SourceElement? { return elements !== "" ? [elements] : []; }
+  /* todo multiple statements in function body */
 
 FormalParameterList
   = "(" _ head:Identifier def:DefaultParameter? tail:(_ "," _ Identifier DefaultParameter?)* ")" {
