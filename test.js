@@ -1511,5 +1511,33 @@ describe('interpreter', function(){
             assert.equal((4/3), output[1]);
             assert.equal((6/3), output[2]);
         });
+        it('should interpret binary expression &&', function(){
+            var program = 'true && true; true && false; false && false; false && true;true and true; true and false; false and false; false and true;';
+            var ast = parser.parse(program);
+            var output = interpreter.evaluate(ast);
+            assert.equal(8, output.length);
+            assert.equal(true, output[0]);
+            assert.equal(false, output[1]);
+            assert.equal(false, output[2]);
+            assert.equal(false, output[3]);
+            assert.equal(true, output[4]);
+            assert.equal(false, output[5]);
+            assert.equal(false, output[6]);
+            assert.equal(false, output[7]);
+        });
+        it('should interpret binary expression &&', function(){
+            var program = 'true || true; true || false; false || false; false || true;true or true; true or false; false or false; false or true;';
+            var ast = parser.parse(program);
+            var output = interpreter.evaluate(ast);
+            assert.equal(8, output.length);
+            assert.equal(true, output[0]);
+            assert.equal(true, output[1]);
+            assert.equal(false, output[2]);
+            assert.equal(true, output[3]);
+            assert.equal(true, output[4]);
+            assert.equal(true, output[5]);
+            assert.equal(false, output[6]);
+            assert.equal(true, output[7]);
+        });
     });
 });
