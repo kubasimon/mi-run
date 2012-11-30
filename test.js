@@ -1475,5 +1475,41 @@ describe('interpreter', function(){
             assert.equal(0, output[1]);
             assert.equal(-1, output[2]);
         });
+        it('should interpret binary expression +', function(){
+            var program = '1-1; 2-2; 3-4';
+            var ast = parser.parse(program);
+            var output = interpreter.evaluate(ast);
+            assert.equal(3, output.length);
+            assert.equal(0, output[0]);
+            assert.equal(0, output[1]);
+            assert.equal(-1, output[2]);
+        });
+        it('should interpret binary expression *', function(){
+            var program = '1*1; 2*2; 3*4';
+            var ast = parser.parse(program);
+            var output = interpreter.evaluate(ast);
+            assert.equal(3, output.length);
+            assert.equal(1, output[0]);
+            assert.equal(4, output[1]);
+            assert.equal(12, output[2]);
+        });
+        it('should interpret binary expression /', function(){
+            var program = '10/1; 4/2; 6/3';
+            var ast = parser.parse(program);
+            var output = interpreter.evaluate(ast);
+            assert.equal(3, output.length);
+            assert.equal(10, output[0]);
+            assert.equal(2, output[1]);
+            assert.equal(2, output[2]);
+        });
+        it('should interpret binary expression / with float', function(){
+            var program = '10/3; 4/3; 6/3';
+            var ast = parser.parse(program);
+            var output = interpreter.evaluate(ast);
+            assert.equal(3, output.length);
+            assert.equal((10/3), output[0]);
+            assert.equal((4/3), output[1]);
+            assert.equal((6/3), output[2]);
+        });
     });
 });

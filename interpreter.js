@@ -113,6 +113,10 @@ interpreter.evaluateBinaryExpression = function(expression, environment) {
             return left + right;
         case '-':
             return left - right;
+        case '*':
+            return left * right;
+        case '/':
+            return left / right;
         default:
             throw new Error('Not supported operator: ' + expression.operator);
     }
