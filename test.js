@@ -1712,5 +1712,16 @@ describe('interpreter', function(){
             assert.equal(1, output[2].length);
             assert.equal(89, output[2][0]);
         });
+        it('should interpret assignment of function with parameter function call and call ', function(){
+            var program = 'a = (a) -> a + 1;b = (b) -> b * 2; c = -> 8; a b c()';
+            var ast = parser.parse(program);
+            var output = interpreter.evaluate(ast);
+            assert.equal(4, output.length);
+            assert.equal(null, output[0]);
+            assert.equal(null, output[1]);
+            assert.equal(null, output[2]);
+            assert.equal(1, output[3].length);
+            assert.equal(17, output[3][0]);
+        });
     });
 });
