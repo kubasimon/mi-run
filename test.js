@@ -395,7 +395,7 @@ describe('PEG', function () {
             assert.equal('Variable', output.elements[0].expression.type);
             assert.equal('a', output.elements[0].expression.name);
         });
-        // todo unary - !!
+        // todo unary - (minus) !!
         it('should parse binary expression with operator !=', function(){
             var program = '1 == 1';
             var output = parser.parse(program);
@@ -1619,7 +1619,7 @@ describe('interpreter', function(){
             assert.equal(2, output[0]);
             assert.equal(2, output[1]);
         });
-        it('should interpret assigment of function and call ', function(){
+        it('should interpret assignment of function and call ', function(){
             var program = 'a = -> 8; a()';
             var ast = parser.parse(program);
             var output = interpreter.evaluate(ast);
@@ -1627,6 +1627,26 @@ describe('interpreter', function(){
             assert.equal(null, output[0]);
             assert.equal(1, output[1].length);
             assert.equal(8, output[1][0]);
+        });
+        it('should interpret assignment of function with global variable and call ', function(){
+            var program = 'b = 7;a = -> b; a()';
+            var ast = parser.parse(program);
+            var output = interpreter.evaluate(ast);
+            assert.equal(3, output.length);
+            assert.equal(7, output[0]);
+            assert.equal(null, output[1]);
+            assert.equal(1, output[2].length);
+            assert.equal(7, output[2][0]);
+        });
+        it('should interpret assignment of function with global variable and call ', function(){
+            var program = 'b = 7;a = -> b + 1; a()';
+            var ast = parser.parse(program);
+            var output = interpreter.evaluate(ast);
+            assert.equal(3, output.length);
+            assert.equal(7, output[0]);
+            assert.equal(null, output[1]);
+            assert.equal(1, output[2].length);
+            assert.equal(8, output[2][0]);
         });
     });
 });
