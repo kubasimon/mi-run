@@ -1648,5 +1648,32 @@ describe('interpreter', function(){
             assert.equal(1, output[2].length);
             assert.equal(8, output[2][0]);
         });
+        it('should interpret assignment of function with parameter and call ', function(){
+            var program = 'a = (b) -> b; a 2';
+            var ast = parser.parse(program);
+            var output = interpreter.evaluate(ast);
+            assert.equal(2, output.length);
+            assert.equal(null, output[0]);
+            assert.equal(1, output[1].length);
+            assert.equal(2, output[1][0]);
+        });
+        it('should interpret assignment of function with parameter and call ', function(){
+            var program = 'a = (a) -> a; a 2';
+            var ast = parser.parse(program);
+            var output = interpreter.evaluate(ast);
+            assert.equal(2, output.length);
+            assert.equal(null, output[0]);
+            assert.equal(1, output[1].length);
+            assert.equal(2, output[1][0]);
+        });
+        it('should interpret assignment of function with parameter and call ', function(){
+            var program = 'a = (a) -> a + 1; a 2';
+            var ast = parser.parse(program);
+            var output = interpreter.evaluate(ast);
+            assert.equal(2, output.length);
+            assert.equal(null, output[0]);
+            assert.equal(1, output[1].length);
+            assert.equal(3, output[1][0]);
+        });
     });
 });

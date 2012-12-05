@@ -2,6 +2,7 @@ var interpreter = (function(undefined) {
 var interpreter = {
    evaluate: function(program) {
     if (program.type === 'Program') {
+        interpreter.globalEnvironment = interpreter.createEnvironment(null);
         return this.evaluateProgramElements(program.elements);
     } else {
         throw new Error('ast has not type Program');
@@ -9,8 +10,29 @@ var interpreter = {
    }
 };
 
-interpreter.globalEnvironment = {
+
+interpreter.createEnvironment = function(parentEnvironment){
+    return {
+        parent: parentEnvironment,
+        objects: {}
+    }
 };
+
+interpreter.addToEnvironment = function(environment, name, body) {
+    environment.objects[name] = body;
+};
+
+interpreter.retrieveFromEnvironment = function(environment, name) {
+    var value = environment.objects[name];
+    if (value !== undefined) {
+        return value;
+    } else if (environment.parent !== null){
+        return interpreter.retrieveFromEnvironment(environment.parent, name);
+    }
+    return value;
+};
+
+interpreter.globalEnvironment = {};
 
 interpreter.evaluateProgramElements = function(elements) {
     if (elements) {
@@ -70,7 +92,7 @@ interpreter.evaluateVariable = function(variableName, environment) {
 //            return null;
 //        }
 //    }
-    return environment[variableName];
+    return interpreter.retrieveFromEnvironment(environment, variableName);
 };
 
 interpreter.evaluateArrayLiteral = function(elements, environment) {
@@ -86,14 +108,15 @@ interpreter.evaluateAssignmentExpression = function(expression, environment) {
         var variableName = expression.left.name;
         if (expression.operator === '=') {
             if (expression.right.type === 'Function') {
-                //store whole function and do do anything
-                // todo assign current envirnoment?
-                environment[variableName] = expression.right;
+                //store whole function ast
+                //create function environment in time when function was defined
+                expression.right.environment = this.createEnvironment(environment);
+                interpreter.addToEnvironment(environment, variableName, expression.right);
                 return null;
             } else {
                 var evaluatedRight = this.evaluateStatement(expression.right, environment);
                 //save variable to environment
-                environment[variableName] = evaluatedRight;
+                interpreter.addToEnvironment(environment, variableName, evaluatedRight);
                 return evaluatedRight;
             }
         } else {
@@ -167,15 +190,21 @@ interpreter.evaluateIfExpression = function(expression, environment) {
 interpreter.evaluateFunctionCallExpression = function(expression, environment) {
     //todo evaluate name??
     var name = expression.name.name;
-    var functionBody = environment[name];
+    var functionBody = this.evaluateVariable(name, environment);
     if (functionBody && functionBody.type === 'Function') {
-
-        //todo create function environment
-        //todo add params to enviroment
-        //evaluate all elements inside function
-        var i = 0, length = functionBody.elements.length, result = [];
+        var functionEnvironment, i = 0, length, argument, result = [];
+        // function environment was created when function was stored in environment
+        functionEnvironment = functionBody.environment;
+        length = functionBody.params.length;
+        //adding params to environment
         for(; i < length; i++) {
-            result.push(this.evaluateStatement(functionBody.elements[i], environment));
+            argument = this.evaluateStatement(expression.arguments[i], environment);
+            this.addToEnvironment(functionEnvironment, functionBody.params[i].name, argument);
+        }
+        //evaluate all elements inside function
+        length = functionBody.elements.length;
+        for(i = 0; i < length; i++) {
+            result.push(this.evaluateStatement(functionBody.elements[i], functionEnvironment));
         }
         return result;
     } else {
@@ -183,7 +212,6 @@ interpreter.evaluateFunctionCallExpression = function(expression, environment) {
     }
 
 };
-
 
 return interpreter;
 })();
