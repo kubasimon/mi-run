@@ -1489,6 +1489,14 @@ describe('interpreter', function(){
             assert.equal("ab", output[2]);
         });
         it('should interpret binary expression +', function(){
+            var program = 'a = 1; a + 2;';
+            var ast = parser.parse(program);
+            var output = interpreter.evaluate(ast);
+            assert.equal(2, output.length);
+            assert.equal(1, output[0]);
+            assert.equal(3, output[1]);
+        });
+        it('should interpret binary expression -', function(){
             var program = '1-1; 2-2; 3-4';
             var ast = parser.parse(program);
             var output = interpreter.evaluate(ast);
@@ -1497,7 +1505,7 @@ describe('interpreter', function(){
             assert.equal(0, output[1]);
             assert.equal(-1, output[2]);
         });
-        it('should interpret binary expression +', function(){
+        it('should interpret binary expression -', function(){
             var program = '1-1; 2-2; 3-4';
             var ast = parser.parse(program);
             var output = interpreter.evaluate(ast);
@@ -1674,6 +1682,35 @@ describe('interpreter', function(){
             assert.equal(null, output[0]);
             assert.equal(1, output[1].length);
             assert.equal(3, output[1][0]);
+        });
+        it('should interpret assignment of function with parameter expression and call ', function(){
+            var program = 'a = (a) -> a + 1; a 2 + 1';
+            var ast = parser.parse(program);
+            var output = interpreter.evaluate(ast);
+            assert.equal(2, output.length);
+            assert.equal(null, output[0]);
+            assert.equal(1, output[1].length);
+            assert.equal(4, output[1][0]);
+        });
+        it('should interpret assignment of function with parameter variable and call ', function(){
+            var program = 'a = (a) -> a + 1;b = 66; a b';
+            var ast = parser.parse(program);
+            var output = interpreter.evaluate(ast);
+            assert.equal(3, output.length);
+            assert.equal(null, output[0]);
+            assert.equal(66, output[1]);
+            assert.equal(1, output[2].length);
+            assert.equal(67, output[2][0]);
+        });
+        it('should interpret assignment of function with parameter function call and call ', function(){
+            var program = 'a = (a) -> a + 1;b = -> 88; a b()';
+            var ast = parser.parse(program);
+            var output = interpreter.evaluate(ast);
+            assert.equal(3, output.length);
+            assert.equal(null, output[0]);
+            assert.equal(null, output[1]);
+            assert.equal(1, output[2].length);
+            assert.equal(89, output[2][0]);
         });
     });
 });
