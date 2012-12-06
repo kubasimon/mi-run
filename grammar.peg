@@ -234,10 +234,45 @@ CallExpression
         };
       }
     )
-    {
-      var result = base;
-      return result;
-    }
+    argumentsOrAccessors:(
+          _ "<" _ name:Expression _ ">" {
+              return {
+                type: "PropertyAccessProperty",
+                name: name
+              };
+            }
+          / _ "." _ name:IdentifierName {
+              return {
+                type: "PropertyAccessProperty",
+                name: name
+              };
+            }
+        )* {
+          var result = base;
+          for (var i = 0; i < argumentsOrAccessors.length; i++) {
+            switch (argumentsOrAccessors[i].type) {
+              case "FunctionCallArguments":
+                result = {
+                  type:      "FunctionCall",
+                  name:      result,
+                  arguments: argumentsOrAccessors[i].arguments
+                };
+                break;
+              case "PropertyAccessProperty":
+                result = {
+                  type: "PropertyAccess",
+                  base: result,
+                  name: argumentsOrAccessors[i].name
+                };
+                break;
+              default:
+                throw new Error(
+                  "Invalid expression type: " + argumentsOrAccessors[i].type
+                );
+            }
+          }
+          return result;
+        }
 
 Arguments
   = _ "(" _ ")" {

@@ -1306,6 +1306,18 @@ describe('PEG', function () {
             assert.equal('a', output.elements[0].base.name);
             assert.equal('BinaryExpression', output.elements[0].name.type);
         });
+        it("should parse array access on function call", function(){
+            var program = 'a()<1>';
+            var output = parser.parse(program);
+            //output is program
+            assert.equal('Program', output.type);
+            assert.equal(1, output.elements.length);
+
+            assert.equal('PropertyAccess', output.elements[0].type);
+            assert.equal('FunctionCall', output.elements[0].base.type);
+            assert.equal('NumericLiteral', output.elements[0].name.type);
+            assert.equal('1', output.elements[0].name.value);
+        });
 
     })
 });
@@ -1809,6 +1821,20 @@ describe('interpreter', function(){
             assert.equal(2, output.length);
             assert.equal(3, output[0].length);
             assert.equal(8, output[0][0]);
+            assert.equal(9, output[1]);
+        });
+        it('should interpret array access with direct call', function(){
+            var program = '[8, 9, 10]<1>';
+            var ast = parser.parse(program);
+            var output = interpreter.evaluate(ast);
+            assert.equal(1, output.length);
+            assert.equal(9, output[0]);
+        });
+        it('should interpret array access with direct call on function return value', function(){
+            var program = 'a = -> [8, 9, 10]; a()<1>';
+            var ast = parser.parse(program);
+            var output = interpreter.evaluate(ast);
+            assert.equal(2, output.length);
             assert.equal(9, output[1]);
         });
     });

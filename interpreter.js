@@ -76,10 +76,8 @@ interpreter.evaluateStatement = function(statement, environment) {
                 return null;
             case 'FunctionCall':
                 return this.evaluateFunctionCallExpression(statement, environment);
-                return null;
             case 'PropertyAccess':
                 return this.evaluatePropertyAccessExpression(statement, environment);
-                return null;
             default:
                 throw new Error('Not supported statement type: ' + statement.type);
         }
@@ -227,6 +225,9 @@ interpreter.evaluateFunctionCallExpression = function(expression, environment) {
 interpreter.evaluatePropertyAccessExpression = function(expression, environment) {
     var base = this.evaluateStatement(expression.base, environment);
     var name = this.evaluateStatement(expression.name, environment);
+    if (expression.base.type === 'FunctionCall') {
+        base = base[base.length-1]; // use last expression as return value
+    }
     return base[name];
 };
 
