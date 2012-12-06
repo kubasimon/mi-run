@@ -395,7 +395,30 @@ describe('PEG', function () {
             assert.equal('Variable', output.elements[0].expression.type);
             assert.equal('a', output.elements[0].expression.name);
         });
-        // todo unary - (minus) !!
+        it('should parse unary expression with operator ~', function(){
+            var program = '~a';
+            var output = parser.parse(program);
+            //output is program
+            assert.equal('Program', output.type);
+            // containing one literal
+            assert.equal(1, output.elements.length);
+            assert.equal('UnaryExpression', output.elements[0].type);
+            assert.equal('-', output.elements[0].operator);
+            assert.equal('Variable', output.elements[0].expression.type);
+            assert.equal('a', output.elements[0].expression.name);
+        });
+        it('should parse unary expression with operator ~', function(){
+            var program = '~1';
+            var output = parser.parse(program);
+            //output is program
+            assert.equal('Program', output.type);
+            // containing one literal
+            assert.equal(1, output.elements.length);
+            assert.equal('UnaryExpression', output.elements[0].type);
+            assert.equal('-', output.elements[0].operator);
+            assert.equal('NumericLiteral', output.elements[0].expression.type);
+            assert.equal('1', output.elements[0].expression.value);
+        });
         it('should parse binary expression with operator !=', function(){
             var program = '1 == 1';
             var output = parser.parse(program);
@@ -1367,6 +1390,15 @@ describe('interpreter', function(){
             assert.equal(false, output[2]);
             assert.equal(false, output[3]);
         });
+        it('should interpret unary expression ~', function(){
+            var program = '~1; a = 5; ~a';
+            var ast = parser.parse(program);
+            var output = interpreter.evaluate(ast);
+            assert.equal(3, output.length);
+            assert.equal(-1, output[0]);
+            assert.equal(5, output[1]);
+            assert.equal(-5, output[2]);
+        });
         it('should interpret binary expression ==', function(){
             var program = 'true == true; "1" == "1"; [] == []; a = []; a == a; true == false; false == false; false == true; 1 == 1; 1 == 2';
             var ast = parser.parse(program);
@@ -1723,5 +1755,6 @@ describe('interpreter', function(){
             assert.equal(1, output[3].length);
             assert.equal(17, output[3][0]);
         });
+        //todo array access
     });
 });

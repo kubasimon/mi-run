@@ -179,10 +179,18 @@ UnaryExpression
         expression: expression
       };
     }
+  / operator:"~" expression:UnaryExpression {
+      return {
+        type:       "UnaryExpression",
+        operator:   operator,
+        expression: expression
+      };
+    }
 
 UnaryOperator
   = "!"
   / NotToken { return "!"}
+  / "~" { return "-"}
 
 
 PostfixExpression

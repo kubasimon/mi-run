@@ -128,10 +128,14 @@ interpreter.evaluateAssignmentExpression = function(expression, environment) {
 };
 
 interpreter.evaluateUnaryExpression = function(expression, environment) {
+    var expr
     if (expression.operator === '!') {
-        var expr = this.evaluateStatement(expression.expression, environment);
+        expr = this.evaluateStatement(expression.expression, environment);
         //todo better converting??
         return !expr;
+    } else if (expression.operator === '-') {
+        expr = this.evaluateStatement(expression.expression, environment);
+        return -expr;
     } else {
         throw new Error('Not supported operator: ' + expression.operator);
     }
