@@ -1268,6 +1268,44 @@ describe('PEG', function () {
             assert.equal('c', output.elements[0].arguments[0].arguments[0].name.name);
             assert.equal(0, output.elements[0].arguments[0].arguments[0].arguments.length);
         });
+        it("should parse array access", function(){
+            var program = 'a<1>';
+            var output = parser.parse(program);
+            //output is program
+            assert.equal('Program', output.type);
+            assert.equal(1, output.elements.length);
+
+            assert.equal('PropertyAccess', output.elements[0].type);
+            assert.equal('Variable', output.elements[0].base.type);
+            assert.equal('a', output.elements[0].base.name);
+            assert.equal('NumericLiteral', output.elements[0].name.type);
+            assert.equal('1', output.elements[0].name.value);
+        });
+        it("should parse array access with spaces", function(){
+            var program = 'a <1> ';
+            var output = parser.parse(program);
+            //output is program
+            assert.equal('Program', output.type);
+            assert.equal(1, output.elements.length);
+
+            assert.equal('PropertyAccess', output.elements[0].type);
+            assert.equal('Variable', output.elements[0].base.type);
+            assert.equal('a', output.elements[0].base.name);
+            assert.equal('NumericLiteral', output.elements[0].name.type);
+            assert.equal('1', output.elements[0].name.value);
+        });
+        it("should parse array access with expression", function(){
+            var program = 'a<1 + 1>';
+            var output = parser.parse(program);
+            //output is program
+            assert.equal('Program', output.type);
+            assert.equal(1, output.elements.length);
+
+            assert.equal('PropertyAccess', output.elements[0].type);
+            assert.equal('Variable', output.elements[0].base.type);
+            assert.equal('a', output.elements[0].base.name);
+            assert.equal('BinaryExpression', output.elements[0].name.type);
+        });
 
     })
 });
@@ -1755,6 +1793,23 @@ describe('interpreter', function(){
             assert.equal(1, output[3].length);
             assert.equal(17, output[3][0]);
         });
-        //todo array access
+        it('should interpret array access', function(){
+            var program = 'x = [8]; x<0>';
+            var ast = parser.parse(program);
+            var output = interpreter.evaluate(ast);
+            assert.equal(2, output.length);
+            assert.equal(1, output[0].length);
+            assert.equal(8, output[0][0]);
+            assert.equal(8, output[1]);
+        });
+        it('should interpret array access with expression', function(){
+            var program = 'x = [8, 9, 10]; x<0 + 1>';
+            var ast = parser.parse(program);
+            var output = interpreter.evaluate(ast);
+            assert.equal(2, output.length);
+            assert.equal(3, output[0].length);
+            assert.equal(8, output[0][0]);
+            assert.equal(9, output[1]);
+        });
     });
 });

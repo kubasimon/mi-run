@@ -205,8 +205,24 @@ NewExpression
   = MemberExpression
 
 MemberExpression
-  = PrimaryExpression
-  / FunctionExpression
+  = base:(
+        PrimaryExpression
+        / FunctionExpression
+  )
+  accessors:(
+  _ "<" _ name:Expression _ ">" { return name; }
+  / _ "." _ name:IdentifierName    { return name; }
+  )* {
+    var result = base;
+    for (var i = 0; i < accessors.length; i++) {
+        result = {
+            type: "PropertyAccess",
+            base: result,
+            name: accessors[i]
+        };
+    }
+    return result;
+  }
 
 CallExpression
   = base:(
@@ -227,7 +243,7 @@ Arguments
   = _ "(" _ ")" {
     return []; /* empty arguments*/
   }
-  / _ args:ArgumentList {
+  / " " _ args:ArgumentList {
     return args !== "" ? args : [];
   }
 
