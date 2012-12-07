@@ -78,6 +78,8 @@ interpreter.evaluateStatement = function(statement, environment) {
                 return this.evaluateFunctionCallExpression(statement, environment);
             case 'PropertyAccess':
                 return this.evaluatePropertyAccessExpression(statement, environment);
+            case 'Block':
+                return this.evaluateBlockExpression(statement, environment);
             default:
                 throw new Error('Not supported statement type: ' + statement.type);
         }
@@ -229,6 +231,14 @@ interpreter.evaluatePropertyAccessExpression = function(expression, environment)
         base = base[base.length-1]; // use last expression as return value
     }
     return base[name];
+};
+
+interpreter.evaluateBlockExpression = function(expression, environment) {
+    var i = 0, length = expression.elements.length, output = [];
+    for(; i < length; i++) {
+        output.push(this.evaluateStatement(expression.elements[i], environment));
+    }
+    return output;
 };
 
 return interpreter;

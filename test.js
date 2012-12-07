@@ -931,20 +931,58 @@ describe('PEG', function () {
         //todo unless - negated if
         //todo if with indentation
         //todo if with multiple statements(expressions !)
-        it("should parse if expression with indentation TODO", function(){
-            var program = "if a\n" +
-                " b \n";
-//            var output = parser.parse(program);
-            //output is program
-//            assert.equal('Program', output.type);
-//            // containing one literal
-//            assert.equal(1, output.elements.length);
-//            assert.equal('IfExpression', output.elements[0].type);
-//            assert.equal('Variable', output.elements[0].condition.type);
-//            assert.equal('a', output.elements[0].condition.name);
-//            assert.equal('Variable', output.elements[0].ifExpression.type);
-//            assert.equal('b', output.elements[0].ifExpression.name);
-//            assert.equal(null, output.elements[0].elseExpression);
+        it("should parse if expression with multiple if expressions", function(){
+            var program = "if a {b; c;}  \n";
+            var output = parser.parse(program);
+            assert.equal('Program', output.type);
+            assert.equal(1, output.elements.length);
+            assert.equal('IfExpression', output.elements[0].type);
+            assert.equal('Variable', output.elements[0].condition.type);
+            assert.equal('a', output.elements[0].condition.name);
+            assert.equal('Block', output.elements[0].ifExpression.type);
+            assert.equal(2, output.elements[0].ifExpression.elements.length);
+            assert.equal('Variable', output.elements[0].ifExpression.elements[0].type);
+            assert.equal('b', output.elements[0].ifExpression.elements[0].name);
+            assert.equal('Variable', output.elements[0].ifExpression.elements[1].type);
+            assert.equal('c', output.elements[0].ifExpression.elements[1].name);
+            assert.equal(null, output.elements[0].elseExpression);
+        });
+        it("should parse if expression with multiple if expressions", function(){
+            var program = "if a {b; c}";
+            var output = parser.parse(program);
+            assert.equal('Program', output.type);
+            assert.equal(1, output.elements.length);
+            assert.equal('IfExpression', output.elements[0].type);
+            assert.equal('Variable', output.elements[0].condition.type);
+            assert.equal('a', output.elements[0].condition.name);
+            assert.equal('Block', output.elements[0].ifExpression.type);
+            assert.equal(2, output.elements[0].ifExpression.elements.length);
+            assert.equal('Variable', output.elements[0].ifExpression.elements[0].type);
+            assert.equal('b', output.elements[0].ifExpression.elements[0].name);
+            assert.equal('Variable', output.elements[0].ifExpression.elements[1].type);
+            assert.equal('c', output.elements[0].ifExpression.elements[1].name);
+            assert.equal(null, output.elements[0].elseExpression);
+        });
+        it("should parse if expression with multiple if expressions and multiple else", function(){
+            var program = "if a {b; c} else {e;f}";
+            var output = parser.parse(program);
+            assert.equal('Program', output.type);
+            assert.equal(1, output.elements.length);
+            assert.equal('IfExpression', output.elements[0].type);
+            assert.equal('Variable', output.elements[0].condition.type);
+            assert.equal('a', output.elements[0].condition.name);
+            assert.equal('Block', output.elements[0].ifExpression.type);
+            assert.equal(2, output.elements[0].ifExpression.elements.length);
+            assert.equal('Variable', output.elements[0].ifExpression.elements[0].type);
+            assert.equal('b', output.elements[0].ifExpression.elements[0].name);
+            assert.equal('Variable', output.elements[0].ifExpression.elements[1].type);
+            assert.equal('c', output.elements[0].ifExpression.elements[1].name);
+            assert.equal('Block', output.elements[0].elseExpression.type);
+            assert.equal(2, output.elements[0].elseExpression.elements.length);
+            assert.equal('Variable', output.elements[0].elseExpression.elements[0].type);
+            assert.equal('e', output.elements[0].elseExpression.elements[0].name);
+            assert.equal('Variable', output.elements[0].elseExpression.elements[1].type);
+            assert.equal('f', output.elements[0].elseExpression.elements[1].name);
         });
         it("should parse anonymous function declaration without params", function(){
             var program = '-> 8';
@@ -1318,7 +1356,7 @@ describe('PEG', function () {
             assert.equal('NumericLiteral', output.elements[0].name.type);
             assert.equal('1', output.elements[0].name.value);
         });
-
+        // todo foreach etc
     })
 });
 
@@ -1672,6 +1710,24 @@ describe('interpreter', function(){
             assert.equal(1, output.length);
             assert.equal(2, output[0]);
         });
+        it('should interpret if expression with multiple expressions', function(){
+            var program = 'if 1 == 1 {1 + 1; 2+2}';
+            var ast = parser.parse(program);
+            var output = interpreter.evaluate(ast);
+            assert.equal(1, output.length);
+            assert.equal(2, output[0].length);
+            assert.equal(2, output[0][0]);
+            assert.equal(4, output[0][1]);
+        });
+        it('should interpret if expression with multiple expressions and else', function(){
+            var program = 'if 1 != 1 {1 + 1; 2+2} else {1 - 1; 2 * 3}';
+            var ast = parser.parse(program);
+            var output = interpreter.evaluate(ast);
+            assert.equal(1, output.length);
+            assert.equal(2, output[0].length);
+            assert.equal(0, output[0][0]);
+            assert.equal(6, output[0][1]);
+        });
         it('should interpret if expression with else ', function(){
             var program = 'if 1 == 1 then 1 + 1 else 8';
             var ast = parser.parse(program);
@@ -1837,5 +1893,19 @@ describe('interpreter', function(){
             assert.equal(2, output.length);
             assert.equal(9, output[1]);
         });
+        //TODO build-in functions? - array length, loadFromDisk?
+    });
+});
+
+describe('knapsack', function() {
+    it('start', function(){
+        var program =
+            'size = 5;\n' +
+            'items = [[1, 2], [3, 2], [1, 4]];\n' +
+            'i = 0;'
+            ;
+        // [price, weight]
+        var ast = parser.parse(program);
+        var output = interpreter.evaluate(ast);
     });
 });

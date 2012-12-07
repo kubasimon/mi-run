@@ -28,6 +28,15 @@ SourceElement
 Statement
   = EmptyStatement
   / ExpressionStatement
+  / Block
+
+Block
+  = "{" _ statements:(SourceElements _)? "}" {
+      return {
+        type:       "Block",
+        elements: statements !== "" ? statements[0] : []
+      };
+    }
 
 EmptyStatement
   = ";" { return { type: "EmptyStatement" }; }
@@ -76,11 +85,11 @@ ConditionalExpression
 
 
 IfExpression
-  = IfToken _
+  = IfToken _  /* one expression in if */
     condition:Expression _
     ThenToken _
     ifExpression:Expression
-    elseExpression:(_ ElseToken _ Expression)?
+    elseExpression:(_ ElseToken _ Statement)?
      {
       return {
         type:          "IfExpression",
@@ -89,6 +98,18 @@ IfExpression
         elseExpression: elseExpression !== "" ? elseExpression[3] : null
       };
     }
+    / IfToken _ /* multiple expressions in if*/
+        condition:Expression _
+        ifExpression:Statement
+        elseExpression:(_ ElseToken _ Statement)?
+         {
+          return {
+            type:          "IfExpression",
+            condition:     condition,
+            ifExpression:   ifExpression,
+            elseExpression: elseExpression !== "" ? elseExpression[3] : null
+          };
+        }
     / LogicalORExpression
 
 LogicalORExpression
