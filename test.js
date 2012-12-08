@@ -1728,6 +1728,15 @@ describe('interpreter', function(){
             assert.equal(0, output[0][0]);
             assert.equal(6, output[0][1]);
         });
+        it('should interpret if expression with multiple expressions and else', function(){
+            var program = 'if 1 != 1 then c else {1 - 1; 2 * 3}';
+            var ast = parser.parse(program);
+            var output = interpreter.evaluate(ast);
+            assert.equal(1, output.length);
+            assert.equal(2, output[0].length);
+            assert.equal(0, output[0][0]);
+            assert.equal(6, output[0][1]);
+        });
         it('should interpret if expression with else ', function(){
             var program = 'if 1 == 1 then 1 + 1 else 8';
             var ast = parser.parse(program);
