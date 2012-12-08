@@ -226,7 +226,12 @@ interpreter.evaluateFunctionCallExpression = function(expression, environment) {
 
 interpreter.evaluatePropertyAccessExpression = function(expression, environment) {
     var base = this.evaluateStatement(expression.base, environment);
-    var name = this.evaluateStatement(expression.name, environment);
+    var name = expression.name;
+    if (expression.name.type) {
+        //right side is function or expression
+        name = this.evaluateStatement(expression.name, environment);
+    }
+    //otherwise right side is property - e.g. length
     return base[name];
 };
 

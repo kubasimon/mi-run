@@ -1930,6 +1930,13 @@ describe('interpreter', function(){
             assert.equal(2, output.length);
             assert.equal(9, output[1]);
         });
+        it('should interpret array length build-in function', function(){
+            var program = '[1, 3, 4].length';
+            var ast = parser.parse(program);
+            var output = interpreter.evaluate(ast);
+            assert.equal(1, output.length);
+            assert.equal(3, output[0]);
+        });
         //TODO build-in functions? - array length, loadFromDisk?
     });
 });
