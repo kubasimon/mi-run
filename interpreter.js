@@ -131,7 +131,7 @@ interpreter.evaluateAssignmentExpression = function(expression, environment) {
 };
 
 interpreter.evaluateUnaryExpression = function(expression, environment) {
-    var expr
+    var expr;
     if (expression.operator === '!') {
         expr = this.evaluateStatement(expression.expression, environment);
         //todo better converting??
@@ -199,7 +199,7 @@ interpreter.evaluateFunctionCallExpression = function(expression, environment) {
     var name = expression.name.name;
     var functionBody = this.evaluateVariable(name, environment);
     if (functionBody && functionBody.type === 'Function') {
-        var functionEnvironment, i = 0, length, argument, result = [];
+        var functionEnvironment, i = 0, length, argument, result = null;
         // function environment was created when function was stored in environment
         functionEnvironment = functionBody.environment;
         length = functionBody.params.length;
@@ -215,7 +215,7 @@ interpreter.evaluateFunctionCallExpression = function(expression, environment) {
         //evaluate all elements inside function
         length = functionBody.elements.length;
         for(i = 0; i < length; i++) {
-            result.push(this.evaluateStatement(functionBody.elements[i], functionEnvironment));
+            result = this.evaluateStatement(functionBody.elements[i], functionEnvironment);
         }
         return result;
     } else {
@@ -227,16 +227,13 @@ interpreter.evaluateFunctionCallExpression = function(expression, environment) {
 interpreter.evaluatePropertyAccessExpression = function(expression, environment) {
     var base = this.evaluateStatement(expression.base, environment);
     var name = this.evaluateStatement(expression.name, environment);
-    if (expression.base.type === 'FunctionCall') {
-        base = base[base.length-1]; // use last expression as return value
-    }
     return base[name];
 };
 
 interpreter.evaluateBlockExpression = function(expression, environment) {
-    var i = 0, length = expression.elements.length, output = [];
+    var i = 0, length = expression.elements.length, output = null;
     for(; i < length; i++) {
-        output.push(this.evaluateStatement(expression.elements[i], environment));
+        output = this.evaluateStatement(expression.elements[i], environment);
     }
     return output;
 };

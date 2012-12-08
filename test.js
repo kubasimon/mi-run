@@ -1119,6 +1119,26 @@ describe('PEG', function () {
             assert.equal('NumericLiteral', output.elements[0].elements[0].type);
             assert.equal(8, output.elements[0].elements[0].value);
         });
+        it("should parse anonymous function declaration without params and multiple body", function(){
+            var program = '-> {8; 10}';
+            var output = parser.parse(program);
+            //output is program
+            assert.equal('Program', output.type);
+            assert.equal(1, output.elements.length);
+            assert.equal('Function', output.elements[0].type);
+            // no name
+            assert.equal(null, output.elements[0].name);
+            // no params
+            assert.equal(0, output.elements[0].params.length);
+            assert.equal(1, output.elements[0].elements.length);
+
+            assert.equal('Block', output.elements[0].elements[0].type);
+            assert.equal(2, output.elements[0].elements[0].elements.length);
+            assert.equal('NumericLiteral', output.elements[0].elements[0].elements[0].type);
+            assert.equal(8, output.elements[0].elements[0].elements[0].value);
+            assert.equal('NumericLiteral', output.elements[0].elements[0].elements[1].type);
+            assert.equal(10, output.elements[0].elements[0].elements[1].value);
+        });
         it("should parse assigning function to variable", function(){
             var program = 'a = (x = "ahoj") -> 8';
             var output = parser.parse(program);
@@ -1306,6 +1326,7 @@ describe('PEG', function () {
             assert.equal('c', output.elements[0].arguments[0].arguments[0].name.name);
             assert.equal(0, output.elements[0].arguments[0].arguments[0].arguments.length);
         });
+        // todo function param function (callback style)
         it("should parse array access", function(){
             var program = 'a<1>';
             var output = parser.parse(program);
@@ -1715,27 +1736,21 @@ describe('interpreter', function(){
             var ast = parser.parse(program);
             var output = interpreter.evaluate(ast);
             assert.equal(1, output.length);
-            assert.equal(2, output[0].length);
-            assert.equal(2, output[0][0]);
-            assert.equal(4, output[0][1]);
+            assert.equal(4, output[0]);
         });
         it('should interpret if expression with multiple expressions and else', function(){
             var program = 'if 1 != 1 {1 + 1; 2+2} else {1 - 1; 2 * 3}';
             var ast = parser.parse(program);
             var output = interpreter.evaluate(ast);
             assert.equal(1, output.length);
-            assert.equal(2, output[0].length);
-            assert.equal(0, output[0][0]);
-            assert.equal(6, output[0][1]);
+            assert.equal(6, output[0]);
         });
         it('should interpret if expression with multiple expressions and else', function(){
             var program = 'if 1 != 1 then c else {1 - 1; 2 * 3}';
             var ast = parser.parse(program);
             var output = interpreter.evaluate(ast);
             assert.equal(1, output.length);
-            assert.equal(2, output[0].length);
-            assert.equal(0, output[0][0]);
-            assert.equal(6, output[0][1]);
+            assert.equal(6, output[0]);
         });
         it('should interpret if expression with else ', function(){
             var program = 'if 1 == 1 then 1 + 1 else 8';
@@ -1757,6 +1772,13 @@ describe('interpreter', function(){
             var output = interpreter.evaluate(ast);
             assert.equal(1, output.length);
             assert.equal(40, output[0]);
+        });
+        it('should interpret if expression with else with multiple expressions', function(){
+            var program = 'if false then 1 + 1 else {8*5; 20}';
+            var ast = parser.parse(program);
+            var output = interpreter.evaluate(ast);
+            assert.equal(1, output.length);
+            assert.equal(20, output[0]);
         });
         it('should interpret assignment of if expression with else ', function(){
             var program = 'a = if false then 1 + 1 else 8*5; a';
@@ -1780,8 +1802,7 @@ describe('interpreter', function(){
             var output = interpreter.evaluate(ast);
             assert.equal(2, output.length);
             assert.equal(null, output[0]);
-            assert.equal(1, output[1].length);
-            assert.equal(8, output[1][0]);
+            assert.equal(8, output[1]);
         });
         it('should interpret assignment of function with global variable and call ', function(){
             var program = 'b = 7;a = -> b; a()';
@@ -1790,8 +1811,7 @@ describe('interpreter', function(){
             assert.equal(3, output.length);
             assert.equal(7, output[0]);
             assert.equal(null, output[1]);
-            assert.equal(1, output[2].length);
-            assert.equal(7, output[2][0]);
+            assert.equal(7, output[2]);
         });
         it('should interpret assignment of function with global variable and call ', function(){
             var program = 'b = 7;a = -> b + 1; a()';
@@ -1800,8 +1820,7 @@ describe('interpreter', function(){
             assert.equal(3, output.length);
             assert.equal(7, output[0]);
             assert.equal(null, output[1]);
-            assert.equal(1, output[2].length);
-            assert.equal(8, output[2][0]);
+            assert.equal(8, output[2]);
         });
         it('should interpret assignment of function with parameter and call ', function(){
             var program = 'a = (b) -> b; a 2';
@@ -1809,8 +1828,23 @@ describe('interpreter', function(){
             var output = interpreter.evaluate(ast);
             assert.equal(2, output.length);
             assert.equal(null, output[0]);
-            assert.equal(1, output[1].length);
-            assert.equal(2, output[1][0]);
+            assert.equal(2, output[1]);
+        });
+        it('should interpret assignment of function with parameter and multiple expressions and call ', function(){
+            var program = 'a = (b) -> {1; b + 1}; a 2';
+            var ast = parser.parse(program);
+            var output = interpreter.evaluate(ast);
+            assert.equal(2, output.length);
+            assert.equal(null, output[0]);
+            assert.equal(3, output[1]);
+        });
+        it('should interpret assignment of function with parameter and multiple expressions and call ', function(){
+            var program = 'a = (b) -> {1; b + 1}; x = a 2';
+            var ast = parser.parse(program);
+            var output = interpreter.evaluate(ast);
+            assert.equal(2, output.length);
+            assert.equal(null, output[0]);
+            assert.equal(3, output[1]);
         });
         it('should interpret assignment of function with parameter and call ', function(){
             var program = 'a = (a) -> a; a 2';
@@ -1818,8 +1852,7 @@ describe('interpreter', function(){
             var output = interpreter.evaluate(ast);
             assert.equal(2, output.length);
             assert.equal(null, output[0]);
-            assert.equal(1, output[1].length);
-            assert.equal(2, output[1][0]);
+            assert.equal(2, output[1]);
         });
         it('should interpret assignment of function with parameter and call ', function(){
             var program = 'a = (a) -> a + 1; a 2';
@@ -1827,8 +1860,7 @@ describe('interpreter', function(){
             var output = interpreter.evaluate(ast);
             assert.equal(2, output.length);
             assert.equal(null, output[0]);
-            assert.equal(1, output[1].length);
-            assert.equal(3, output[1][0]);
+            assert.equal(3, output[1]);
         });
         it('should interpret assignment of function with parameter expression and call ', function(){
             var program = 'a = (a) -> a + 1; a 2 + 1';
@@ -1836,8 +1868,7 @@ describe('interpreter', function(){
             var output = interpreter.evaluate(ast);
             assert.equal(2, output.length);
             assert.equal(null, output[0]);
-            assert.equal(1, output[1].length);
-            assert.equal(4, output[1][0]);
+            assert.equal(4, output[1]);
         });
         it('should interpret assignment of function with parameter variable and call ', function(){
             var program = 'a = (a) -> a + 1;b = 66; a b';
@@ -1846,8 +1877,7 @@ describe('interpreter', function(){
             assert.equal(3, output.length);
             assert.equal(null, output[0]);
             assert.equal(66, output[1]);
-            assert.equal(1, output[2].length);
-            assert.equal(67, output[2][0]);
+            assert.equal(67, output[2]);
         });
         it('should interpret assignment of function with parameter function call and call ', function(){
             var program = 'a = (a) -> a + 1;b = -> 88; a b()';
@@ -1856,8 +1886,7 @@ describe('interpreter', function(){
             assert.equal(3, output.length);
             assert.equal(null, output[0]);
             assert.equal(null, output[1]);
-            assert.equal(1, output[2].length);
-            assert.equal(89, output[2][0]);
+            assert.equal(89, output[2]);
         });
         it('should interpret assignment of function with parameter function call and call ', function(){
             var program = 'a = (a) -> a + 1;b = (b) -> b * 2; c = -> 8; a b c()';
@@ -1867,8 +1896,7 @@ describe('interpreter', function(){
             assert.equal(null, output[0]);
             assert.equal(null, output[1]);
             assert.equal(null, output[2]);
-            assert.equal(1, output[3].length);
-            assert.equal(17, output[3][0]);
+            assert.equal(17, output[3]);
         });
         it('should interpret array access', function(){
             var program = 'x = [8]; x<0>';
