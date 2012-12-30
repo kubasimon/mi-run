@@ -2,7 +2,7 @@ var interpreter = (function(undefined) {
 var interpreter = {
    evaluate: function(program) {
     if (program.type === 'Program') {
-        interpreter.globalEnvironment = interpreter.createEnvironment(null);
+        this._cleanUp();
         return this.evaluateProgramElements(program.elements);
     } else {
         throw new Error('ast has not type Program');
@@ -10,11 +10,16 @@ var interpreter = {
    }
 };
 
+interpreter._cleanUp = function() {
+    interpreter.globalEnvironment = interpreter.createEnvironment(null);
+};
+
 
 interpreter.createEnvironment = function(parentEnvironment){
     return {
         parent: parentEnvironment,
-        objects: {}
+        objects: {},
+        anonymousCounter: 0
     }
 };
 
@@ -30,6 +35,22 @@ interpreter.retrieveFromEnvironment = function(environment, name) {
         return interpreter.retrieveFromEnvironment(environment.parent, name);
     }
     return value;
+};
+
+interpreter.saveAnonymousFunction = function(environment, expression) {
+    var name = "anonymous_" + environment.anonymousCounter;
+    environment.anonymousCounter ++;
+    expression.name = {
+        name: name
+    };
+    interpreter.saveFunctionToEnvironment(environment, name, expression)
+};
+
+interpreter.saveFunctionToEnvironment = function(environment, functionName, expression) {
+    //store whole function ast
+    //create function environment in time when function was defined
+    expression.environment = this.createEnvironment(environment);
+    interpreter.addToEnvironment(environment, functionName, expression);
 };
 
 interpreter.globalEnvironment = {};
@@ -73,6 +94,7 @@ interpreter.evaluateStatement = function(statement, environment) {
                 return this.evaluateIfExpression(statement, environment);
             case 'Function':
                 // no effect, only anonymous function declaration
+                this.saveAnonymousFunction(environment, statement);
                 return null;
             case 'FunctionCall':
                 return this.evaluateFunctionCallExpression(statement, environment);
@@ -111,10 +133,7 @@ interpreter.evaluateAssignmentExpression = function(expression, environment) {
         var variableName = expression.left.name;
         if (expression.operator === '=') {
             if (expression.right.type === 'Function') {
-                //store whole function ast
-                //create function environment in time when function was defined
-                expression.right.environment = this.createEnvironment(environment);
-                interpreter.addToEnvironment(environment, variableName, expression.right);
+                interpreter.saveFunctionToEnvironment(environment, variableName, expression.right);
                 return null;
             } else {
                 var evaluatedRight = this.evaluateStatement(expression.right, environment);
@@ -230,6 +249,26 @@ interpreter.evaluatePropertyAccessExpression = function(expression, environment)
     if (expression.name.type) {
         //right side is function or expression
         name = this.evaluateStatement(expression.name, environment);
+    }
+    //we can have property "argument", so we are calling property as a function
+    if (expression.argument) {
+        var arguments, functionEnvironment, expr;
+
+
+        functionEnvironment = environment;
+        if (expression.argument.type === 'Function') {
+            interpreter.saveAnonymousFunction(environment, expression.argument);
+        } else {
+            arguments = this.evaluateStatement(expression.argument, environment);
+        }
+        if (expression.name === 'map') {
+//            console.log(expression.argument);
+            return Array.prototype.map(arguments, base);
+            //return base.map.apply(null, arguments)
+
+        } else {
+            throw new Error('not implemented function ' + name);
+        }
     }
     //otherwise right side is property - e.g. length
     return base[name];

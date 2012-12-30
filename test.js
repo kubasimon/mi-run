@@ -1059,6 +1059,23 @@ describe('PEG', function () {
             assert.equal('NumericLiteral', output.elements[0].elements[0].type);
             assert.equal(8, output.elements[0].elements[0].value);
         });
+        it("should parse anonymous function declaration with param and body", function(){
+            var program = '(x, y) -> x y';
+            var output = parser.parse(program);
+            //output is program
+            assert.equal('Program', output.type);
+            assert.equal(1, output.elements.length);
+            assert.equal('Function', output.elements[0].type);
+            // no name
+            assert.equal(null, output.elements[0].name);
+            // params
+            assert.equal(2, output.elements[0].params.length);
+            assert.equal('x', output.elements[0].params[0].name);
+            assert.equal('y', output.elements[0].params[1].name);
+
+            assert.equal(1, output.elements[0].elements.length);
+            assert.equal('FunctionCall', output.elements[0].elements[0].type);
+        });
         it("should parse anonymous function declaration with param with default value", function(){
             var program = '(x = 2, y = 1) -> 8';
             var output = parser.parse(program);
@@ -1326,6 +1343,36 @@ describe('PEG', function () {
             assert.equal('c', output.elements[0].arguments[0].arguments[0].name.name);
             assert.equal(0, output.elements[0].arguments[0].arguments[0].arguments.length);
         });
+        it("should parse function call with params - int and callback function", function(){
+            var program = 'a 1,->2';
+            var output = parser.parse(program);
+            //output is program
+            assert.equal('Program', output.type);
+            assert.equal(1, output.elements.length);
+
+            assert.equal('FunctionCall', output.elements[0].type);
+            assert.equal('Variable', output.elements[0].name.type);
+            assert.equal('a', output.elements[0].name.name);
+            assert.equal(2, output.elements[0].arguments.length);
+            assert.equal('NumericLiteral', output.elements[0].arguments[0].type);
+            assert.equal('Function', output.elements[0].arguments[1].type);
+            assert.equal(0, output.elements[0].arguments[1].params.length);
+        });
+        it("should parse function call with params - int and callback function", function(){
+            var program = 'a 1,(x)->2';
+            var output = parser.parse(program);
+            //output is program
+            assert.equal('Program', output.type);
+            assert.equal(1, output.elements.length);
+
+            assert.equal('FunctionCall', output.elements[0].type);
+            assert.equal('Variable', output.elements[0].name.type);
+            assert.equal('a', output.elements[0].name.name);
+            assert.equal(2, output.elements[0].arguments.length);
+            assert.equal('NumericLiteral', output.elements[0].arguments[0].type);
+            assert.equal('Function', output.elements[0].arguments[1].type);
+            assert.equal(1, output.elements[0].arguments[1].params.length);
+        });
         // todo function param function (callback style)
         it("should parse array access", function(){
             var program = 'a<1>';
@@ -1376,6 +1423,32 @@ describe('PEG', function () {
             assert.equal('FunctionCall', output.elements[0].base.type);
             assert.equal('NumericLiteral', output.elements[0].name.type);
             assert.equal('1', output.elements[0].name.value);
+        });
+        it('should parse map build-in function', function(){
+            var program = '[1, 3, 4].map : -> 1';
+            var output = parser.parse(program);
+            //output is program
+            assert.equal('Program', output.type);
+
+            assert.equal(1, output.elements.length);
+            assert.equal('PropertyAccess', output.elements[0].type);
+            assert.equal('ArrayLiteral', output.elements[0].base.type);
+            assert.equal('map', output.elements[0].name);
+            assert.equal('Function', output.elements[0].argument.type);
+            assert.equal(0, output.elements[0].argument.params.length);
+        });
+        it('should parse map build-in function', function(){
+            var program = '[1, 3, 4].map : (x) -> x';
+            var output = parser.parse(program);
+            //output is program
+            assert.equal('Program', output.type);
+
+            assert.equal(1, output.elements.length);
+            assert.equal('PropertyAccess', output.elements[0].type);
+            assert.equal('ArrayLiteral', output.elements[0].base.type);
+            assert.equal('map', output.elements[0].name);
+            assert.equal('Function', output.elements[0].argument.type);
+            assert.equal(1, output.elements[0].argument.params.length);
         });
         // todo foreach etc
     })
@@ -1898,6 +1971,36 @@ describe('interpreter', function(){
             assert.equal(null, output[2]);
             assert.equal(17, output[3]);
         });
+        it('should interpret recursive function ', function(){
+            var program = 'fact = (x) -> if x == 0 then 1 else x * fact x - 1; fact 2; fact 3; fact 4';
+            var ast = parser.parse(program);
+            var output = interpreter.evaluate(ast);
+            assert.equal(4, output.length);
+            assert.equal(2, output[1]);
+            assert.equal(6, output[2]);
+            assert.equal(24, output[3]);
+        });
+        it('should interpret assignment of function with parameter variable and function and call ', function(){
+            var program = 'a = (a, b) -> b a;b = -> 66; a 1,b';
+            var ast = parser.parse(program);
+            var output = interpreter.evaluate(ast);
+            assert.equal(3, output.length);
+            assert.equal(null, output[0]);
+            assert.equal(null, output[1]);
+            assert.equal(66, output[2]);
+        });
+        it('should interpret assignment of function with parameter variable and function and call ', function(){
+            var program =
+                'a = (a, b) -> b a;' +
+                'b = (x)-> x + 66;' +
+                'a 1,b';
+            var ast = parser.parse(program);
+            var output = interpreter.evaluate(ast);
+            assert.equal(3, output.length);
+            assert.equal(null, output[0]);
+            assert.equal(null, output[1]);
+            assert.equal(67, output[2]);
+        });
         it('should interpret array access', function(){
             var program = 'x = [8]; x<0>';
             var ast = parser.parse(program);
@@ -1937,19 +2040,46 @@ describe('interpreter', function(){
             assert.equal(1, output.length);
             assert.equal(3, output[0]);
         });
+//        it('should interpret map build-in function', function(){
+//            var program = '[1, 3, 4].map: -> 1';
+//            var ast = parser.parse(program);
+//            var output = interpreter.evaluate(ast);
+//            assert.equal(1, output.length);
+//            assert.equal(3, output[0]);
+//        });
         //TODO build-in functions? - array length, loadFromDisk?
     });
 });
 
 describe('knapsack', function() {
-    it('start', function(){
-        var program =
-            'size = 5;\n' +
-            'items = [[1, 2], [3, 2], [1, 4]];\n' +
-            'i = 0;'
-            ;
-        // [price, weight]
-        var ast = parser.parse(program);
-        var output = interpreter.evaluate(ast);
-    });
+//    it('ut itemsPrice function', function(){
+//        var program =
+//            'items = [[1, 3], [2, 1]];' +
+//            // [price, weight]
+//            'itemsPrice = (items) -> (item.map (x) -> x[1]).reduce (x, y) -> x + y';
+//        var ast = parser.parse(program);
+//        var output = interpreter.evaluate(ast);
+//        console.log(output);
+//    });
+//    it('ut checkBestSollution function', function(){
+//        var program =
+//            'bestSolution = [];' +
+//            'checkBestSolution = (items) -> ';
+//        var ast = parser.parse(program);
+//        var output = interpreter.evaluate(ast);
+//        console.log(output);
+//    });
+//    it('start', function(){
+//        var program =
+//            'size = 5;\n' +
+//            'items = [[1, 2], [3, 2], [1, 4]];\n' +
+//            'bestPrice = 0;' +
+//            'bestSolution = [];' +
+//            'i = 0;' //+
+//            //'addToKnapsack = () -> if '
+//            ;
+//        // [price, weight]
+//        var ast = parser.parse(program);
+//        var output = interpreter.evaluate(ast);
+//    });
 });

@@ -232,14 +232,17 @@ MemberExpression
   )
   accessors:(
   _ "<" _ name:Expression _ ">" { return name; }
-  / _ "." _ name:IdentifierName    { return name; }
-  )* {
+  / _ "." _ name:IdentifierName  { return name; }
+  )* propertyArgument:(_ ":" _ propertyArgument:Statement {return propertyArgument;})?
+   {
     var result = base;
+    var propertyArgument = propertyArgument ? propertyArgument : null;
     for (var i = 0; i < accessors.length; i++) {
         result = {
             type: "PropertyAccess",
             base: result,
-            name: accessors[i]
+            name: accessors[i],
+            argument: propertyArgument
         };
     }
     return result;
