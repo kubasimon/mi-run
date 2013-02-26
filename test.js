@@ -2040,13 +2040,36 @@ describe('interpreter', function(){
             assert.equal(1, output.length);
             assert.equal(3, output[0]);
         });
-//        it('should interpret map build-in function', function(){
-//            var program = '[1, 3, 4].map: -> 1';
-//            var ast = parser.parse(program);
-//            var output = interpreter.evaluate(ast);
-//            assert.equal(1, output.length);
-//            assert.equal(3, output[0]);
-//        });
+        it('should interpret map build-in function', function(){
+            var program = '[1, 3, 4].map: -> 1';
+            var ast = parser.parse(program);
+            var output = interpreter.evaluate(ast);
+            assert.equal(1, output.length);
+            assert.equal(3, output[0].length);
+            assert.equal(1, output[0][0]);
+            assert.equal(1, output[0][1]);
+            assert.equal(1, output[0][2]);
+        });
+        it('should interpret map build-in function', function(){
+            var program = '[1, 3, 4].map: (x) -> x';
+            var ast = parser.parse(program);
+            var output = interpreter.evaluate(ast);
+            assert.equal(1, output.length);
+            assert.equal(3, output[0].length);
+            assert.equal(1, output[0][0]);
+            assert.equal(3, output[0][1]);
+            assert.equal(4, output[0][2]);
+        });
+        it('should interpret map build-in function', function(){
+            var program = '[1, 3, 4].map: (x) -> x*x';
+            var ast = parser.parse(program);
+            var output = interpreter.evaluate(ast);
+            assert.equal(1, output.length);
+            assert.equal(3, output[0].length);
+            assert.equal(1, output[0][0]);
+            assert.equal(9, output[0][1]);
+            assert.equal(16, output[0][2]);
+        });
         //TODO build-in functions? - array length, loadFromDisk?
     });
 });

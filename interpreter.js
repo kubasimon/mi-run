@@ -243,6 +243,40 @@ interpreter.evaluateFunctionCallExpression = function(expression, environment) {
 
 };
 
+interpreter.evaluateAnonymousFunction = function(expression, arguments) {
+    //todo refactor
+    var functionBody = expression;
+    if (functionBody && functionBody.type === 'Function') {
+        var functionEnvironment, i = 0, length, argument, result = null;
+        // function environment was created when function was stored in environment
+        functionEnvironment = functionBody.environment;
+        length = expression.params.length;
+
+        if (length === 1) {
+            this.addToEnvironment(functionEnvironment, functionBody.params[i].name, arguments);
+        } else if (length > 1) {
+            //adding params to environment
+            for(; i < length; i++) {
+//                argument = this.evaluateStatement(arguments[i], functionEnvironment);
+//                if (argument.length) {
+//                    //use last expression in possible function
+//                    argument = argument[argument.length - 1];
+//                }
+                this.addToEnvironment(functionEnvironment, functionBody.params[i].name, arguments[i]);
+            }
+        }
+
+        //evaluate all elements inside function
+        length = functionBody.elements.length;
+        for(i = 0; i < length; i++) {
+            result = this.evaluateStatement(functionBody.elements[i], functionEnvironment);
+        }
+        return result;
+    } else {
+        throw new Error('"variable ' + name + '" is not a function: %j', functionBody);
+    }
+};
+
 interpreter.evaluatePropertyAccessExpression = function(expression, environment) {
     var base = this.evaluateStatement(expression.base, environment);
     var name = expression.name;
@@ -262,9 +296,7 @@ interpreter.evaluatePropertyAccessExpression = function(expression, environment)
             arguments = this.evaluateStatement(expression.argument, environment);
         }
         if (expression.name === 'map') {
-//            console.log(expression.argument);
-            return Array.prototype.map(arguments, base);
-            //return base.map.apply(null, arguments)
+            return interpreter.Array.map(expression.argument, base, functionEnvironment);
 
         } else {
             throw new Error('not implemented function ' + name);
@@ -272,6 +304,21 @@ interpreter.evaluatePropertyAccessExpression = function(expression, environment)
     }
     //otherwise right side is property - e.g. length
     return base[name];
+};
+
+interpreter.Array = {
+    map: function(functionExpression, base, environment) {
+        var len = base.length;
+        if (functionExpression.type !== "Function")
+            throw new TypeError();
+
+        var res = new Array(len);
+        for (var i = 0; i < len; i++) {
+            res[i] = interpreter.evaluateAnonymousFunction(functionExpression, base[i]);
+        }
+
+        return res;
+    }
 };
 
 interpreter.evaluateBlockExpression = function(expression, environment) {
