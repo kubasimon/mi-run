@@ -297,7 +297,8 @@ interpreter.evaluatePropertyAccessExpression = function(expression, environment)
         }
         if (expression.name === 'map') {
             return interpreter.Array.map(expression.argument, base, functionEnvironment);
-
+        } else if (expression.name === 'reduce') {
+            return interpreter.Array.reduce(expression.argument, base, functionEnvironment);
         } else {
             throw new Error('not implemented function ' + name);
         }
@@ -307,7 +308,7 @@ interpreter.evaluatePropertyAccessExpression = function(expression, environment)
 };
 
 interpreter.Array = {
-    map: function(functionExpression, base, environment) {
+    map: function(functionExpression, base) {
         var len = base.length;
         if (functionExpression.type !== "Function")
             throw new TypeError();
@@ -318,6 +319,29 @@ interpreter.Array = {
         }
 
         return res;
+    },
+
+    reduce: function(functionExpression, base) {
+        var len = base.length;
+        //todo initial value!?!
+        if (functionExpression.type !== "Function")
+            throw new TypeError();
+
+        // no value to return if no initial value and an empty array
+        if (len == 0)
+            throw new TypeError();
+
+        var rv = 0;
+        if (functionExpression.params.length === 3) {
+            rv = interpreter.evaluateStatement(functionExpression.params[2].default, functionExpression.environment);
+        }
+
+        var i = 0;
+        for (; i < len; i++) {
+            rv = interpreter.evaluateAnonymousFunction(functionExpression, [base[i], rv]);
+        }
+
+        return rv;
     }
 };
 

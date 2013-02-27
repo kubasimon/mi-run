@@ -2080,6 +2080,35 @@ describe('interpreter', function(){
             assert.equal(6, output[0][1]);
             assert.equal(8, output[0][2]);
         });
+        it('should interpret reduce build-in function', function(){
+            var program = '[1, 2, 3].reduce: (x, acc) -> acc + x';
+            var ast = parser.parse(program);
+            var output = interpreter.evaluate(ast);
+            assert.equal(1, output.length);
+            assert.equal(6, output[0]);
+        });
+        it('should interpret reduce build-in function with initial value', function(){
+            var program = '[3, 2, 3].reduce: (x, acc, a = 1) -> acc * x';
+            var ast = parser.parse(program);
+            var output = interpreter.evaluate(ast);
+            assert.equal(1, output.length);
+            assert.equal(18, output[0]);
+        });
+        it('should interpret reduce build-in function max', function(){
+            var program = '[1, 2, 3].reduce: (x, acc) -> if x > acc then x else acc';
+            var ast = parser.parse(program);
+            var output = interpreter.evaluate(ast);
+            assert.equal(1, output.length);
+            assert.equal(3, output[0]);
+        });
+        it('should interpret reduce build-in function min', function(){
+            var program = '[8, 15, 35, 5, 78].reduce: (x, acc) -> if x < acc or acc == 0 then x else acc';
+            var ast = parser.parse(program);
+            var output = interpreter.evaluate(ast);
+            assert.equal(1, output.length);
+            assert.equal(5, output[0]);
+        });
+
 
 
 
