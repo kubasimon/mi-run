@@ -2070,6 +2070,19 @@ describe('interpreter', function(){
             assert.equal(9, output[0][1]);
             assert.equal(16, output[0][2]);
         });
+        it('should interpret map build-in function for multiarray', function(){
+            var program = '[[1, 1], [3, 3], [4, 4]].map: (x) -> x<0>+x<0>';
+            var ast = parser.parse(program);
+            var output = interpreter.evaluate(ast);
+            assert.equal(1, output.length);
+            assert.equal(3, output[0].length);
+            assert.equal(2, output[0][0]);
+            assert.equal(6, output[0][1]);
+            assert.equal(8, output[0][2]);
+        });
+
+
+
         //TODO build-in functions? - array length, loadFromDisk?
     });
 });
