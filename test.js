@@ -2108,6 +2108,16 @@ describe('interpreter', function(){
             assert.equal(1, output.length);
             assert.equal(5, output[0]);
         });
+        it('should interpret map reduce chaining with helper variable', function(){
+            var program = 'a = [1, 3, 4].map: (x) -> x; a.reduce: (x, acc) -> x+acc';
+            var ast = parser.parse(program);
+            var output = interpreter.evaluate(ast);
+            assert.equal(2, output.length);
+            assert.equal(1, output[0][0]);
+            assert.equal(3, output[0][1]);
+            assert.equal(4, output[0][2]);
+            assert.equal(8, output[1]);
+        });
 
 
 
@@ -2117,15 +2127,22 @@ describe('interpreter', function(){
 });
 
 describe('knapsack', function() {
-//    it('ut itemsPrice function', function(){
-//        var program =
-//            'items = [[1, 3], [2, 1]];' +
-//            // [price, weight]
-//            'itemsPrice = (items) -> (item.map (x) -> x[1]).reduce (x, y) -> x + y';
-//        var ast = parser.parse(program);
-//        var output = interpreter.evaluate(ast);
-//        console.log(output);
-//    });
+    it('ut itemsPrice function', function(){
+        var program =
+            'items = [[1, 3], [2, 1]];' +
+            // [price, weight]
+            //function definition
+            'itemsPrice = (i) -> {' +
+//                'i;' +
+                'helper = i.map: (x) -> x+1;'+
+//                'helper.reduce: (x, y) -> x + y' +
+            '}' +
+            //function call
+            'itemsPrice [[1, 3],[2, 1]]';
+        var ast = parser.parse(program);
+        var output = interpreter.evaluate(ast);
+        console.log(output);
+    });
 //    it('ut checkBestSollution function', function(){
 //        var program =
 //            'bestSolution = [];' +
