@@ -2118,6 +2118,12 @@ describe('interpreter', function(){
             assert.equal(4, output[0][2]);
             assert.equal(8, output[1]);
         });
+        it('should interpret debug function', function(){
+            var program = 'dbg "test"';
+            var ast = parser.parse(program);
+            var output = interpreter.evaluate(ast);
+            assert.equal("test", output._dbg);
+        });
 
 
 
@@ -2133,14 +2139,16 @@ describe('knapsack', function() {
             // [price, weight]
             //function definition
             'itemsPrice = (i) -> {' +
+                'dbg i' +
 //                'i;' +
-                'helper = i.map: (x) -> x+1;'+
+//                'helper = i.map: (x) -> x+1;'+
 //                'helper.reduce: (x, y) -> x + y' +
             '}' +
             //function call
             'itemsPrice [[1, 3],[2, 1]]';
         var ast = parser.parse(program);
         var output = interpreter.evaluate(ast);
+//        console.log(ast.elements[2]);
         console.log(output);
     });
 //    it('ut checkBestSollution function', function(){

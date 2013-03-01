@@ -10,8 +10,12 @@ var interpreter = {
    }
 };
 
+interpreter.dbg = [];
+
 interpreter._cleanUp = function() {
     interpreter.globalEnvironment = interpreter.createEnvironment(null);
+    interpreter.addToEnvironment(interpreter.globalEnvironment, 'dbg', {type: 'dbg'});
+    interpreter.dbg = [];
 };
 
 
@@ -60,6 +64,9 @@ interpreter.evaluateProgramElements = function(elements) {
         var i = 0, length = elements.length, output = [];
         for(; i < length; i++) {
             output.push(this.evaluateStatement(elements[i], this.globalEnvironment));
+        }
+        if (interpreter.dbg.length > 0) {
+            output["_dbg"] = interpreter.dbg;
         }
         return output;
     } else {
@@ -217,30 +224,43 @@ interpreter.evaluateFunctionCallExpression = function(expression, environment) {
     //todo evaluate name??
     var name = expression.name.name;
     var functionBody = this.evaluateVariable(name, environment);
-    if (functionBody && functionBody.type === 'Function') {
-        var functionEnvironment, i = 0, length, argument, result = null;
-        // function environment was created when function was stored in environment
-        functionEnvironment = functionBody.environment;
-        length = functionBody.params.length;
-        //adding params to environment
-        for(; i < length; i++) {
-            argument = this.evaluateStatement(expression.arguments[i], environment);
-            if (argument.length) {
-                //use last expression in possible function
-                argument = argument[argument.length - 1];
-            }
-            this.addToEnvironment(functionEnvironment, functionBody.params[i].name, argument);
-        }
-        //evaluate all elements inside function
-        length = functionBody.elements.length;
-        for(i = 0; i < length; i++) {
-            result = this.evaluateStatement(functionBody.elements[i], functionEnvironment);
-        }
-        return result;
+    if (functionBody.type === 'dbg') {
+        return interpreter.evaluateBuildInDbg(environment, expression.arguments)
     } else {
-        throw new Error('"variable ' + name + '" is not a function: %j', functionBody);
+        if (functionBody && functionBody.type === 'Function') {
+            var functionEnvironment, i = 0, length, argument, result = null;
+            // function environment was created when function was stored in environment
+            functionEnvironment = functionBody.environment;
+            length = functionBody.params.length;
+            //adding params to environment
+            for(; i < length; i++) {
+                argument = this.evaluateStatement(expression.arguments[i], environment);
+                if (argument.length) {
+                    //use last expression in possible function
+                    argument = argument[argument.length - 1];
+                }
+                this.addToEnvironment(functionEnvironment, functionBody.params[i].name, argument);
+            }
+            //evaluate all elements inside function
+            length = functionBody.elements.length;
+            for(i = 0; i < length; i++) {
+                result = this.evaluateStatement(functionBody.elements[i], functionEnvironment);
+            }
+            return result;
+        } else {
+            throw new Error('"variable ' + name + '" is not a function: %j', functionBody);
+        }
     }
 
+};
+
+interpreter.evaluateBuildInDbg = function(environment, args) {
+    var i = 0, val;
+    for (;i < args.length; i++) {
+        val = interpreter.evaluateStatement(args[i], environment);
+        interpreter.dbg.push(val);
+    }
+    return null;
 };
 
 interpreter.evaluateAnonymousFunction = function(expression, arguments) {
