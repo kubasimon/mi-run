@@ -2135,6 +2135,69 @@ describe('interpreter', function(){
             var output = interpreter.evaluate(ast);
             assert.equal("test", output._dbg);
         });
+        it('should interpret global variable scoping - global variable is not changed inside function', function(){
+            var program = 'a = 1; ' +
+                'x = -> a = 2;' +
+                'x();' +
+                'a';
+            var ast = parser.parse(program);
+            var output = interpreter.evaluate(ast);
+            assert.equal(1, output[3]);
+        });
+        it('should interpret global variable scoping - global variable is accessible inside function', function(){
+            var program = 'a = 1; ' +
+                'x = -> a + 1;' +
+                'x();' +
+                'a';
+            var ast = parser.parse(program);
+            var output = interpreter.evaluate(ast);
+            assert.equal(2, output[2]);
+        });
+        it('should interpret function inside function', function(){
+            var program =
+                'x = -> {' +
+                    'y = -> 1' +
+                    'y() + 2' +
+                '}' +
+                'x();';
+
+            var ast = parser.parse(program);
+            var output = interpreter.evaluate(ast);
+            assert.equal(3, output[1]);
+        });
+        it('should interpret function with environment variables when defined', function(){
+            var program =
+                'a = 8;' +
+                'x = -> a;' +
+                'x();' +
+                'a = 10;' +
+                'x();';
+
+            var ast = parser.parse(program);
+            var output = interpreter.evaluate(ast);
+            assert.equal(8, output[0]);
+            assert.equal(null, output[1]);
+            assert.equal(8, output[2]);
+            assert.equal(10, output[3]);
+            assert.equal(10, output[4]);
+        });
+        it('should interpret function with environment variable when defined', function(){
+            var program =
+                'a = 8;' +
+                'x = -> a;' +
+                'y = -> {' +
+                    'a = 20;' +
+                    'x() + a' +
+                '}' +
+                'y();';
+
+            var ast = parser.parse(program);
+            var output = interpreter.evaluate(ast);
+            assert.equal(8, output[0]);
+            assert.equal(null, output[1]);
+            assert.equal(null, output[2]);
+            assert.equal(28, output[3]);
+        });
 
 
 
@@ -2190,7 +2253,7 @@ describe('knapsack', function() {
         assert.equal(11, output[4]);
         assert.equal(23, output[5]);
     });
-//    it('ut checkBestSollution function', function(){
+//    it('ut checkBestSolution function', function(){
 //        var program =
 //            'bestSolution = [];' +
 //            'checkBestSolution = (items) -> ';
@@ -2198,17 +2261,17 @@ describe('knapsack', function() {
 //        var output = interpreter.evaluate(ast);
 //        console.log(output);
 //    });
-//    it('start', function(){
-//        var program =
-//            'size = 5;\n' +
-//            'items = [[1, 2], [3, 2], [1, 4]];\n' +
-//            'bestPrice = 0;' +
-//            'bestSolution = [];' +
-//            'i = 0;' //+
-//            //'addToKnapsack = () -> if '
-//            ;
-//        // [price, weight]
-//        var ast = parser.parse(program);
-//        var output = interpreter.evaluate(ast);
-//    });
+    it('start', function(){
+        var program =
+            'size = 5;\n' +
+            'items = [[1, 2], [3, 2], [1, 4]];\n' +
+            'bestPrice = 0;' +
+            'bestSolution = [];' +
+            'i = 0;' //+
+            'addToKnapsack = () -> if '
+            ;
+        // [price, weight]
+        var ast = parser.parse(program);
+        var output = interpreter.evaluate(ast);
+    });
 });
