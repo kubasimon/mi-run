@@ -235,10 +235,6 @@ interpreter.evaluateFunctionCallExpression = function(expression, environment) {
             //adding params to environment
             for(; i < length; i++) {
                 argument = this.evaluateStatement(expression.arguments[i], environment);
-                if (argument.length) {
-                    //use last expression in possible function
-                    argument = argument[argument.length - 1];
-                }
                 this.addToEnvironment(functionEnvironment, functionBody.params[i].name, argument);
             }
             //evaluate all elements inside function

@@ -1911,6 +1911,17 @@ describe('interpreter', function(){
             assert.equal(null, output[0]);
             assert.equal(3, output[1]);
         });
+        it('should interpret assignment of function with array parameter and call ', function(){
+            var program = 'a = (b) -> {b}; a [2, 3]';
+            var ast = parser.parse(program);
+            var output = interpreter.evaluate(ast);
+
+            assert.equal(2, output.length);
+            assert.equal(null, output[0]);
+            assert.equal(2, output[1].length);
+            assert.equal(2, output[1][0]);
+            assert.equal(3, output[1][1]);
+        });
         it('should interpret assignment of function with parameter and multiple expressions and call ', function(){
             var program = 'a = (b) -> {1; b + 1}; x = a 2';
             var ast = parser.parse(program);
@@ -2139,17 +2150,45 @@ describe('knapsack', function() {
             // [price, weight]
             //function definition
             'itemsPrice = (i) -> {' +
-                'dbg i' +
 //                'i;' +
-//                'helper = i.map: (x) -> x+1;'+
-//                'helper.reduce: (x, y) -> x + y' +
+                'helper = i.map: (x) -> x<0>;'+
+                'helper.reduce: (x, y) -> x + y' +
             '}' +
             //function call
-            'itemsPrice [[1, 3],[2, 1]]';
+            'itemsPrice items;' +
+            'itemsPrice [[2, 3], [2, 1]];' +
+            'itemsPrice [[3, 3], [2, 1]];' +
+            'itemsPrice [[8, 3], [2, 1]];' +
+            '';
         var ast = parser.parse(program);
         var output = interpreter.evaluate(ast);
-//        console.log(ast.elements[2]);
-        console.log(output);
+        assert.equal(3, output[2]);
+        assert.equal(4, output[3]);
+        assert.equal(5, output[4]);
+        assert.equal(10, output[5]);
+    });
+    it('ut itemsWeight function', function(){
+        var program =
+            'items = [[1, 3], [2, 1]];' +
+                // [price, weight]
+                //function definition
+            'itemsWeight = (i) -> {' +
+//                'i;' +
+                'helper = i.map: (x) -> x<1>;'+
+                'helper.reduce: (x, y) -> x + y' +
+            '}' +
+            //function call
+            'itemsWeight items;' +
+            'itemsWeight [[2, 3], [2, 3]];' +
+            'itemsWeight [[3, 3], [2, 8]];' +
+            'itemsWeight [[8, 22], [2, 1]];' +
+            '';
+        var ast = parser.parse(program);
+        var output = interpreter.evaluate(ast);
+        assert.equal(4, output[2]);
+        assert.equal(6, output[3]);
+        assert.equal(11, output[4]);
+        assert.equal(23, output[5]);
     });
 //    it('ut checkBestSollution function', function(){
 //        var program =
