@@ -67,7 +67,12 @@ interpreter.evaluateProgramElements = function(elements) {
             var out = this.evaluateStatement(elements[i], this.globalEnvironment);
             if (out !== undefined) {
                 //clone
+                try {
+
                 out = JSON.parse(JSON.stringify(out));
+                } catch(err) {
+                    console.log(out)
+                }
             }
             output.push(out);
         }
@@ -323,8 +328,10 @@ interpreter.evaluatePropertyAccessExpression = function(expression, environment)
             return interpreter.Array.reduce(expression.argument, base, functionEnvironment);
         } else if (expression.name === 'push') {
             return interpreter.Array.push(expression.argument, base, functionEnvironment);
+        } else if (expression.name === 'pop') {
+            return interpreter.Array.pop(expression.argument, base, functionEnvironment);
         } else {
-            throw new Error('not implemented function ' + name);
+            throw new Error('not implemented function ' + name + ' on base: ' + base + ' typeof = ' + (typeof base));
         }
     }
     //otherwise right side is property - e.g. length
@@ -336,6 +343,10 @@ interpreter.Array = {
         var arg = interpreter.evaluateStatement(argument, environment);
         base.push(arg);
         return arg;
+    },
+
+    pop: function (argument, base, environment) {
+        return base.pop();
     },
 
     map: function(functionExpression, base) {
