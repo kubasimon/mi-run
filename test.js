@@ -2198,6 +2198,22 @@ describe('interpreter', function(){
             assert.equal(null, output[2]);
             assert.equal(28, output[3]);
         });
+        it('should interpret function with environment variables when defined - variable safety - lexical scoping coffee script example', function(){
+            var program =
+                'outer = 10;' +
+                'changeNumbers = -> {' +
+                    'inner = ~1;' +
+                    'outer = 10' +
+                '}' +
+                'inner = changeNumbers();' +
+                'inner';
+
+            var ast = parser.parse(program);
+            var output = interpreter.evaluate(ast);
+            assert.equal(10, output[0]);
+            assert.equal(null, output[1]);
+            assert.equal(10, output[3]);
+        });
 
 
 
