@@ -322,14 +322,13 @@ interpreter.evaluatePropertyAccessExpression = function(expression, environment)
         } else {
             arguments = this.evaluateStatement(expression.argument, environment);
         }
-        if (expression.name === 'map') {
-            return interpreter.Array.map(expression.argument, base, functionEnvironment);
-        } else if (expression.name === 'reduce') {
-            return interpreter.Array.reduce(expression.argument, base, functionEnvironment);
-        } else if (expression.name === 'push') {
-            return interpreter.Array.push(expression.argument, base, functionEnvironment);
-        } else if (expression.name === 'pop') {
-            return interpreter.Array.pop(expression.argument, base, functionEnvironment);
+
+        if (Object.prototype.toString.call( base ) === '[object Array]') {
+            if (interpreter.Array[name]) {
+                return interpreter.Array[name].call(null, expression.argument, base, functionEnvironment)
+            } else {
+                throw new Error('not implemented function ' + name + ' on base: ' + base + ' typeof = ' + (typeof base));
+            }
         } else {
             throw new Error('not implemented function ' + name + ' on base: ' + base + ' typeof = ' + (typeof base));
         }
