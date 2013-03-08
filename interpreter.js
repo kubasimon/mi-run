@@ -63,7 +63,13 @@ interpreter.evaluateProgramElements = function(elements) {
     if (elements) {
         var i = 0, length = elements.length, output = [];
         for(; i < length; i++) {
-            output.push(this.evaluateStatement(elements[i], this.globalEnvironment));
+            //clone to
+            var out = this.evaluateStatement(elements[i], this.globalEnvironment);
+            if (out !== undefined) {
+                //clone
+                out = JSON.parse(JSON.stringify(out));
+            }
+            output.push(out);
         }
         if (interpreter.dbg.length > 0) {
             output["_dbg"] = interpreter.dbg;
@@ -315,6 +321,8 @@ interpreter.evaluatePropertyAccessExpression = function(expression, environment)
             return interpreter.Array.map(expression.argument, base, functionEnvironment);
         } else if (expression.name === 'reduce') {
             return interpreter.Array.reduce(expression.argument, base, functionEnvironment);
+        } else if (expression.name === 'push') {
+            return interpreter.Array.push(expression.argument, base, functionEnvironment);
         } else {
             throw new Error('not implemented function ' + name);
         }
@@ -324,6 +332,12 @@ interpreter.evaluatePropertyAccessExpression = function(expression, environment)
 };
 
 interpreter.Array = {
+    push: function (argument, base, environment) {
+        var arg = interpreter.evaluateStatement(argument, environment);
+        base.push(arg);
+        return arg;
+    },
+
     map: function(functionExpression, base) {
         var len = base.length;
         if (functionExpression.type !== "Function")

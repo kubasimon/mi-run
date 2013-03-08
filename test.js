@@ -2091,6 +2091,17 @@ describe('interpreter', function(){
             assert.equal(6, output[0][1]);
             assert.equal(8, output[0][2]);
         });
+        it('should interpret push build-in function', function(){
+            var program = 'a = []; x = 88;  a.push: x; a';
+            var ast = parser.parse(program);
+            var output = interpreter.evaluate(ast);
+            assert.equal(4, output.length);
+            assert.equal(0, output[0].length);
+            assert.equal(88, output[1]);
+            assert.equal(88, output[2]);
+            assert.equal(1, output[3].length);
+            assert.equal(88, output[3][0]);
+        });
         it('should interpret reduce build-in function', function(){
             var program = '[1, 2, 3].reduce: (x, acc) -> acc + x';
             var ast = parser.parse(program);
