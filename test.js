@@ -2,6 +2,7 @@
 
 
 var assert = require("assert");
+var fs = require("fs");
 
 var PEG, grammar, parser, interpreter;
 
@@ -2051,6 +2052,20 @@ describe('interpreter', function(){
             assert.equal(1, output.length);
             assert.equal(3, output[0]);
         });
+        it('should interpret array length build-in function', function(){
+            var program = '[[1,2], [3,3], [4,4]].length';
+            var ast = parser.parse(program);
+            var output = interpreter.evaluate(ast);
+            assert.equal(1, output.length);
+            assert.equal(3, output[0]);
+        });
+        it('should interpret array length build-in function', function(){
+            var program = 'a = [[1,2], [3,3], [4,4]]; a.length';
+            var ast = parser.parse(program);
+            var output = interpreter.evaluate(ast);
+            assert.equal(2, output.length);
+            assert.equal(3, output[1]);
+        });
         it('should interpret map build-in function', function(){
             var program = '[1, 3, 4].map: -> 1';
             var ast = parser.parse(program);
@@ -2160,6 +2175,14 @@ describe('interpreter', function(){
             assert.equal(3, output[0][1]);
             assert.equal(4, output[0][2]);
             assert.equal(8, output[1]);
+        });
+        it('should interpret array length', function(){
+            var program = '[1, 3, 4].length; [1, 3, 4, 5].length;';
+            var ast = parser.parse(program);
+            var output = interpreter.evaluate(ast);
+            assert.equal(2, output.length);
+            assert.equal(3, output[0]);
+            assert.equal(4, output[1]);
         });
         it('should interpret debug function', function(){
             var program = 'dbg "test"';
@@ -2284,7 +2307,6 @@ describe('knapsack', function() {
                 // [price, weight]
                 //function definition
             'itemsWeight = (i) -> {' +
-//                'i;' +
                 'helper = i.map: (x) -> x<1>;'+
                 'helper.reduce: (x, y) -> x + y' +
             '}' +
@@ -2301,6 +2323,25 @@ describe('knapsack', function() {
         assert.equal(11, output[4]);
         assert.equal(23, output[5]);
     });
+
+    it('ut foreach function', function(){
+        var program =
+            'items = [[1, 3], [2, 1]];' +
+            // [price, weight]
+            //function definition
+            'foreach = (items) -> {' +
+                'if items.length > 0  {' +
+                    'dbg items.pop:;' +
+                    'foreach items;' +
+                '} else {' +
+                    'items ' +
+                '}' +
+            '}' +
+            'foreach items';
+        var ast = parser.parse(program);
+        var output = interpreter.evaluate(ast);
+        assert.equal(2, output["_dbg"][0].length);
+    });
 //    it('ut checkBestSolution function', function(){
 //        var program =
 //            'bestSolution = [];' +
@@ -2310,16 +2351,11 @@ describe('knapsack', function() {
 //        console.log(output);
 //    });
     it('start', function(){
-        var program =
-            'size = 5;\n' +
-            'items = [[1, 2], [3, 2], [1, 4]];\n' +
-            'bestPrice = 0;' +
-            'bestSolution = [];' +
-            'i = 0;' //+
-            'addToKnapsack = () -> if '
-            ;
+        var program = fs.readFileSync('fixtures/knapsack.coffee', 'utf8');
+//        console.log(program)
         // [price, weight]
         var ast = parser.parse(program);
         var output = interpreter.evaluate(ast);
+        console.log(output)
     });
 });

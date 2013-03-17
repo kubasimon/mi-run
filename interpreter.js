@@ -227,7 +227,7 @@ interpreter.evaluateIfExpression = function(expression, environment) {
                 return this.evaluateStatement(expression.elseExpression, environment);
             }
         }
-        throw new Error('Else part is missing: ' + expression);
+//        throw new Error('Else part is missing: ' + expression);
     }
 };
 
@@ -265,6 +265,14 @@ interpreter.evaluateBuildInDbg = function(environment, args) {
     var i = 0, val;
     for (;i < args.length; i++) {
         val = interpreter.evaluateStatement(args[i], environment);
+        if (val !== undefined) {
+            //clone
+            try {
+                val = JSON.parse(JSON.stringify(val));
+            } catch(err) {
+                console.log(val)
+            }
+        }
         interpreter.dbg.push(val);
     }
     return null;
