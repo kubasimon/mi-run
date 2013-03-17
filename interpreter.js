@@ -352,6 +352,16 @@ interpreter.Array = {
         return arg;
     },
 
+    unshift: function (argument, base, environment) {
+        var arg = interpreter.evaluateStatement(argument, environment);
+        base.unshift(arg);
+        return arg;
+    },
+
+    shift: function (argument, base, environment) {
+        return base.shift();
+    },
+
     pop: function (argument, base, environment) {
         return base.pop();
     },
