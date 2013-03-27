@@ -2220,6 +2220,15 @@ describe('interpreter', function(){
             var output = interpreter.evaluate(ast);
             assert.equal(1, output[3]);
         });
+        it('should interpret global variable scoping - global variable is not changed inside function', function(){
+            var program = 'a = [1, 2]; ' +
+                'x = -> a = [1, 2, 3];' +
+                'x();' +
+                'a';
+            var ast = parser.parse(program);
+            var output = interpreter.evaluate(ast);
+            assert.equal(2, output[3].length);
+        });
         it('should interpret global variable scoping - global variable is accessible inside function', function(){
             var program = 'a = 1; ' +
                 'x = -> a + 1;' +
