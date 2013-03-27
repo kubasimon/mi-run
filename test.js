@@ -2159,6 +2159,25 @@ describe('interpreter', function(){
             assert.equal(88, output[1]);
             assert.equal(0, output[2].length);
         });
+        it('should interpret clone build-in function', function(){
+            var program = 'a = [88]; b = a.clone:; a.push: 2; b;a';
+            var ast = parser.parse(program);
+            var output = interpreter.evaluate(ast);
+            assert.equal(5, output.length);
+            assert.equal(1, output[0].length);
+
+            assert.equal(1, output[1].length);
+            assert.equal(88, output[1][0]);
+
+            assert.equal(2, output[2]);
+
+            assert.equal(1, output[3].length);
+            assert.equal(88, output[3][0]);
+
+            assert.equal(2, output[4].length);
+            assert.equal(88, output[4][0]);
+            assert.equal(2, output[4][1]);
+        });
         it('should interpret reduce build-in function', function(){
             var program = '[1, 2, 3].reduce: (x, acc) -> acc + x';
             var ast = parser.parse(program);

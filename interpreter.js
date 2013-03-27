@@ -366,6 +366,10 @@ interpreter.Array = {
         return base.pop();
     },
 
+    clone: function (argument, base, environment) {
+        return base.slice();
+    },
+
     map: function(functionExpression, base) {
         var len = base.length;
         if (functionExpression.type !== "Function")
