@@ -2401,10 +2401,25 @@ describe('knapsack', function() {
 //    });
     it('start', function(){
         var program = fs.readFileSync('fixtures/knapsack.coffee', 'utf8');
+        var ast = parser.parse(program);
+        var output = interpreter.evaluate(ast);
+        //console.log(output)
+        assert.equal(473, output.pop());
+    });
+    it('start', function(){
+        var program = fs.readFileSync('fixtures/knapsack10.coffee', 'utf8');
+        var ast = parser.parse(program);
+        var output = interpreter.evaluate(ast);
+        console.log(output._dbg);
+        assert.equal(798, output.pop());
+    });
+    it('start', function(){
+        var program = fs.readFileSync('fixtures/knapsack25.coffee', 'utf8');
 //        console.log(program)
         // [price, weight]
         var ast = parser.parse(program);
         var output = interpreter.evaluate(ast);
-        console.log(output)
+        //console.log(output._dbg);
+        //assert.equal(2427, output.pop());
     });
 });

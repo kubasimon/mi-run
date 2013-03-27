@@ -342,6 +342,18 @@ interpreter.evaluatePropertyAccessExpression = function(expression, environment)
         }
     }
     //otherwise right side is property - e.g. length
+//    console.log("base:");
+//    console.log(base);
+//    console.log(name);
+    try {
+    base[name];
+    } catch (e) {
+        console.log("typerrrorrrr:");
+        console.log(base);
+        console.log(name);
+        console.log(expression.base);
+        console.log(environment);
+    }
     return base[name];
 };
 

@@ -1,15 +1,15 @@
 
 size = 100;
-"[price, weight]";
-items = [[114, 18], [136, 42], [192, 88], [223, 3]];
-"best is: 473"
+"[weight, price]";
+items = [[27, 38], [2, 86], [41, 112], [1, 0], [25, 66], [1, 97], [34, 195], [3, 85], [50, 42], [12, 223]];
+"best price = 798"
 
 bestPrice = 0;
 bestSolution = [];
 i = 0;
 itemsWeight = (i) -> {
   if i.length > 0 {
-    helper = i.map: (x) -> x<1>;
+    helper = i.map: (x) -> x<0>;
     helper.reduce: (x, y) -> x + y
   } else {
     0;
@@ -17,7 +17,7 @@ itemsWeight = (i) -> {
 };
 itemsPrice = (i) -> {
   if i.length > 0 {
-    helper = i.map: (x) -> x<0>;
+    helper = i.map: (x) -> x<1>;
     helper.reduce: (x, y) -> x + y
   } else {
     0;
@@ -31,6 +31,7 @@ addToKnapsack = (used, unused, bestPrice) -> {
     currentPrice = itemsPrice used;
     if currentPrice > bestPrice {
       bestPrice = currentPrice;
+      dbg bestPrice
     }
 
     item = unused.shift:;
@@ -48,11 +49,6 @@ addToKnapsack = (used, unused, bestPrice) -> {
   }
 }
 
-printItems = (items) -> {
-  dbg items.reduce: (item, acc)-> {
-    acc + " [" + item<0> + ", " + item<1> + "]";
-  }
-}
 
 foreach = (len, items, bestPrice) -> {
   if len isnt 0 {
