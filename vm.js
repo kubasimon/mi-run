@@ -9,7 +9,8 @@ var vm = (function(undefined) {
         vm.stack = [];
         vm.heap = [];
         vm.localVariables = [];
-        vm.instructions = []
+        vm.instructions = [];
+        vm.instructionPointer = 0;
     };
 
     vm.addInstruction = function(instruction) {
@@ -19,8 +20,9 @@ var vm = (function(undefined) {
     vm.interpreter = {};
 
     vm.interpreter.process = function() {
-        for(var i = 0; i < vm.instructions.length; i++) {
-            var instruction = vm.instructions[i].split(" ");
+        while(vm.instructionPointer < vm.instructions.length) {
+            var instruction = vm.instructions[vm.instructionPointer].split(" ");
+            var jump = false;
             switch (instruction[0]) {
                 case 'push':
                     vm.interpreter.pushIntInstruction(parseInt(instruction[1], 10));
@@ -40,8 +42,15 @@ var vm = (function(undefined) {
                 case 'compare':
                     vm.interpreter.subtractInstruction();
                     break;
+                case 'conditional_jump':
+                    jump = vm.interpreter.conditionalJumpInstruction();
+                    break;
                 default :
                     throw new Error('unknown instruction: ' + instruction.join(" "))
+            }
+            // move to next instruction when not jumping
+            if (!jump) {
+                vm.instructionPointer++;
             }
         }
     };
@@ -81,8 +90,18 @@ var vm = (function(undefined) {
         vm.stack.push(res)
     };
 
+    vm.interpreter.conditionalJumpInstruction = function() {
+        var condition = vm.stack.pop();
+        var pointer = vm.stack.pop();
+        if (condition != 0) {
+            vm.instructionPointer = pointer;
+            return true
+        }
+        return false
+    };
+
     return vm;
-})();
+})(undefined);
 
 if (typeof module !== "undefined") {
     module.exports = vm;

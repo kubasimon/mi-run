@@ -117,6 +117,39 @@ describe('vm', function(){
             assert.equal(vm.stack.length, 1);
             assert.equal(vm.stack[0], 3);
         });
+
+        it('should (not) do conditional jump', function(){
+            //set up
+            vm.start();
+            vm.addInstruction("push 4");
+            vm.addInstruction("push 0");
+            vm.addInstruction("conditional_jump");
+            vm.addInstruction("push 88");
+            vm.addInstruction("push 66");
+
+
+            vm.interpreter.process();
+
+            assert.equal(vm.stack.length, 2);
+            assert.equal(vm.stack[0], 88);
+            assert.equal(vm.stack[1], 66);
+        });
+
+        it('should  do conditional jump', function(){
+            //set up
+            vm.start();
+            vm.addInstruction("push 4");
+            vm.addInstruction("push 1");
+            vm.addInstruction("conditional_jump");
+            vm.addInstruction("push 88");
+            vm.addInstruction("push 66");
+
+
+            vm.interpreter.process();
+
+            assert.equal(vm.stack.length, 1);
+            assert.equal(vm.stack[0], 66);
+        });
     });
 });
 
