@@ -74,6 +74,36 @@ describe('vm', function(){
             assert.equal(vm.stack.length, 1);
             assert.equal(vm.stack[0], 4);
         });
+
+        it('should compare numbers on stack and push result to stack', function(){
+            //set up
+            vm.start();
+
+            vm.interpreter.pushIntInstruction(1);
+            vm.interpreter.pushIntInstruction(5);
+            assert.equal(vm.stack.length, 2);
+
+            // do work
+            vm.interpreter.compareInstruction();
+
+            assert.equal(vm.stack.length, 1);
+            assert.equal(vm.stack[0], 0);
+        });
+
+        it('should compare numbers on stack and push result to stack', function(){
+            //set up
+            vm.start();
+
+            vm.interpreter.pushIntInstruction(5);
+            vm.interpreter.pushIntInstruction(5);
+            assert.equal(vm.stack.length, 2);
+
+            // do work
+            vm.interpreter.compareInstruction();
+
+            assert.equal(vm.stack.length, 1);
+            assert.equal(vm.stack[0], 1);
+        });
     });
 });
 

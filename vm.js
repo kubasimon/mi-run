@@ -30,11 +30,20 @@ var vm = (function(undefined) {
         vm.stack.push(val1 + val2)
     };
 
-
     vm.interpreter.subtractInstruction = function() {
         var val1 = vm.stack.pop();
         var val2 = vm.stack.pop();
         vm.stack.push(val1 - val2)
+    };
+
+    vm.interpreter.compareInstruction = function() {
+        var val1 = vm.stack.pop();
+        var val2 = vm.stack.pop();
+        var res = 0; // FALSE
+        if (val1 == val2) {
+            res = 1; // TRUE
+        }
+        vm.stack.push(res)
     };
 
     return vm;
