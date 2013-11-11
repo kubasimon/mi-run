@@ -33,6 +33,47 @@ describe('vm', function(){
             assert.equal(vm.stack.length, 0);
             assert.equal(vm.localVariables[1], 1);
         });
+
+        it('should store push int value to stack ', function(){
+            //set up
+            vm.start();
+
+            // do work
+            vm.interpreter.pushIntInstruction(8);
+
+            assert.equal(vm.stack.length, 1);
+            assert.equal(vm.stack[0], 8);
+        });
+
+        it('should add to numbers on stack and push result to stack', function(){
+            //set up
+            vm.start();
+
+            vm.interpreter.pushIntInstruction(1);
+            vm.interpreter.pushIntInstruction(5);
+            assert.equal(vm.stack.length, 2);
+
+            // do work
+            vm.interpreter.addInstruction();
+
+            assert.equal(vm.stack.length, 1);
+            assert.equal(vm.stack[0], 6);
+        });
+
+        it('should subtract to numbers on stack and push result to stack', function(){
+            //set up
+            vm.start();
+
+            vm.interpreter.pushIntInstruction(1);
+            vm.interpreter.pushIntInstruction(5);
+            assert.equal(vm.stack.length, 2);
+
+            // do work
+            vm.interpreter.subtractInstruction();
+
+            assert.equal(vm.stack.length, 1);
+            assert.equal(vm.stack[0], 4);
+        });
     });
 });
 
