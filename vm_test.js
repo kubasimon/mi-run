@@ -104,6 +104,19 @@ describe('vm', function(){
             assert.equal(vm.stack.length, 1);
             assert.equal(vm.stack[0], 1);
         });
+
+        it('should add instruction manually and call add', function(){
+            //set up
+            vm.start();
+            vm.addInstruction("push 1");
+            vm.addInstruction("push 2");
+            vm.addInstruction("add");
+
+            vm.interpreter.process();
+
+            assert.equal(vm.stack.length, 1);
+            assert.equal(vm.stack[0], 3);
+        });
     });
 });
 

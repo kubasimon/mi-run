@@ -9,9 +9,44 @@ var vm = (function(undefined) {
         vm.stack = [];
         vm.heap = [];
         vm.localVariables = [];
+        vm.instructions = []
+    };
+
+    vm.addInstruction = function(instruction) {
+        return vm.instructions.push(instruction)
     };
 
     vm.interpreter = {};
+
+    vm.interpreter.process = function() {
+        for(var i = 0; i < vm.instructions.length; i++) {
+            var instruction = vm.instructions[i].split(" ");
+            switch (instruction[0]) {
+                case 'push':
+                    vm.interpreter.pushIntInstruction(parseInt(instruction[1], 10));
+                    break;
+                case 'load':
+                    vm.interpreter.loadInstruction(parseInt(instruction[1], 10));
+                    break;
+                case 'store':
+                    vm.interpreter.storeInstruction(parseInt(instruction[1], 10));
+                    break;
+                case 'add':
+                    vm.interpreter.addInstruction();
+                    break;
+                case 'subtract':
+                    vm.interpreter.subtractInstruction();
+                    break;
+                case 'compare':
+                    vm.interpreter.subtractInstruction();
+                    break;
+                default :
+                    throw new Error('unknown instruction: ' + instruction.join(" "))
+            }
+        }
+    };
+
+    // ---- instructions
     vm.interpreter.pushIntInstruction = function(intValue) {
         vm.stack.push(intValue)
     };
