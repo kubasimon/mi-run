@@ -98,14 +98,16 @@ var vm = (function(undefined) {
         }
     };
 
-
+    vm.allocateArray = function(size) {
+        return vm.heap.push({type: 'array', size: size, data: []}) - 1
+    };
 
     vm.interpreter = {};
 
     vm.interpreter.process = function() {
         while(vm.instructionPointer < vm.instructions.length) {
             var instruction = vm.instructions[vm.instructionPointer].split(" ");
-            console.log("frame "+ vm.currentStackFrame + " #" + vm.currentFrame().instructionPointer + ": " + instruction);
+//            console.log("frame "+ vm.currentStackFrame + " #" + vm.currentFrame().instructionPointer + ": " + instruction);
 //            console.log(vm.currentFrame().stack);
             if (instruction[0] == 'terminate') {
                 break;
@@ -156,6 +158,15 @@ var vm = (function(undefined) {
                     break;
                 case 'duplicate':
                     vm.interpreter.duplicateInstruction();
+                    break;
+                case 'new_array':
+                    vm.interpreter.newArrayInstruction(parseInt(instruction[1], 10));
+                    break;
+                case 'array_store':
+                    vm.interpreter.arrayStoreInstruction();
+                    break;
+                case 'array_load':
+                    vm.interpreter.arrayLoadInstruction();
                     break;
                 default :
                     throw new Error('unknown instruction: ' + instruction.join(" "))
@@ -248,6 +259,46 @@ var vm = (function(undefined) {
         vm.currentFrame().stack.push(value);
         vm.currentFrame().stack.push(value);
     };
+
+    vm.interpreter.newArrayInstruction = function(size) {
+        var address = vm.allocateArray(size);
+        vm.currentFrame().stack.push(address);
+    };
+
+    vm.interpreter.arrayStoreInstruction = function() {
+        var value = vm.currentFrame().stack.pop();
+        var index = vm.currentFrame().stack.pop();
+        var address = vm.currentFrame().stack.pop();
+        if (! address in vm.heap) {
+            throw new Error('Address "' + address + '" not found on heap !');
+        }
+        var array = vm.heap[address];
+        if (array.type != 'array') {
+            throw new Error('No array on address "' + address + '"! Heap data: ' + array );
+        }
+        if (index > array.size || index < 0 ) {
+            throw new Error('Array Index Out Of Bounds: requested index  "' + index + '" Array size: ' + array.size );
+        }
+
+        array.data[index] = value;
+    };
+
+    vm.interpreter.arrayLoadInstruction = function() {
+        var index = vm.currentFrame().stack.pop();
+        var address = vm.currentFrame().stack.pop();
+        if (! address in vm.heap) {
+            throw new Error('Address "' + address + '" not found on heap !');
+        }
+        var array = vm.heap[address];
+        if (array.type != 'array') {
+            throw new Error('No array on address "' + address + '"! Heap data: ' + array );
+        }
+        if (index > array.size || index < 0 ) {
+            throw new Error('Array Index Out Of Bounds: requested index  "' + index + '" Array size: ' + array.size );
+        }
+
+        vm.currentFrame().stack.push(array.data[index]);
+    }
 
     return vm;
 })(undefined);

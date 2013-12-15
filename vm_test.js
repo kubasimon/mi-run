@@ -357,13 +357,101 @@ describe('vm', function(){
             assert.equal(vm.currentFrame().stack._data[0], 5);
         });
 
-//        it('should create new array', function(){
-//            vm.start();
-//
-//            vm.addInstruction("new_array");
-//
-//            assert.equal(vm.currentFrame().stack.size, 1);
-//        });
+        it('should create new array', function(){
+            vm.start();
+
+            vm.addInstruction("new_array 5");
+
+            vm.interpreter.process();
+
+            assert.equal(vm.currentFrame().stack.size, 1);
+        });
+
+        it('should create store a retrieve something to/from array', function(){
+            vm.start();
+
+            vm.addInstruction("new_array 5");
+            vm.addInstruction("store 0");
+
+            vm.addInstruction("load 0"); // array
+            vm.addInstruction("push 0"); // index
+            vm.addInstruction("push 88"); // value
+            vm.addInstruction("array_store");
+
+            vm.addInstruction("load 0"); // array
+            vm.addInstruction("push 0"); // index
+            vm.addInstruction("array_load");
+
+            vm.interpreter.process();
+
+            assert.equal(vm.currentFrame().stack.size, 1);
+            assert.equal(vm.currentFrame().stack._data, 88);
+        });
+
+        it('should pass array to function', function(){
+            vm.start();
+
+            vm.addInstruction("new_array 5");
+            vm.addInstruction("store 0");
+
+            vm.addInstruction("load 0"); // array
+            vm.addInstruction("push 0"); // index
+            vm.addInstruction("push 5"); // value
+            vm.addInstruction("array_store");
+
+            vm.addInstruction("load 0"); // array
+            vm.addInstruction("push 1"); // index
+            vm.addInstruction("push 4"); // value
+            vm.addInstruction("array_store");
+
+            vm.addInstruction("load 0"); // array
+            vm.addInstruction("push 2"); // index
+            vm.addInstruction("push 1"); // value
+            vm.addInstruction("array_store");
+
+            vm.addInstruction("load 0"); // array
+
+            vm.addInstruction("invoke sum");
+            vm.addInstruction("terminate");
+
+            vm.addFunction("sum", { instructions: [
+                'load 0', //array ref
+
+                'push 0', //tmp = 0
+                'store 1', //tmp = 0
+
+                'push 0', //i = 0
+                'store 2', //i = 0
+
+                'push 3', // i != 3
+                'load 2', // i != 3
+                'compare', // i != 3
+                'conditional_jump 12', // i != 3
+
+                'load 0', // array[i]
+                'load 2', // array[i]
+                'array_load', // array[i]
+
+                'load 1', // tmp = array[i] + tmp
+                'add', // tmp = array[i] + tmp
+                'store 1', // tmp = array[i] + tmp
+
+                'load 2', // i++
+                'push 1', // i++
+                'add', // i++
+                'store 2', // i++
+
+                'jump -14',
+
+                'load 1',
+                'return_int'
+            ], arguments: 1, localVariables:3 });
+
+            vm.interpreter.process();
+
+            assert.equal(vm.currentFrame().stack.size, 1);
+            assert.equal(vm.currentFrame().stack._data, 10);
+        });
 
     });
 });
