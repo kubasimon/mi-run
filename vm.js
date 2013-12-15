@@ -5,7 +5,10 @@ var vm = (function(undefined) {
         vm.heap = [];
         vm.stackFrames = [];
         vm.currentStackFrame = 0;
+        vm.maximumStackFrames = 1024;
         vm.stackFrames.push(vm.createNewStackFrame());
+        vm.instructions = [];
+        vm.instructionPointer = 0;
     };
 
     vm.currentFrame = function() {
@@ -13,10 +16,11 @@ var vm = (function(undefined) {
     };
 
     vm.createNewStackFrame = function() {
+        if (vm.stackFrames.length + 1 > vm.maximumStackFrames) {
+            throw new Error("StackOverflow, max stack frames level reached: " + this.maximumStackFrames);
+        }
         return {
             localVariables: [],
-            instructions: [],
-            instructionPointer: 0,
             constantPool: [],
             stack: {
                 _data: [],
@@ -38,7 +42,7 @@ var vm = (function(undefined) {
     };
 
     vm.addInstruction = function(instruction) {
-        return vm.currentFrame().instructions.push(instruction) - 1
+        return vm.instructions.push(instruction) - 1
     };
 
     vm.setConstantPool = function(constants) {
@@ -64,8 +68,8 @@ var vm = (function(undefined) {
     vm.interpreter = {};
 
     vm.interpreter.process = function() {
-        while(vm.currentFrame().instructionPointer < vm.currentFrame().instructions.length) {
-            var instruction = vm.currentFrame().instructions[vm.currentFrame().instructionPointer].split(" ");
+        while(vm.instructionPointer < vm.instructions.length) {
+            var instruction = vm.instructions[vm.instructionPointer].split(" ");
 //            console.log("#" + vm.currentFrame().instructionPointer + ": " + instruction);
 //            console.log(vm.stack);
 //            console.log(vm.localVariables);
@@ -105,7 +109,7 @@ var vm = (function(undefined) {
             }
             // move to next instruction when not jumping
             if (!jump) {
-                vm.currentFrame().instructionPointer++;
+                vm.instructionPointer++;
             }
         }
     };
@@ -149,14 +153,14 @@ var vm = (function(undefined) {
         var condition = vm.currentFrame().stack.pop();
         var pointer = vm.currentFrame().stack.pop();
         if (condition != 0) {
-            vm.currentFrame().instructionPointer = pointer;
+            vm.instructionPointer = pointer;
             return true
         }
         return false
     };
 
     vm.interpreter.jumpInstruction = function(jumpTo) {
-        vm.currentFrame().instructionPointer = jumpTo;
+        vm.instructionPointer = jumpTo;
     };
 
     return vm;
