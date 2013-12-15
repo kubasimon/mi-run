@@ -1,0 +1,13 @@
+
+
+push_c #index - vlozi na zasobnik z constant poolu
+push <int> - vlozi na zasobnik cislo
+load #index - vlozi na zasobnik z lokalni promenne
+store #index - ulozi do localni promenne hodnotu ze zasobniku
+
+add - secte hondnoty na zasobniku
+subtract - odecte hodnoty na zasobniku
+compare - porovna hodnoty na zasobniku
+conditional_jump - pokud je na zasobniku > 1, tak skoci na danou instruci
+jump - skoci na instrukci
+new_array - vytvori nove pole

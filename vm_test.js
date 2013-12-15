@@ -10,28 +10,28 @@ describe('vm', function(){
         it('should load from local variable ', function(){
             //set up
             vm.start();
-            vm.localVariables = [1];
+            vm.currentFrame().localVariables = [1];
 
             // do work
             vm.interpreter.loadInstruction(0);
 
 
-            assert.equal(vm.stack.size, 1);
-            assert.equal(vm.stack._data[0], 1);
+            assert.equal(vm.currentFrame().stack.size, 1);
+            assert.equal(vm.currentFrame().stack._data[0], 1);
         });
 
         it('should store from stack to local variable ', function(){
             //set up
             vm.start();
-            vm.localVariables = [1];
-            assert.equal(vm.stack.size, 0);
+            vm.currentFrame().localVariables = [1];
+            assert.equal(vm.currentFrame().stack.size, 0);
             vm.interpreter.loadInstruction(0);
 
             // do work
             vm.interpreter.storeInstruction(1);
 
-            assert.equal(vm.stack.size, 0);
-            assert.equal(vm.localVariables[1], 1);
+            assert.equal(vm.currentFrame().stack.size, 0);
+            assert.equal(vm.currentFrame().localVariables[1], 1);
         });
 
         it('should store push int value to stack ', function(){
@@ -41,8 +41,8 @@ describe('vm', function(){
             // do work
             vm.interpreter.pushIntInstruction(8);
 
-            assert.equal(vm.stack.size, 1);
-            assert.equal(vm.stack._data[0], 8);
+            assert.equal(vm.currentFrame().stack.size, 1);
+            assert.equal(vm.currentFrame().stack._data[0], 8);
         });
 
         it('should add to numbers on stack and push result to stack', function(){
@@ -51,13 +51,13 @@ describe('vm', function(){
 
             vm.interpreter.pushIntInstruction(1);
             vm.interpreter.pushIntInstruction(5);
-            assert.equal(vm.stack.size, 2);
+            assert.equal(vm.currentFrame().stack.size, 2);
 
             // do work
             vm.interpreter.addInstruction();
 
-            assert.equal(vm.stack.size, 1);
-            assert.equal(vm.stack._data[0], 6);
+            assert.equal(vm.currentFrame().stack.size, 1);
+            assert.equal(vm.currentFrame().stack._data[0], 6);
         });
 
         it('should subtract to numbers on stack and push result to stack', function(){
@@ -66,13 +66,13 @@ describe('vm', function(){
 
             vm.interpreter.pushIntInstruction(1);
             vm.interpreter.pushIntInstruction(5);
-            assert.equal(vm.stack.size, 2);
+            assert.equal(vm.currentFrame().stack.size, 2);
 
             // do work
             vm.interpreter.subtractInstruction();
 
-            assert.equal(vm.stack.size, 1);
-            assert.equal(vm.stack._data[0], 4);
+            assert.equal(vm.currentFrame().stack.size, 1);
+            assert.equal(vm.currentFrame().stack._data[0], 4);
         });
 
         it('should compare numbers on stack and push result to stack', function(){
@@ -81,13 +81,13 @@ describe('vm', function(){
 
             vm.interpreter.pushIntInstruction(1);
             vm.interpreter.pushIntInstruction(5);
-            assert.equal(vm.stack.size, 2);
+            assert.equal(vm.currentFrame().stack.size, 2);
 
             // do work
             vm.interpreter.compareInstruction();
 
-            assert.equal(vm.stack.size, 1);
-            assert.equal(vm.stack._data[0], 0);
+            assert.equal(vm.currentFrame().stack.size, 1);
+            assert.equal(vm.currentFrame().stack._data[0], 0);
         });
 
         it('should compare numbers on stack and push result to stack', function(){
@@ -96,13 +96,13 @@ describe('vm', function(){
 
             vm.interpreter.pushIntInstruction(5);
             vm.interpreter.pushIntInstruction(5);
-            assert.equal(vm.stack.size, 2);
+            assert.equal(vm.currentFrame().stack.size, 2);
 
             // do work
             vm.interpreter.compareInstruction();
 
-            assert.equal(vm.stack.size, 1);
-            assert.equal(vm.stack._data[0], 1);
+            assert.equal(vm.currentFrame().stack.size, 1);
+            assert.equal(vm.currentFrame().stack._data[0], 1);
         });
 
         it('should add instruction manually and call add', function(){
@@ -114,8 +114,8 @@ describe('vm', function(){
 
             vm.interpreter.process();
 
-            assert.equal(vm.stack.size, 1);
-            assert.equal(vm.stack._data[0], 3);
+            assert.equal(vm.currentFrame().stack.size, 1);
+            assert.equal(vm.currentFrame().stack._data[0], 3);
         });
 
         it('should (not) do conditional jump', function(){
@@ -130,9 +130,9 @@ describe('vm', function(){
 
             vm.interpreter.process();
 
-            assert.equal(vm.stack.size, 2);
-            assert.equal(vm.stack._data[0], 88);
-            assert.equal(vm.stack._data[1], 66);
+            assert.equal(vm.currentFrame().stack.size, 2);
+            assert.equal(vm.currentFrame().stack._data[0], 88);
+            assert.equal(vm.currentFrame().stack._data[1], 66);
         });
 
         it('should  do conditional jump', function(){
@@ -147,8 +147,8 @@ describe('vm', function(){
 
             vm.interpreter.process();
 
-            assert.equal(vm.stack.size, 1);
-            assert.equal(vm.stack._data[0], 66);
+            assert.equal(vm.currentFrame().stack.size, 1);
+            assert.equal(vm.currentFrame().stack._data[0], 66);
         });
 
         it('should push constant to stack', function(){
@@ -160,9 +160,9 @@ describe('vm', function(){
 
             vm.interpreter.process();
 
-            assert.equal(vm.stack.size, 2);
-            assert.equal(vm.stack._data[0], "Hello World");
-            assert.equal(vm.stack._data[1], 5);
+            assert.equal(vm.currentFrame().stack.size, 2);
+            assert.equal(vm.currentFrame().stack._data[0], "Hello World");
+            assert.equal(vm.currentFrame().stack._data[1], 5);
         });
 
         it('should do while statement', function(){
@@ -187,8 +187,8 @@ describe('vm', function(){
 
             vm.addInstruction("load 0");
             vm.interpreter.process();
-            assert.equal(vm.stack.size, 1);
-            assert.equal(vm.stack._data[0], 5);
+            assert.equal(vm.currentFrame().stack.size, 1);
+            assert.equal(vm.currentFrame().stack._data[0], 5);
         });
 
         it('should do stackoverflow error', function(){
@@ -197,6 +197,7 @@ describe('vm', function(){
             vm.addInstruction("push 1");
             vm.addInstruction("jump 0");
 
+
             assert.throws(
                 function() {
                     vm.interpreter.process();
@@ -204,6 +205,14 @@ describe('vm', function(){
                 /StackOverflow/
             );
         });
+
+//        it('should create new array', function(){
+//            vm.start();
+//
+//            vm.addInstruction("new_array");
+//
+//            assert.equal(vm.currentFrame().stack.size, 1);
+//        });
 
     });
 });

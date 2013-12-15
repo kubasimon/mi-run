@@ -2,36 +2,47 @@ var vm = (function(undefined) {
     var vm = {};
 
     vm.start = function() {
-        vm.stack = {
-            _data: [],
-            size: 0,
-            maxStackSize: 1024,
-            push: function(val) {
-                this.size++;
-                if (this.size > this.maxStackSize) {
-                    throw new Error("StackOverflow, max stack level reached: " + this.maxStackSize);
-                }
-                return this._data.push(val)
-            },
-            pop: function() {
-                this.size--;
-                return this._data.pop()
-            }
-        };
-
         vm.heap = [];
-        vm.localVariables = [];
-        vm.instructions = [];
-        vm.instructionPointer = 0;
-        vm.constantPool = [];
+        vm.stackFrames = [];
+        vm.currentStackFrame = 0;
+        vm.stackFrames.push(vm.createNewStackFrame());
+    };
+
+    vm.currentFrame = function() {
+        return vm.stackFrames[vm.currentStackFrame];
+    };
+
+    vm.createNewStackFrame = function() {
+        return {
+            localVariables: [],
+            instructions: [],
+            instructionPointer: 0,
+            constantPool: [],
+            stack: {
+                _data: [],
+                size: 0,
+                maxStackSize: 1024,
+                push: function(val) {
+                    this.size++;
+                    if (this.size > this.maxStackSize) {
+                        throw new Error("StackOverflow, max stack level reached: " + this.maxStackSize);
+                    }
+                    return this._data.push(val)
+                },
+                pop: function() {
+                    this.size--;
+                    return this._data.pop()
+                }
+            }
+        }
     };
 
     vm.addInstruction = function(instruction) {
-        return vm.instructions.push(instruction) - 1
+        return vm.currentFrame().instructions.push(instruction) - 1
     };
 
     vm.setConstantPool = function(constants) {
-        vm.constantPool = constants
+        vm.currentFrame().constantPool = constants
     };
 
     vm.getConstantValue = function(index) {
@@ -39,12 +50,12 @@ var vm = (function(undefined) {
             throw Error("Index [" + index + "] is not starting with '#'!");
         }
         var accessIndex = index.substr(1, index.length);
-        var val = vm.constantPool[accessIndex];
+        var val = vm.currentFrame().constantPool[accessIndex];
         if (val) {
 //            console.log("Index " + index + " value: " + val);
             return val;
         } else {
-            throw Error("Index [" + index + "] not found in constant pool: " + JSON.stringify(vm.constantPool));
+            throw Error("Index [" + index + "] not found in constant pool: " + JSON.stringify(vm.currentFrame().constantPool));
         }
     };
 
@@ -53,9 +64,9 @@ var vm = (function(undefined) {
     vm.interpreter = {};
 
     vm.interpreter.process = function() {
-        while(vm.instructionPointer < vm.instructions.length) {
-            var instruction = vm.instructions[vm.instructionPointer].split(" ");
-//            console.log("#" + vm.instructionPointer + ": " + instruction);
+        while(vm.currentFrame().instructionPointer < vm.currentFrame().instructions.length) {
+            var instruction = vm.currentFrame().instructions[vm.currentFrame().instructionPointer].split(" ");
+//            console.log("#" + vm.currentFrame().instructionPointer + ": " + instruction);
 //            console.log(vm.stack);
 //            console.log(vm.localVariables);
             var jump = false;
@@ -94,58 +105,58 @@ var vm = (function(undefined) {
             }
             // move to next instruction when not jumping
             if (!jump) {
-                vm.instructionPointer++;
+                vm.currentFrame().instructionPointer++;
             }
         }
     };
 
     // ---- instructions
     vm.interpreter.pushIntInstruction = function(intValue) {
-        vm.stack.push(intValue)
+        vm.currentFrame().stack.push(intValue)
     };
 
     vm.interpreter.loadInstruction = function(localVariableIndex) {
-        vm.stack.push(vm.localVariables[localVariableIndex])
+        vm.currentFrame().stack.push(vm.currentFrame().localVariables[localVariableIndex])
     };
 
     vm.interpreter.storeInstruction = function(localVariableIndex) {
-        vm.localVariables[localVariableIndex] = vm.stack.pop();
+        vm.currentFrame().localVariables[localVariableIndex] = vm.currentFrame().stack.pop();
     };
 
     vm.interpreter.addInstruction = function() {
-        var val1 = vm.stack.pop();
-        var val2 = vm.stack.pop();
-        vm.stack.push(val1 + val2)
+        var val1 = vm.currentFrame().stack.pop();
+        var val2 = vm.currentFrame().stack.pop();
+        vm.currentFrame().stack.push(val1 + val2)
     };
 
     vm.interpreter.subtractInstruction = function() {
-        var val1 = vm.stack.pop();
-        var val2 = vm.stack.pop();
-        vm.stack.push(val1 - val2)
+        var val1 = vm.currentFrame().stack.pop();
+        var val2 = vm.currentFrame().stack.pop();
+        vm.currentFrame().stack.push(val1 - val2)
     };
 
     vm.interpreter.compareInstruction = function() {
-        var val1 = vm.stack.pop();
-        var val2 = vm.stack.pop();
+        var val1 = vm.currentFrame().stack.pop();
+        var val2 = vm.currentFrame().stack.pop();
         var res = 0; // FALSE
         if (val1 == val2) {
             res = 1; // TRUE
         }
-        vm.stack.push(res)
+        vm.currentFrame().stack.push(res)
     };
 
     vm.interpreter.conditionalJumpInstruction = function() {
-        var condition = vm.stack.pop();
-        var pointer = vm.stack.pop();
+        var condition = vm.currentFrame().stack.pop();
+        var pointer = vm.currentFrame().stack.pop();
         if (condition != 0) {
-            vm.instructionPointer = pointer;
+            vm.currentFrame().instructionPointer = pointer;
             return true
         }
         return false
     };
 
     vm.interpreter.jumpInstruction = function(jumpTo) {
-        vm.instructionPointer = jumpTo;
+        vm.currentFrame().instructionPointer = jumpTo;
     };
 
     return vm;
