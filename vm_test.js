@@ -121,9 +121,8 @@ describe('vm', function(){
         it('should (not) do conditional jump', function(){
             //set up
             vm.start();
-            vm.addInstruction("push 4");
             vm.addInstruction("push 0");
-            vm.addInstruction("conditional_jump");
+            vm.addInstruction("conditional_jump 2");
             vm.addInstruction("push 88");
             vm.addInstruction("push 66");
 
@@ -138,9 +137,8 @@ describe('vm', function(){
         it('should  do conditional jump', function(){
             //set up
             vm.start();
-            vm.addInstruction("push 4");
             vm.addInstruction("push 1");
-            vm.addInstruction("conditional_jump");
+            vm.addInstruction("conditional_jump 2");
             vm.addInstruction("push 88");
             vm.addInstruction("push 66");
 
@@ -170,20 +168,19 @@ describe('vm', function(){
             vm.start();
             vm.setConstantPool([1, 5]);
             vm.addInstruction("push_c #0"); // x = 1
-            var beforeWhileStart = vm.addInstruction("store 0");  // x = 1
+            vm.addInstruction("store 0");  // x = 1
 
-            vm.addInstruction("push " + (beforeWhileStart + 11)); // jump to end of while
             vm.addInstruction("load 0"); // while x != 5
             vm.addInstruction("push_c #1"); // while x != 5
             vm.addInstruction("compare"); // while x != 5
-            vm.addInstruction("conditional_jump"); // while x != 5
+            vm.addInstruction("conditional_jump 6"); // while x != 5
 
             vm.addInstruction("load 0"); // x = x + 1
             vm.addInstruction("push_c #0"); // x = x + 1
             vm.addInstruction("add"); // x = x + 1
             vm.addInstruction("store 0"); // x = x + 1
 
-            vm.addInstruction("jump " + (beforeWhileStart + 1));
+            vm.addInstruction("jump -8");
 
             vm.addInstruction("load 0");
             vm.interpreter.process();
@@ -195,8 +192,7 @@ describe('vm', function(){
             vm.start();
 
             vm.addInstruction("push 1");
-            vm.addInstruction("jump 0");
-
+            vm.addInstruction("jump -1");
 
             assert.throws(
                 function() {
@@ -204,6 +200,161 @@ describe('vm', function(){
                 },
                 /StackOverflow/
             );
+        });
+
+        it('should do stackoverflow error with infinite recursion', function(){
+            vm.start();
+
+            vm.addFunction("recursion", { instructions: [
+                'invoke recursion',
+                'return'
+            ]});
+            vm.addInstruction("push 1");
+            vm.addInstruction("invoke recursion");
+
+            assert.throws(
+                function() {
+                    vm.interpreter.process();
+                },
+                /StackOverflow/
+            );
+        });
+
+        it('should do throw away void function results', function(){
+            vm.start();
+
+            vm.addInstruction("push 8");
+            vm.addInstruction("invoke void");
+            vm.addInstruction("push 8");
+            vm.addInstruction("add");
+            vm.addInstruction("terminate");
+            vm.addFunction("void", { instructions: [
+                'push 1',
+                'push 1',
+                'add 1',
+                'return'
+            ], arguments: 0, localVariables:2});
+
+            vm.interpreter.process();
+
+            assert.equal(vm.currentFrame().stack._data[0], 16);
+        });
+
+        it('should work with function returning int', function(){
+            vm.start();
+
+            vm.addInstruction("invoke three");
+            vm.addInstruction("push 8");
+            vm.addInstruction("add");
+            vm.addInstruction("terminate");
+            vm.addFunction("three", { instructions: [
+                'push 3',
+                'return_int'
+            ], arguments: 0, localVariables:2});
+
+            vm.interpreter.process();
+
+            assert.equal(vm.currentFrame().stack._data[0], 11);
+        });
+
+        it('should work with function returning int', function(){
+            vm.start();
+
+            vm.addInstruction("invoke three");
+            vm.addInstruction("push 8");
+            vm.addInstruction("add");
+            vm.addInstruction("terminate");
+            vm.addFunction("three", { instructions: [
+                'push 3',
+                'push 3',
+                'add',
+                'push 3',
+                'add',
+                'return_int'
+            ], arguments: 0, localVariables:2});
+
+            vm.interpreter.process();
+
+            assert.equal(vm.currentFrame().stack._data[0], 17);
+        });
+
+        it('should work with function with one argument ', function(){
+            vm.start();
+
+            vm.addInstruction("push 8");
+            vm.addInstruction("invoke oneargument");
+            vm.addInstruction("terminate");
+            vm.addFunction("oneargument", { instructions: [
+                'load 0',
+                'load 0',
+                'add',
+                'return_int'
+            ], arguments: 1, localVariables:2 });
+
+            vm.interpreter.process();
+
+            assert.equal(vm.currentFrame().stack._data[0], 16);
+        });
+
+        it('should work with function with two arguments ', function(){
+            vm.start();
+
+            vm.addInstruction("push 6");
+            vm.addInstruction("push 8");
+            vm.addInstruction("invoke twoargument");
+            vm.addInstruction("terminate");
+            vm.addFunction("twoargument", { instructions: [
+                'load 0',
+                'load 1',
+                'subtract',
+                'return_int'
+            ], arguments: 2, localVariables:2 });
+
+            vm.interpreter.process();
+
+            assert.equal(vm.currentFrame().stack._data[0], 2);
+        });
+
+        it('should work with function with two arguments ', function(){
+            vm.start();
+
+            vm.addInstruction("push 8");
+            vm.addInstruction("push 6");
+            vm.addInstruction("invoke twoargument");
+            vm.addInstruction("terminate");
+            vm.addFunction("twoargument", { instructions: [
+                'load 0',
+                'load 1',
+                'subtract',
+                'return_int'
+            ], arguments: 2, localVariables:2 });
+
+            vm.interpreter.process();
+
+            assert.equal(vm.currentFrame().stack._data[0], -2);
+        });
+
+        it('should work with recursion', function(){
+            vm.start();
+
+            vm.addInstruction("push 1");
+            vm.addInstruction("invoke recursion");
+            vm.addInstruction("terminate");
+            vm.addFunction("recursion", { instructions: [
+                'load 0',
+                'push 1',
+                'add',
+                'duplicate',
+                'push 5',
+                'compare',
+                'conditional_jump 2',
+                'invoke recursion',
+                'return_int'
+            ], arguments: 1, localVariables:1 });
+
+            vm.interpreter.process();
+
+            assert.equal(vm.currentFrame().stack._data[0], 5);
         });
 
 //        it('should create new array', function(){

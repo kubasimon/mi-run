@@ -8,6 +8,9 @@ store #index - ulozi do localni promenne hodnotu ze zasobniku
 add - secte hondnoty na zasobniku
 subtract - odecte hodnoty na zasobniku
 compare - porovna hodnoty na zasobniku
-conditional_jump - pokud je na zasobniku > 1, tak skoci na danou instruci
-jump - skoci na instrukci
+conditional_jump #instruction - pokud je na zasobniku > 1, tak skoci na danou instruci
+jump #instruction- skoci na instrukci
+duplicate - duplikuje vrchol zasobniku
+terminate - konec programu:)
+
 new_array - vytvori nove pole

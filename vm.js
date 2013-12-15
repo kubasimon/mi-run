@@ -5,22 +5,29 @@ var vm = (function(undefined) {
         vm.heap = [];
         vm.stackFrames = [];
         vm.currentStackFrame = 0;
-        vm.maximumStackFrames = 1024;
-        vm.stackFrames.push(vm.createNewStackFrame());
+        vm.maximumStackFrames = 10;
+        vm.createNewStackFrame(null, []);
         vm.instructions = [];
         vm.instructionPointer = 0;
+        vm.table = [];
     };
 
     vm.currentFrame = function() {
         return vm.stackFrames[vm.currentStackFrame];
     };
 
-    vm.createNewStackFrame = function() {
+    vm.createNewStackFrame = function(returnAddress, arguments) {
         if (vm.stackFrames.length + 1 > vm.maximumStackFrames) {
             throw new Error("StackOverflow, max stack frames level reached: " + this.maximumStackFrames);
         }
-        return {
-            localVariables: [],
+        var localVariables = [];
+        for (var i = 0; i <= arguments.length; i++) {
+            localVariables.push(arguments.pop())
+        }
+
+        var frame = {
+            returnAddress: returnAddress,
+            localVariables: localVariables,
             constantPool: [],
             stack: {
                 _data: [],
@@ -39,7 +46,35 @@ var vm = (function(undefined) {
                 }
             }
         }
+        vm.currentStackFrame = vm.stackFrames.push(frame) - 1;
     };
+
+    vm.deleteStackFrame = function() {
+        // remove frame
+        vm.stackFrames.pop();
+//        console.log("deleting frame: " + vm.currentStackFrame);
+        // set last as active
+        vm.currentStackFrame = vm.currentStackFrame - 1;
+//        console.log("current: " + vm.currentStackFrame);
+    }
+
+    vm.addFunction = function(name, funct) {
+        var startAddress = -1;
+        for(var i = 0; i <= funct.instructions.length; i++) {
+            var address = vm.addInstruction(funct.instructions[i]);
+            if (startAddress == -1) {
+                startAddress = address
+            }
+        }
+        vm.table[name] = {startAddress: startAddress, arguments: funct.arguments, localVariables: funct.localVariables}
+    }
+
+    vm.lookUpFunction = function(name) {
+        if (name in vm.table) {
+            return vm.table[name];
+        }
+        throw new Error ("Function '" + name + "' not found!" );
+    }
 
     vm.addInstruction = function(instruction) {
         return vm.instructions.push(instruction) - 1
@@ -70,9 +105,12 @@ var vm = (function(undefined) {
     vm.interpreter.process = function() {
         while(vm.instructionPointer < vm.instructions.length) {
             var instruction = vm.instructions[vm.instructionPointer].split(" ");
-//            console.log("#" + vm.currentFrame().instructionPointer + ": " + instruction);
+            console.log("frame "+ vm.currentStackFrame + " #" + vm.currentFrame().instructionPointer + ": " + instruction);
+//            console.log(vm.currentFrame().stack);
+            if (instruction[0] == 'terminate') {
+                break;
+            }
 //            console.log(vm.stack);
-//            console.log(vm.localVariables);
             var jump = false;
             switch (instruction[0]) {
                 case 'push_c':
@@ -98,11 +136,26 @@ var vm = (function(undefined) {
                     vm.interpreter.compareInstruction();
                     break;
                 case 'conditional_jump':
-                    jump = vm.interpreter.conditionalJumpInstruction();
+                    jump = vm.interpreter.conditionalJumpInstruction(parseInt(instruction[1], 10));
                     break;
                 case 'jump':
                     vm.interpreter.jumpInstruction(parseInt(instruction[1], 10));
                     jump = true;
+                    break;
+                case 'invoke':
+                    vm.interpreter.invokeInstruction(instruction[1]);
+                    jump = true;
+                    break;
+                case 'return':
+                    vm.interpreter.returnInstruction();
+                    jump = true;
+                    break;
+                case 'return_int':
+                    vm.interpreter.returnIntInstruction();
+                    jump = true;
+                    break;
+                case 'duplicate':
+                    vm.interpreter.duplicateInstruction();
                     break;
                 default :
                     throw new Error('unknown instruction: ' + instruction.join(" "))
@@ -149,18 +202,51 @@ var vm = (function(undefined) {
         vm.currentFrame().stack.push(res)
     };
 
-    vm.interpreter.conditionalJumpInstruction = function() {
+    vm.interpreter.conditionalJumpInstruction = function(relativeJump) {
         var condition = vm.currentFrame().stack.pop();
-        var pointer = vm.currentFrame().stack.pop();
         if (condition != 0) {
-            vm.instructionPointer = pointer;
+            vm.instructionPointer = vm.instructionPointer + relativeJump;
             return true
         }
         return false
     };
 
-    vm.interpreter.jumpInstruction = function(jumpTo) {
-        vm.instructionPointer = jumpTo;
+    vm.interpreter.jumpInstruction = function(relativeJumpTo) {
+        vm.instructionPointer = vm.instructionPointer + relativeJumpTo;
+    };
+
+    vm.interpreter.invokeInstruction = function(functionName) {
+        var fnc = vm.lookUpFunction(functionName);
+        // jump to next instruction
+        var returnAddress = vm.instructionPointer + 1;
+        // load arguments
+        var arguments = [];
+        for (var i = 0; i < fnc.arguments; i++) {
+            arguments.push(vm.currentFrame().stack.pop())
+        }
+        vm.createNewStackFrame(returnAddress, arguments);
+        vm.instructionPointer = fnc.startAddress;
+
+    };
+
+    vm.interpreter.returnInstruction = function() {
+        var returnAddress = vm.currentFrame().returnAddress;
+        vm.deleteStackFrame();
+        vm.instructionPointer = returnAddress;
+    };
+
+    vm.interpreter.returnIntInstruction = function() {
+        var value = vm.currentFrame().stack.pop();
+        var returnAddress = vm.currentFrame().returnAddress;
+        vm.deleteStackFrame();
+        vm.instructionPointer = returnAddress;
+        vm.currentFrame().stack.push(value)
+    };
+
+    vm.interpreter.duplicateInstruction = function() {
+        var value = vm.currentFrame().stack.pop();
+        vm.currentFrame().stack.push(value);
+        vm.currentFrame().stack.push(value);
     };
 
     return vm;
