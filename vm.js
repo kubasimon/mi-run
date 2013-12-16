@@ -45,7 +45,7 @@ var vm = (function(undefined) {
                     return this._data.pop()
                 }
             }
-        }
+        };
         vm.currentStackFrame = vm.stackFrames.push(frame) - 1;
     };
 
@@ -56,7 +56,7 @@ var vm = (function(undefined) {
         // set last as active
         vm.currentStackFrame = vm.currentStackFrame - 1;
 //        console.log("current: " + vm.currentStackFrame);
-    }
+    };
 
     vm.addFunction = function(name, funct) {
         var startAddress = -1;
@@ -67,14 +67,14 @@ var vm = (function(undefined) {
             }
         }
         vm.table[name] = {startAddress: startAddress, arguments: funct.arguments, localVariables: funct.localVariables}
-    }
+    };
 
     vm.lookUpFunction = function(name) {
         if (name in vm.table) {
             return vm.table[name];
         }
         throw new Error ("Function '" + name + "' not found!" );
-    }
+    };
 
     vm.addInstruction = function(instruction) {
         return vm.instructions.push(instruction) - 1
@@ -298,7 +298,7 @@ var vm = (function(undefined) {
         }
 
         vm.currentFrame().stack.push(array.data[index]);
-    }
+    };
 
     return vm;
 })(undefined);
