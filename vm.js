@@ -2,14 +2,14 @@ var vm = (function(undefined) {
     var vm = {};
 
     vm.start = function() {
-        vm.heap = [];
         vm.stackFrames = [];
         vm.currentStackFrame = 0;
         vm.maximumStackFrames = 10;
-        vm.createNewStackFrame(null, []);
         vm.instructions = [];
         vm.instructionPointer = 0;
         vm.table = [];
+        vm.createNewStackFrame(null, []);
+        vm.heap = []; //vm.initializeHeap();
     };
 
     vm.currentFrame = function() {
@@ -99,6 +99,7 @@ var vm = (function(undefined) {
     };
 
     vm.allocateArray = function(size) {
+        // todo better allocation
         return vm.heap.push({type: 'array', size: size, data: []}) - 1
     };
 
@@ -140,6 +141,21 @@ var vm = (function(undefined) {
                 case 'conditional_jump':
                     jump = vm.interpreter.conditionalJumpInstruction(parseInt(instruction[1], 10));
                     break;
+                case 'greater_jump':
+                    jump = vm.interpreter.greaterJumpInstruction(parseInt(instruction[1], 10));
+                    break;
+                case 'greater_or_equal_jump':
+                    jump = vm.interpreter.greaterOrEqualJumpInstruction(parseInt(instruction[1], 10));
+                    break;
+                case 'less_jump':
+                    jump = vm.interpreter.lessJumpInstruction(parseInt(instruction[1], 10));
+                    break;
+                case 'less_or_equal_jump':
+                    jump = vm.interpreter.lessOrEqualJumpInstruction(parseInt(instruction[1], 10));
+                    break;
+                case 'equal_jump':
+                    jump = vm.interpreter.equalJumpInstruction(parseInt(instruction[1], 10));
+                    break;
                 case 'jump':
                     vm.interpreter.jumpInstruction(parseInt(instruction[1], 10));
                     jump = true;
@@ -167,6 +183,9 @@ var vm = (function(undefined) {
                     break;
                 case 'array_load':
                     vm.interpreter.arrayLoadInstruction();
+                    break;
+                case 'array_length':
+                    vm.interpreter.arrayLengthInstruction();
                     break;
                 default :
                     throw new Error('unknown instruction: ' + instruction.join(" "))
@@ -216,6 +235,56 @@ var vm = (function(undefined) {
     vm.interpreter.conditionalJumpInstruction = function(relativeJump) {
         var condition = vm.currentFrame().stack.pop();
         if (condition != 0) {
+            vm.instructionPointer = vm.instructionPointer + relativeJump;
+            return true
+        }
+        return false
+    };
+
+    vm.interpreter.greaterJumpInstruction = function(relativeJump) {
+        var first = vm.currentFrame().stack.pop();
+        var second = vm.currentFrame().stack.pop();
+        if (first > second) {
+            vm.instructionPointer = vm.instructionPointer + relativeJump;
+            return true
+        }
+        return false
+    };
+
+    vm.interpreter.greaterOrEqualJumpInstruction = function(relativeJump) {
+        var first = vm.currentFrame().stack.pop();
+        var second = vm.currentFrame().stack.pop();
+        if (first >= second) {
+            vm.instructionPointer = vm.instructionPointer + relativeJump;
+            return true
+        }
+        return false
+    };
+
+    vm.interpreter.lessJumpInstruction = function(relativeJump) {
+        var first = vm.currentFrame().stack.pop();
+        var second = vm.currentFrame().stack.pop();
+        if (first < second) {
+            vm.instructionPointer = vm.instructionPointer + relativeJump;
+            return true
+        }
+        return false
+    };
+
+    vm.interpreter.lessOrEqualJumpInstruction = function(relativeJump) {
+        var first = vm.currentFrame().stack.pop();
+        var second = vm.currentFrame().stack.pop();
+        if (first <= second) {
+            vm.instructionPointer = vm.instructionPointer + relativeJump;
+            return true
+        }
+        return false
+    };
+
+    vm.interpreter.equalJumpInstruction = function(relativeJump) {
+        var first = vm.currentFrame().stack.pop();
+        var second = vm.currentFrame().stack.pop();
+        if (first == second) {
             vm.instructionPointer = vm.instructionPointer + relativeJump;
             return true
         }
@@ -298,6 +367,18 @@ var vm = (function(undefined) {
         }
 
         vm.currentFrame().stack.push(array.data[index]);
+    };
+
+    vm.interpreter.arrayLengthInstruction = function() {
+        var address = vm.currentFrame().stack.pop();
+        if (! address in vm.heap) {
+            throw new Error('Address "' + address + '" not found on heap !');
+        }
+        var array = vm.heap[address];
+        if (array.type != 'array') {
+            throw new Error('No array on address "' + address + '"! Heap data: ' + array );
+        }
+        vm.currentFrame().stack.push(array.data.length);
     };
 
     return vm;

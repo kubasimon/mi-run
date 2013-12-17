@@ -423,10 +423,13 @@ describe('vm', function(){
                 'push 0', //i = 0
                 'store 2', //i = 0
 
-                'push 3', // i != 3
-                'load 2', // i != 3
-                'compare', // i != 3
-                'conditional_jump 12', // i != 3
+
+                'load 0', // array.length
+                'array_length',  // array.length
+
+                'load 2', // i !=  array.len
+                'compare', // i != array.len
+                'conditional_jump 12', // i != array.len
 
                 'load 0', // array[i]
                 'load 2', // array[i]
@@ -441,7 +444,7 @@ describe('vm', function(){
                 'add', // i++
                 'store 2', // i++
 
-                'jump -14',
+                'jump -15',
 
                 'load 1',
                 'return_int'

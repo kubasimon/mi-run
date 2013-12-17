@@ -3,6 +3,7 @@
     "args": [],
     "constant_pool": [ "hello_world", "Hello world"],
     "instructions": [
-        "push_c 1"
+        "push_c 1",
+        "print"
     ]
 }
