@@ -124,6 +124,11 @@ var vm = (function(undefined) {
         return vm.heap.push({type: 'array', size: size, data: []}) - 1
     };
 
+    vm.allocateObject = function() {
+        // todo better allocation
+        return vm.heap.push({type: 'object', data: []}) - 1
+    };
+
     vm.interpreter = {};
 
     vm.interpreter.process = function() {
@@ -207,6 +212,18 @@ var vm = (function(undefined) {
                     break;
                 case 'array_length':
                     vm.interpreter.arrayLengthInstruction();
+                    break;
+                case 'array_call':
+                    vm.interpreter.arrayCallInstruction(parseInt(instruction[1], 10));
+                    break;
+                case 'new_object':
+                    vm.interpreter.newObjectInstruction();
+                    break;
+                case 'object_store':
+                    vm.interpreter.objectStoreInstruction(instruction[1]);
+                    break;
+                case 'object_load':
+                    vm.interpreter.objectLoadInstruction(instruction[1]);
                     break;
                 case 'built_in':
                     vm.interpreter.builtInInstruction(parseInt(instruction[1], 10));
@@ -405,6 +422,86 @@ var vm = (function(undefined) {
         vm.currentFrame().stack.push(array.data.length);
     };
 
+    vm.interpreter.newObjectInstruction = function() {
+        var address = vm.allocateObject();
+        vm.currentFrame().stack.push(address);
+    };
+
+    vm.interpreter.objectStoreInstruction = function(fieldName) {
+        var value = vm.currentFrame().stack.pop();
+        var address = vm.currentFrame().stack.pop();
+        if (! address in vm.heap) {
+            throw new Error('Address "' + address + '" not found on heap !');
+        }
+        var object = vm.heap[address];
+        if (object.type != 'object') {
+            throw new Error('No object on address "' + object + '"! Heap data: ' + object );
+        }
+
+        var index = 0;
+        var last = null;
+        var next = null;
+        if (object.data[index] != null) {
+            while(true) {
+                last = index;
+                if (object.data[index].name == fieldName) {
+                    break;
+                }
+                index = object.data[index].next;
+                if (index == null) {
+                    break;
+                }
+            }
+        }
+        if ((index == 0 && last == null) || index == null) {
+            // not found, add new field
+            var dataObj = {name: fieldName, value: value, next: null};
+            var nextAddress = object.data.push(dataObj) - 1;
+            if (last != null) {
+                // assign to last as next
+                object.data[last].next = nextAddress;
+            }
+        } else {
+            // found
+
+            object.data[index].value = value;
+        }
+
+    };
+
+    vm.interpreter.objectLoadInstruction = function(fieldName) {
+        var address = vm.currentFrame().stack.pop();
+        if (! address in vm.heap) {
+            throw new Error('Address "' + address + '" not found on heap !');
+        }
+        var object = vm.heap[address];
+        if (object.type != 'object') {
+            throw new Error('No object on address "' + object + '"! Heap data: ' + object );
+        }
+
+        var index = 0;
+        var last = null;
+        var next = null;
+        var debugFields = [];
+        if (object.data[index] == null) {
+                throw new Error("Field '" + fieldName + "' not found.  No fields defined");
+        }
+        while(true) {
+            last = index;
+            if (object.data[index].name == fieldName) {
+                vm.currentFrame().stack.push(object.data[index].value);
+                break;
+            }
+            debugFields.push(object.data[index].name);
+            index = object.data[index].next;
+            if (index == null) {
+                // not found
+                throw new Error("Field '" + fieldName + "' not found. Defined fields: " + debugFields);
+            }
+        }
+
+    };
+
     vm.interpreter.builtInInstruction = function(index) {
         switch (index) {
             case 0:
@@ -416,8 +513,6 @@ var vm = (function(undefined) {
                 throw new Error("No built-in function on index [" + index + "]!")
 
         }
-        var address = vm.currentFrame().stack.pop();
-
     };
 
     return vm;

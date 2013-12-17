@@ -1,0 +1,21 @@
+[{
+    "name": "main",
+    "arguments": 0,
+    "localVariables": 1,
+    "constantPool": [ "hello_object", "Hello Object"],
+    "instructions": [
+        "new_object",
+        "store 0",
+
+        "load 0",
+        "push 88",
+
+        "object_store test",
+
+        "load 0",
+        "object_load test",
+
+        "built_in 0",
+        "return"
+    ]
+}]

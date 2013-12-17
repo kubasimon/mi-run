@@ -1,0 +1,41 @@
+[
+    {
+        "name": "main",
+        "arguments": 0,
+        "localVariables": 1,
+        "constantPool": [ "best_solution"],
+        "instructions": [
+            "new_object",
+            "store 0",
+
+            "load 0",
+            "push 66",
+            "object_store solution",
+
+            "load 0",
+            "invoke changeSolution",
+
+
+            "load 0",
+            "object_load solution",
+            "built_in 0",
+            "return"
+        ]
+    },
+    {
+        "name": "changeSolution",
+        "arguments": 1,
+        "localVariables": 1,
+        "constantPool": [ "best_solution"],
+        "instructions": [
+            "load 0",
+            "object_load solution",
+            "built_in 0",
+
+            "load 0",
+            "push 99",
+            "object_store solution",
+            "return"
+        ]
+    }
+]

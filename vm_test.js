@@ -479,6 +479,26 @@ describe('vm', function(){
             assert.equal(vm._output[0], 10);
         });
 
+        it('should load bytecode and run hello object', function(){
+            vm.load("./fixtures/bytecode/hello_object.json");
+
+            assert.equal(vm._output[0], 88);
+        });
+
+        it('should work with more field', function(){
+            vm.load("./fixtures/bytecode/object_more_fields.json");
+
+            assert.equal(vm._output[0], 88);
+            assert.equal(vm._output[1], 89);
+            assert.equal(vm._output[2], 87);
+        });
+
+        it('should work with passing object to functions', function(){
+            vm.load("./fixtures/bytecode/knapsack_change_best_solution.json");
+
+            assert.equal(vm._output[0], 66);
+            assert.equal(vm._output[1], 99);
+        });
     });
 });
 
