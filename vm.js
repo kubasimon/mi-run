@@ -1,3 +1,4 @@
+var fs = require("fs");
 var vm = (function(undefined) {
     var vm = {};
 
@@ -10,13 +11,27 @@ var vm = (function(undefined) {
         vm.table = [];
         vm.createNewStackFrame(null, []);
         vm.heap = []; //vm.initializeHeap();
+        vm._output = [];
+    };
+
+    vm.load = function(file) {
+        vm.start();
+        var dataJSON = require(file);
+        for(var i = 0; i < dataJSON.length; i++) {
+            vm.addFunction(dataJSON[i])
+        }
+
+        var startInstruction = vm.addInstruction("invoke main");
+        vm.addInstruction("terminate");
+        vm.instructionPointer = startInstruction;
+        vm.interpreter.process();
     };
 
     vm.currentFrame = function() {
         return vm.stackFrames[vm.currentStackFrame];
     };
 
-    vm.createNewStackFrame = function(returnAddress, arguments) {
+    vm.createNewStackFrame = function(returnAddress, arguments, constantPool) {
         if (vm.stackFrames.length + 1 > vm.maximumStackFrames) {
             throw new Error("StackOverflow, max stack frames level reached: " + this.maximumStackFrames);
         }
@@ -25,10 +40,12 @@ var vm = (function(undefined) {
             localVariables.push(arguments.pop())
         }
 
+        var constPool = constantPool || [];
+
         var frame = {
             returnAddress: returnAddress,
             localVariables: localVariables,
-            constantPool: [],
+            constantPool: constPool,
             stack: {
                 _data: [],
                 size: 0,
@@ -58,15 +75,19 @@ var vm = (function(undefined) {
 //        console.log("current: " + vm.currentStackFrame);
     };
 
-    vm.addFunction = function(name, funct) {
+    vm.addFunction = function(funct) {
         var startAddress = -1;
-        for(var i = 0; i <= funct.instructions.length; i++) {
+        for(var i = 0; i < funct.instructions.length; i++) {
             var address = vm.addInstruction(funct.instructions[i]);
             if (startAddress == -1) {
                 startAddress = address
             }
         }
-        vm.table[name] = {startAddress: startAddress, arguments: funct.arguments, localVariables: funct.localVariables}
+        vm.table[funct.name] = {
+            startAddress: startAddress,
+            arguments: funct.arguments,
+            localVariables: funct.localVariables,
+            constantPool: funct.constantPool}
     };
 
     vm.lookUpFunction = function(name) {
@@ -86,7 +107,7 @@ var vm = (function(undefined) {
 
     vm.getConstantValue = function(index) {
         if (index.indexOf('#') !== 0) {
-            throw Error("Index [" + index + "] is not starting with '#'!");
+            throw Error("Getting constant value error: Index [" + index + "] is not starting with '#'!");
         }
         var accessIndex = index.substr(1, index.length);
         var val = vm.currentFrame().constantPool[accessIndex];
@@ -186,6 +207,9 @@ var vm = (function(undefined) {
                     break;
                 case 'array_length':
                     vm.interpreter.arrayLengthInstruction();
+                    break;
+                case 'built_in':
+                    vm.interpreter.builtInInstruction(parseInt(instruction[1], 10));
                     break;
                 default :
                     throw new Error('unknown instruction: ' + instruction.join(" "))
@@ -304,7 +328,7 @@ var vm = (function(undefined) {
         for (var i = 0; i < fnc.arguments; i++) {
             arguments.push(vm.currentFrame().stack.pop())
         }
-        vm.createNewStackFrame(returnAddress, arguments);
+        vm.createNewStackFrame(returnAddress, arguments, fnc.constantPool);
         vm.instructionPointer = fnc.startAddress;
 
     };
@@ -379,6 +403,21 @@ var vm = (function(undefined) {
             throw new Error('No array on address "' + address + '"! Heap data: ' + array );
         }
         vm.currentFrame().stack.push(array.data.length);
+    };
+
+    vm.interpreter.builtInInstruction = function(index) {
+        switch (index) {
+            case 0:
+                var output = vm.currentFrame().stack.pop();
+                console.log(output);
+                vm._output.push(output);
+                break;
+            default:
+                throw new Error("No built-in function on index [" + index + "]!")
+
+        }
+        var address = vm.currentFrame().stack.pop();
+
     };
 
     return vm;

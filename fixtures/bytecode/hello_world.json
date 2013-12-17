@@ -1,9 +1,11 @@
-{
-    "method": "main",
-    "args": [],
-    "constant_pool": [ "hello_world", "Hello world"],
+[{
+    "name": "main",
+    "arguments": 0,
+    "localVariables": 0,
+    "constantPool": [ "hello_world", "Hello World"],
     "instructions": [
-        "push_c 1",
-        "print"
+        "push_c #1",
+        "built_in 0",
+        "return"
     ]
-}
+}]

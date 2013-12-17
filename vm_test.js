@@ -205,7 +205,7 @@ describe('vm', function(){
         it('should do stackoverflow error with infinite recursion', function(){
             vm.start();
 
-            vm.addFunction("recursion", { instructions: [
+            vm.addFunction({ name:"recursion",  instructions: [
                 'invoke recursion',
                 'return'
             ]});
@@ -228,7 +228,7 @@ describe('vm', function(){
             vm.addInstruction("push 8");
             vm.addInstruction("add");
             vm.addInstruction("terminate");
-            vm.addFunction("void", { instructions: [
+            vm.addFunction({name:"void", instructions: [
                 'push 1',
                 'push 1',
                 'add 1',
@@ -247,7 +247,7 @@ describe('vm', function(){
             vm.addInstruction("push 8");
             vm.addInstruction("add");
             vm.addInstruction("terminate");
-            vm.addFunction("three", { instructions: [
+            vm.addFunction({name:"three", instructions: [
                 'push 3',
                 'return_int'
             ], arguments: 0, localVariables:2});
@@ -264,7 +264,7 @@ describe('vm', function(){
             vm.addInstruction("push 8");
             vm.addInstruction("add");
             vm.addInstruction("terminate");
-            vm.addFunction("three", { instructions: [
+            vm.addFunction({ name:"three", instructions: [
                 'push 3',
                 'push 3',
                 'add',
@@ -284,7 +284,7 @@ describe('vm', function(){
             vm.addInstruction("push 8");
             vm.addInstruction("invoke oneargument");
             vm.addInstruction("terminate");
-            vm.addFunction("oneargument", { instructions: [
+            vm.addFunction({ name: "oneargument", instructions: [
                 'load 0',
                 'load 0',
                 'add',
@@ -303,7 +303,7 @@ describe('vm', function(){
             vm.addInstruction("push 8");
             vm.addInstruction("invoke twoargument");
             vm.addInstruction("terminate");
-            vm.addFunction("twoargument", { instructions: [
+            vm.addFunction({ name: "twoargument", instructions: [
                 'load 0',
                 'load 1',
                 'subtract',
@@ -322,7 +322,7 @@ describe('vm', function(){
             vm.addInstruction("push 6");
             vm.addInstruction("invoke twoargument");
             vm.addInstruction("terminate");
-            vm.addFunction("twoargument", { instructions: [
+            vm.addFunction({ name: "twoargument", instructions: [
                 'load 0',
                 'load 1',
                 'subtract',
@@ -340,7 +340,7 @@ describe('vm', function(){
             vm.addInstruction("push 1");
             vm.addInstruction("invoke recursion");
             vm.addInstruction("terminate");
-            vm.addFunction("recursion", { instructions: [
+            vm.addFunction({ name: "recursion", instructions: [
                 'load 0',
                 'push 1',
                 'add',
@@ -414,7 +414,7 @@ describe('vm', function(){
             vm.addInstruction("invoke sum");
             vm.addInstruction("terminate");
 
-            vm.addFunction("sum", { instructions: [
+            vm.addFunction({ name: "sum", instructions: [
                 'load 0', //array ref
 
                 'push 0', //tmp = 0
@@ -454,6 +454,23 @@ describe('vm', function(){
 
             assert.equal(vm.currentFrame().stack.size, 1);
             assert.equal(vm.currentFrame().stack._data, 10);
+        });
+
+        it('should call built-in print function', function(){
+            vm.start();
+
+            vm.addInstruction("push 88"); // value
+            vm.addInstruction("built_in 0");
+
+            vm.interpreter.process();
+
+            assert.equal(vm._output[0], 88);
+        });
+
+        it('should load bytecode and run hello world', function(){
+            vm.load("./fixtures/bytecode/hello_world.json");
+
+            assert.equal(vm._output[0], "Hello World");
         });
 
     });
