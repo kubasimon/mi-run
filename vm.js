@@ -189,8 +189,8 @@ var vm = (function(undefined) {
                     vm.interpreter.returnInstruction();
                     jump = true;
                     break;
-                case 'return_int':
-                    vm.interpreter.returnIntInstruction();
+                case 'return_value':
+                    vm.interpreter.returnValueInstruction();
                     jump = true;
                     break;
                 case 'duplicate':
@@ -339,7 +339,7 @@ var vm = (function(undefined) {
         vm.instructionPointer = returnAddress;
     };
 
-    vm.interpreter.returnIntInstruction = function() {
+    vm.interpreter.returnValueInstruction = function() {
         var value = vm.currentFrame().stack.pop();
         var returnAddress = vm.currentFrame().returnAddress;
         vm.deleteStackFrame();

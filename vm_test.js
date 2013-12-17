@@ -249,7 +249,7 @@ describe('vm', function(){
             vm.addInstruction("terminate");
             vm.addFunction({name:"three", instructions: [
                 'push 3',
-                'return_int'
+                'return_value'
             ], arguments: 0, localVariables:2});
 
             vm.interpreter.process();
@@ -270,7 +270,7 @@ describe('vm', function(){
                 'add',
                 'push 3',
                 'add',
-                'return_int'
+                'return_value'
             ], arguments: 0, localVariables:2});
 
             vm.interpreter.process();
@@ -288,7 +288,7 @@ describe('vm', function(){
                 'load 0',
                 'load 0',
                 'add',
-                'return_int'
+                'return_value'
             ], arguments: 1, localVariables:2 });
 
             vm.interpreter.process();
@@ -307,7 +307,7 @@ describe('vm', function(){
                 'load 0',
                 'load 1',
                 'subtract',
-                'return_int'
+                'return_value'
             ], arguments: 2, localVariables:2 });
 
             vm.interpreter.process();
@@ -326,7 +326,7 @@ describe('vm', function(){
                 'load 0',
                 'load 1',
                 'subtract',
-                'return_int'
+                'return_value'
             ], arguments: 2, localVariables:2 });
 
             vm.interpreter.process();
@@ -349,7 +349,7 @@ describe('vm', function(){
                 'compare',
                 'conditional_jump 2',
                 'invoke recursion',
-                'return_int'
+                'return_value'
             ], arguments: 1, localVariables:1 });
 
             vm.interpreter.process();
@@ -447,7 +447,7 @@ describe('vm', function(){
                 'jump -15',
 
                 'load 1',
-                'return_int'
+                'return_value'
             ], arguments: 1, localVariables:3 });
 
             vm.interpreter.process();
@@ -471,6 +471,12 @@ describe('vm', function(){
             vm.load("./fixtures/bytecode/hello_world.json");
 
             assert.equal(vm._output[0], "Hello World");
+        });
+
+        it('should load bytecode and run array sum', function(){
+            vm.load("./fixtures/bytecode/array_sum.json");
+
+            assert.equal(vm._output[0], 10);
         });
 
     });

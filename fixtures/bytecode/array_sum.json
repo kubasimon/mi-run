@@ -1,0 +1,80 @@
+[
+    {
+        "name": "main",
+        "arguments": 0,
+        "localVariables": 0,
+        "constantPool": [ "hello_world", "Hello World"],
+        "instructions": [
+            "invoke newArray",
+            "invoke sum",
+            "built_in 0",
+            "return"
+        ]
+    },
+    {
+        "name": "newArray",
+        "instructions":  [
+            "new_array 5",
+            "store 0",
+
+            "load 0",
+            "push 0",
+            "push 5",
+            "array_store",
+
+            "load 0",
+            "push 1",
+            "push 4",
+            "array_store",
+
+            "load 0",
+            "push 2",
+            "push 1",
+            "array_store",
+
+            "load 0",
+            "return_value"
+        ],
+        "localVariables": 1,
+        "arguments": 0
+    },
+    {
+        "name": "sum",
+        "instructions": [
+            "load 0",
+            "push 0",
+            "store 1",
+            "push 0",
+            "store 2",
+            "load 0",
+            "array_length",
+
+            "load 2",
+            "compare",
+            "conditional_jump 12",
+
+            "load 0",
+            "load 2",
+            "array_load",
+
+            "load 1",
+            "add",
+            "store 1",
+
+            "load 2",
+            "push 1",
+            "add",
+            "store 2",
+
+            "jump -15",
+
+            "load 1",
+            "return_value"
+        ],
+        "arguments": 1,
+        "localVariables":3
+    }
+
+
+
+]
