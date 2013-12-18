@@ -1,5 +1,6 @@
 var assert = require("assert");
 var compiler = require('./compiler.js');
+compiler.initialize();
 
 describe('compiler', function() {
     it('should parse empty program', function(){
@@ -55,6 +56,77 @@ describe('compiler', function() {
                 "invoke_native push",
                 "push 88",
                 "load 0",
+                "invoke_native push",
+                "return"
+            ]}])
+    });
+
+    it('should compile object definition', function(){
+        var out = compiler.compile("function main(){var o = {}}");
+        assert.deepEqual(out, [{"name": "main",
+            "arguments": 0,
+            "localVariables": 1,
+            "instructions": [
+                "new_object",
+                "store 0",
+                "return"
+            ]}])
+    });
+
+    it('should compile object initialization ', function(){
+        var out = compiler.compile("function main(){var o = {test: 66}}");
+        assert.deepEqual(out, [{"name": "main",
+            "arguments": 0,
+            "localVariables": 1,
+            "instructions": [
+                "new_object",
+                "store 0",
+                "push 66",
+                "load 0",
+                "object_store test",
+                "return"
+            ]}])
+    });
+
+    it('should compile object initialization 2x', function(){
+        var out = compiler.compile("function main(){var o = {test: 66, rest: 99}}");
+        assert.deepEqual(out, [{"name": "main",
+            "arguments": 0,
+            "localVariables": 1,
+            "instructions": [
+                "new_object",
+                "store 0",
+                "push 66",
+                "load 0",
+                "object_store test",
+                "push 99",
+                "load 0",
+                "object_store rest",
+                "return"
+            ]}])
+    });
+
+    it('should compile object initialization and array initialization', function(){
+        var out = compiler.compile("function main(){var o = {test: 66, rest: 99}; var j = [55, 56]}");
+        assert.deepEqual(out, [{"name": "main",
+            "arguments": 0,
+            "localVariables": 2,
+            "instructions": [
+                "new_object",
+                "store 0",
+                "push 66",
+                "load 0",
+                "object_store test",
+                "push 99",
+                "load 0",
+                "object_store rest",
+                "new_array",
+                "store 1",
+                "push 55",
+                "load 1",
+                "invoke_native push",
+                "push 56",
+                "load 1",
                 "invoke_native push",
                 "return"
             ]}])
