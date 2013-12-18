@@ -1,0 +1,60 @@
+[{
+    "name": "main",
+    "arguments": 0,
+    "localVariables": 3,
+    "constantPool": [ "hello_object", "Hello Object"],
+    "instructions": [
+        "new_object",
+        "store 0",
+
+        "load 0",
+        "push 88",
+
+        "object_store w",
+
+        "load 0",
+        "push 123",
+
+        "object_store p",
+
+        "new_object",
+        "store 1",
+        "load 1",
+        "push 888",
+
+        "object_store w",
+
+        "load 1",
+        "push 321",
+
+        "object_store p",
+
+
+        "new_array",
+        "store 2",
+
+        "load 2",
+        "push 0",
+        "load 0",
+        "array_store",
+
+        "load 2",
+        "push 1",
+        "load 1",
+        "array_store",
+
+        "load 2",
+        "push 0",
+        "array_load",
+        "object_load w",
+        "built_in 0",
+
+        "load 2",
+        "push 1",
+        "array_load",
+        "object_load w",
+        "built_in 0",
+
+        "return"
+    ]
+}]
