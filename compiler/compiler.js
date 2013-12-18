@@ -63,6 +63,9 @@ var compiler = (function(PEG, fs, undefined) {
                 case "VariableStatement":
                     compiler.generateVariableDeclaration(element, fnc, localVariables);
                     break;
+                case "FunctionCall":
+                    compiler.generateFunctionCall(element, fnc, localVariables);
+                    break;
                 default:
                     throw new Error ("Type '" + element.type + "' not implemented in function context!")
             }
@@ -147,6 +150,26 @@ var compiler = (function(PEG, fs, undefined) {
             }
         }
     };
+
+    compiler.generateFunctionCall = function(element, fnc, localVariables) {
+        if (element.name.type == "Variable") {
+            //push arguments reverse order
+            for (var i = 0; i < element.arguments.length; i++) {
+                var arg = element.arguments[i];
+                switch (arg.type) {
+                    case "NumericLiteral":
+                        fnc.instructions.push("push " + arg.value);
+                        break;
+                    default:
+                        throw new Error ("Value Type '" + arg.type + "' not implemented in call function argument!")
+                }
+            }
+            //invoke <name>
+            fnc.instructions.push("invoke " + element.name.name);
+        } else {
+            throw new Error ("Function name type '" + element.name.type + "' not implemented, only 'Variable' allowed !")
+        }
+    }
 
 
 

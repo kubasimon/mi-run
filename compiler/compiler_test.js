@@ -131,4 +131,17 @@ describe('compiler', function() {
                 "return"
             ]}])
     });
+
+    it('should compile function call with int arguments', function(){
+        var out = compiler.compile("function main(){test(66,67)}");
+        assert.deepEqual(out, [{"name": "main",
+            "arguments": 0,
+            "localVariables": 0,
+            "instructions": [
+                "push 66",
+                "push 67",
+                "invoke test",
+                "return"
+            ]}])
+    });
 });
