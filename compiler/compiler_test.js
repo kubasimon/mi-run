@@ -211,4 +211,39 @@ describe('compiler', function() {
                 "return"
             ]}])
     });
+
+    it('should compile for statement', function(){
+        var out = compiler.compile("function main(){var j = 0; for(var i=1; i<=10;i++){j = j + 1}}");
+        assert.deepEqual(out, [{"name": "main",
+            "arguments": 0,
+            "localVariables": 2,
+            "instructions": [
+                "push 0",
+                "store 0",
+
+                // init i
+                "push 1",
+                "store 1",
+
+                // check condition
+                "load 1",
+                "push 10",
+                "less_or_equal_jump 9", //jump to end
+
+                // body
+                "load 0",
+                "push 1",
+                "add",
+                "store 0",
+
+                // increment
+                "push 1",
+                "load 1",
+                "add",
+                "store 1",
+                "jump -11", //jump to condition
+
+                "return"
+            ]}])
+    });
 });

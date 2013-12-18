@@ -261,6 +261,13 @@ var compiler = (function(PEG, fs, undefined) {
             }
         }
         // generate body
+        if (element.statement.type == "Block") {
+            for (var i = 0; i < element.statement.statements.length; i++) {
+                compiler.generateExpression(localVariables, element.statement.statements[i], fnc);
+            }
+        } else {
+            throw new Error ("ForStatement statement type '" + element.statement.type + "' not implemented, only 'Block' allowed !")
+        }
 
         // counter
         if (element.counter) {
@@ -299,21 +306,49 @@ var compiler = (function(PEG, fs, undefined) {
 
     };
 
-    compiler.generateExpression = function(localVariables, operand, fnc) {
-        switch(operand.type) {
+    compiler.generateExpression = function(localVariables, expression, fnc) {
+        switch(expression.type) {
             case "Variable":
-                compiler.loadVariable(localVariables, operand.name, fnc);
+                compiler.loadVariable(localVariables, expression.name, fnc);
                 break;
             case "NumericLiteral":
-                fnc.instructions.push("push " + operand.value);
+                fnc.instructions.push("push " + expression.value);
+                break;
+            case "BinaryExpression":
+                //generate binary expression
+                // left first then right
+                compiler.generateExpression(localVariables, expression.left, fnc);
+                compiler.generateExpression(localVariables, expression.right, fnc);
+
+                switch (expression.operator) {
+                    case "+":
+                        fnc.instructions.push("add");
+                        break;
+                    case "-":
+                        fnc.instructions.push("subtract");
+                        break;
+                    case "*":
+                    case "/":
+                    default:
+                    throw new Error ("BinaryExpression operator '" + expression.operator + "' not implemented, only '+', '-' allowed !")
+                }
+                break;
+            case "AssignmentExpression":
+                if (expression.left.type == "Variable") {
+                    //generate right
+                    compiler.generateExpression(localVariables, expression.right, fnc);
+                    // assign result to left variable
+                    compiler.storeVariable(localVariables, expression.left.name, fnc);
+
+                } else {
+                    throw new Error ("AssignmentExpression left type'" +expression.left.type + "' not implemented, only 'Variable' allowed !")
+                }
                 break;
             default:
-                throw new Error ("BinaryExpress operand type'" + operand.type + "' not implemented, only 'Variable', 'NumericLiteral' allowed !")
+                throw new Error ("BinaryExpression type'" + expression.type + "' not implemented, only 'Variable', 'NumericLiteral' allowed !")
         }
 
     };
-
-
 
     return compiler;
 })(PEG, fs);
