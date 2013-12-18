@@ -12,7 +12,7 @@ function start(items, numberOfItems, capacity) {
         var startWith = items.shift();
         var newArray = [];
         newArray.push(startWith);
-        knapsack.addToKnapsack(capacity, newArray, items.slice(), startWith.w, startWith.p, solution);
+        addToKnapsack(capacity, newArray, items.slice(), startWith.w, startWith.p, solution);
         //add item back to end and try pop another
         items.push(startWith);
     }
@@ -25,7 +25,7 @@ function addToKnapsack(capacity, usedItems, notUsedItems, currentWeight, current
         solution.bestPrice = currentPrice;
     }
 
-    var maxRestPrice = knapsack.sumPrice(notUsedItems);
+    var maxRestPrice = sumPrice(notUsedItems);
     if (currentPrice + maxRestPrice < solution.bestPrice) {
         return;
     }
@@ -38,31 +38,10 @@ function addToKnapsack(capacity, usedItems, notUsedItems, currentWeight, current
         usedItems.pop();
     }
 }
-
-var knapsack = {
-
-    start: function(items, numberOfItems, capacity) {
-        var solution = {
-            bestPrice: 0
-        };
-        for (var i = 0; i < numberOfItems; i++) {
-            //pop first item
-            var startWith = items.shift();
-            knapsack.addToKnapsack(capacity, [startWith], items.slice(), startWith.w, startWith.p, solution);
-            //add item back to end and try pop another
-            items.push(startWith);
-        }
-        return solution.bestPrice;
-    },
-
-
-
-    sumPrice: function (items) {
-        var tmp = 0;
-        for (var i = 0; i < items.length; i++) {
-            tmp += items[i].p
-        }
-        return tmp;
+function sumPrice(items) {
+    var tmp = 0;
+    for (var i = 0; i < items.length; i++) {
+        tmp += items[i].p
     }
-
-};
+    return tmp;
+}
