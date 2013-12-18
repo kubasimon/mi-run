@@ -64,6 +64,22 @@ var compiler = (function(PEG, fs, undefined) {
                                         fnc.instructions.push("new_array");
                                         fnc.instructions.push("store " + index);
                                         // TODO default values
+                                        // initialize
+                                        for (i=0; i<declaration.value.elements.length; i++) {
+                                            var elem = declaration.value.elements[i];
+                                            switch (elem.type) {
+                                                case "NumericLiteral":
+                                                    // push value
+                                                    // load 0
+                                                    // invokenative push
+                                                    fnc.instructions.push("push " + elem.value);
+                                                    fnc.instructions.push("load " + index);
+                                                    fnc.instructions.push("invoke_native push");
+                                                    break;
+                                                default:
+                                                    throw new Error ("Value Type '" +elem.type + "' not implemented in variable initialization context!")
+                                            }
+                                        }
                                         break;
                                     default:
                                         throw new Error ("Value Type '" + declaration.value.type + "' not implemented in variable context!")

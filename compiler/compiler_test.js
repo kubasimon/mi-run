@@ -26,4 +26,37 @@ describe('compiler', function() {
                 "return"
             ]}])
     });
+
+    it('should compile array initialization', function(){
+        var out = compiler.compile("function main(){var array = [1]}");
+        assert.deepEqual(out, [{"name": "main",
+            "arguments": 0,
+            "localVariables": 1,
+            "instructions": [
+                "new_array",
+                "store 0",
+                "push 1",
+                "load 0",
+                "invoke_native push",
+                "return"
+            ]}])
+    });
+
+    it('should compile array initialization 2 elems', function(){
+        var out = compiler.compile("function main(){var array = [85, 88]}");
+        assert.deepEqual(out, [{"name": "main",
+            "arguments": 0,
+            "localVariables": 1,
+            "instructions": [
+                "new_array",
+                "store 0",
+                "push 85",
+                "load 0",
+                "invoke_native push",
+                "push 88",
+                "load 0",
+                "invoke_native push",
+                "return"
+            ]}])
+    });
 });
