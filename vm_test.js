@@ -521,7 +521,7 @@ describe('vm', function(){
             assert.equal(vm._output[0], 66);
             assert.equal(vm._output[1], 99);
         });
-                                                                                                                          k
+
         it('should work with object in array', function(){
             vm.load("./fixtures/bytecode/object_in_array.json");
 
