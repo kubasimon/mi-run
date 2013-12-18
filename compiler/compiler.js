@@ -26,7 +26,7 @@ var compiler = (function(PEG, fs, undefined) {
                         compiler.generateFunction(elem, bytecode);
                         break;
                     default:
-                        throw new Error ("Type '" + elem.type + "' not allow in top context!")
+                        throw new Error ("Type '" + elem.type + "' not implemented in top context!")
                 }
             }
         } else {
@@ -42,7 +42,51 @@ var compiler = (function(PEG, fs, undefined) {
             "localVariables": 0, // TODO
             "instructions": [] // TODO
         };
+        compiler.generateFunctionBody(elem.elements, fnc);
         bytecode.push(fnc);
+    };
+
+    compiler.generateFunctionBody = function(elements, fnc) {
+        var localVariables = [];
+        for (var i = 0; i < elements.length; i++) {
+            var element = elements[i];
+            switch (element.type) {
+                case "":
+                    case "VariableStatement":
+                        if (element.declarations.length == 1) {
+                            var declaration = element.declarations[0];
+                            var index = localVariables.push(declaration.name) - 1;
+                            if (declaration.value) {
+                                switch (declaration.value.type) {
+                                    case "ArrayLiteral":
+                                        // new_array
+                                        // store 0
+                                        fnc.instructions.push("new_array");
+                                        fnc.instructions.push("store " + index);
+                                        // TODO default values
+                                        break;
+                                    default:
+                                        throw new Error ("Value Type '" + declaration.value.type + "' not implemented in variable context!")
+                                }
+
+
+                            } else {
+                                throw new Error ("Empty declaration value! '" + declaration)
+                            }
+
+
+                        } else {
+                            throw new Error ("Only one declaration allowed! '" + element)
+
+                        }
+                    break;
+                default:
+                    throw new Error ("Type '" + element.type + "' not implemented in function context!")
+            }
+        }
+
+        fnc.instructions.push("return");
+        fnc.localVariables = localVariables.length;
     };
 
 

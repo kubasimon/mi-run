@@ -118,10 +118,6 @@ var vm = (function(undefined) {
         vm.addNativeFunction({
             name: "array.length",
             fn: function(array) {
-                console.log(">>")
-                console.log(array);
-                console.log("<<")
-
                 vm.currentFrame().stack.push(array.data.length);
             },
             arguments: 1
