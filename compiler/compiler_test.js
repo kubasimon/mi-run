@@ -144,4 +144,44 @@ describe('compiler', function() {
                 "return"
             ]}])
     });
+
+    it('should compile function call with variable arguments', function(){
+        var out = compiler.compile("function main(){var test = []; test(test,67)}");
+        assert.deepEqual(out, [{"name": "main",
+            "arguments": 0,
+            "localVariables": 1,
+            "instructions": [
+                "new_array",
+                "store 0",
+                "load 0",
+                "push 67",
+                "invoke test",
+                "return"
+            ]}])
+    });
+
+    it('should compile function with 1 argument call with variable arguments', function(){
+        var out = compiler.compile("function main(a){var test = []; x(test,67)}");
+        assert.deepEqual(out, [{"name": "main",
+            "arguments": 1,
+            "localVariables": 2,
+            "instructions": [
+                "new_array",
+                "store 1",
+                "load 1",
+                "push 67",
+                "invoke x",
+                "return"
+            ]}])
+    });
+
+    it('should NOT compile function call with undefined variable arguments', function(){
+        assert.throws(
+            function() {
+                compiler.compile("function main(){test(test,67)}");
+            },
+            /Variable 'test' not defined/
+        );
+    });
+
 });

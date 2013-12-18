@@ -51,12 +51,16 @@ var compiler = (function(PEG, fs, undefined) {
             "localVariables": 0, // TODO
             "instructions": [] // TODO
         };
-        compiler.generateFunctionBody(elem.elements, fnc);
+        var localVariables = [];
+        // add arguments as local variables
+        for(var i=0; i < elem.params.length; i++) {
+            localVariables.push(elem.params[i]);
+        }
+        compiler.generateFunctionBody(elem.elements, fnc, localVariables);
         bytecode.push(fnc);
     };
 
-    compiler.generateFunctionBody = function(elements, fnc) {
-        var localVariables = [];
+    compiler.generateFunctionBody = function(elements, fnc, localVariables) {
         for (var i = 0; i < elements.length; i++) {
             var element = elements[i];
             switch (element.type) {
@@ -159,6 +163,20 @@ var compiler = (function(PEG, fs, undefined) {
                 switch (arg.type) {
                     case "NumericLiteral":
                         fnc.instructions.push("push " + arg.value);
+                        break;
+                    case "Variable":
+                        // is variable defined?
+                        var found = false;
+                        for (var j = 0; j < localVariables.length; j++) {
+                            if (localVariables[j] == arg.name) {
+                                fnc.instructions.push("load " + j);
+                                found = true;
+                                break;
+                            }
+                        }
+                        if (! found ) {
+                            throw new Error ("Variable '" + arg.name + "' not defined! Defined variables: " + localVariables);
+                        }
                         break;
                     default:
                         throw new Error ("Value Type '" + arg.type + "' not implemented in call function argument!")
