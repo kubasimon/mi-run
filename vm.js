@@ -9,9 +9,11 @@ var vm = (function(undefined) {
         vm.instructions = [];
         vm.instructionPointer = 0;
         vm.table = [];
+        vm.tableNative = [];
         vm.createNewStackFrame(null, []);
         vm.heap = []; //vm.initializeHeap();
         vm._output = [];
+        vm.addNativeArrayFunctions();
     };
 
     vm.load = function(file) {
@@ -75,6 +77,13 @@ var vm = (function(undefined) {
 //        console.log("current: " + vm.currentStackFrame);
     };
 
+    vm.addNativeFunction = function(funct) {
+        vm.tableNative[funct.name] = {
+            fn: funct.fn,
+            arguments: funct.arguments
+        }
+    };
+
     vm.addFunction = function(funct) {
         var startAddress = -1;
         for(var i = 0; i < funct.instructions.length; i++) {
@@ -95,6 +104,75 @@ var vm = (function(undefined) {
             return vm.table[name];
         }
         throw new Error ("Function '" + name + "' not found!" );
+    };
+
+    vm.lookUpNativeFunction = function(obj, name) {
+        var fullName = obj+"."+name;
+        if (fullName in vm.tableNative) {
+            return vm.tableNative[fullName];
+        }
+        throw new Error ("Native Function '" + fullName + "' not found!");
+    };
+
+    vm.addNativeArrayFunctions = function() {
+        vm.addNativeFunction({
+            name: "array.length",
+            fn: function(array) {
+                console.log(">>")
+                console.log(array);
+                console.log("<<")
+
+                vm.currentFrame().stack.push(array.data.length);
+            },
+            arguments: 1
+        });
+        vm.addNativeFunction({
+            name: "array.pop",
+            fn: function(array) {
+                vm.currentFrame().stack.push(array.data.pop());
+            },
+            arguments: 1
+        });
+        vm.addNativeFunction({
+            name: "array.push",
+            fn: function(array, value) {
+                array.data.push(value)
+            },
+            arguments: 2
+        });
+        vm.addNativeFunction({
+            name: "array.shift",
+            fn: function(array) {
+                array.data.shift()
+            },
+            arguments: 1
+        });
+        vm.addNativeFunction({
+            name: "array.slice",
+            fn: function(array) {
+                var address = vm.allocateArray();
+                // copy data
+                address.data = array.data;
+                vm.currentFrame().stack.push(address);
+            },
+            arguments: 1
+        });
+    };
+
+    vm.retrieveHeapObject = function(address) {
+        //TODO address isPointer?
+        if (! address in vm.heap) {
+            throw new Error('Address "' + address + '" not found on heap !');
+        }
+        return vm.heap[address];
+    };
+
+    vm.retrieveArray = function(arrayAddress) {
+        var array = vm.retrieveHeapObject(arrayAddress);
+        if (array.type != 'array') {
+            throw new Error('No array on address "' + arrayAddress + '"! Heap data: ' + array );
+        }
+        return array;
     };
 
     vm.addInstruction = function(instruction) {
@@ -190,6 +268,9 @@ var vm = (function(undefined) {
                     vm.interpreter.invokeInstruction(instruction[1]);
                     jump = true;
                     break;
+                case 'invoke_native':
+                    vm.interpreter.invokeNativeInstruction(instruction[1]);
+                    break;
                 case 'return':
                     vm.interpreter.returnInstruction();
                     jump = true;
@@ -212,9 +293,6 @@ var vm = (function(undefined) {
                     break;
                 case 'array_length':
                     vm.interpreter.arrayLengthInstruction();
-                    break;
-                case 'array_call':
-                    vm.interpreter.arrayCallInstruction(parseInt(instruction[1], 10));
                     break;
                 case 'new_object':
                     vm.interpreter.newObjectInstruction();
@@ -350,6 +428,22 @@ var vm = (function(undefined) {
 
     };
 
+    vm.interpreter.invokeNativeInstruction = function(functionName) {
+        // jump to next instruction
+        var nativeAddress = vm.currentFrame().stack.pop();
+        var heapObject = vm.retrieveHeapObject(nativeAddress);
+
+        var fnc = vm.lookUpNativeFunction(heapObject.type, functionName);
+        // load arguments
+        var arguments = [heapObject];
+        for (var i = 1; i < fnc.arguments; i++) {
+            arguments.push(vm.currentFrame().stack.pop())
+        }
+
+
+        fnc.fn.apply(undefined, arguments);
+    };
+
     vm.interpreter.returnInstruction = function() {
         var returnAddress = vm.currentFrame().returnAddress;
         vm.deleteStackFrame();
@@ -379,13 +473,7 @@ var vm = (function(undefined) {
         var value = vm.currentFrame().stack.pop();
         var index = vm.currentFrame().stack.pop();
         var address = vm.currentFrame().stack.pop();
-        if (! address in vm.heap) {
-            throw new Error('Address "' + address + '" not found on heap !');
-        }
-        var array = vm.heap[address];
-        if (array.type != 'array') {
-            throw new Error('No array on address "' + address + '"! Heap data: ' + array );
-        }
+        var array = vm.retrieveArray(address);
         if (index > array.size || index < 0 ) {
             throw new Error('Array Index Out Of Bounds: requested index  "' + index + '" Array size: ' + array.size );
         }
@@ -396,13 +484,7 @@ var vm = (function(undefined) {
     vm.interpreter.arrayLoadInstruction = function() {
         var index = vm.currentFrame().stack.pop();
         var address = vm.currentFrame().stack.pop();
-        if (! address in vm.heap) {
-            throw new Error('Address "' + address + '" not found on heap !');
-        }
-        var array = vm.heap[address];
-        if (array.type != 'array') {
-            throw new Error('No array on address "' + address + '"! Heap data: ' + array );
-        }
+        var array = vm.retrieveArray(address);
         if (index > array.size || index < 0 ) {
             throw new Error('Array Index Out Of Bounds: requested index  "' + index + '" Array size: ' + array.size );
         }
@@ -412,13 +494,7 @@ var vm = (function(undefined) {
 
     vm.interpreter.arrayLengthInstruction = function() {
         var address = vm.currentFrame().stack.pop();
-        if (! address in vm.heap) {
-            throw new Error('Address "' + address + '" not found on heap !');
-        }
-        var array = vm.heap[address];
-        if (array.type != 'array') {
-            throw new Error('No array on address "' + address + '"! Heap data: ' + array );
-        }
+        var array = vm.retrieveArray(address);
         vm.currentFrame().stack.push(array.data.length);
     };
 

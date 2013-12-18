@@ -479,6 +479,28 @@ describe('vm', function(){
             assert.equal(vm._output[0], 10);
         });
 
+        it('should load bytecode and run array native functions', function(){
+            vm.load("./fixtures/bytecode/array_functions.json");
+
+            assert.equal(vm._output[0], 2);
+            assert.equal(vm._output[1], 4);
+            assert.equal(vm._output[2], 3);
+            assert.equal(vm._output[3], 74);
+        });
+
+        it('should load bytecode and run array native slice', function(){
+            vm.load("./fixtures/bytecode/array_slice.json");
+
+            assert.equal(vm._output[0], 99);
+            assert.equal(vm._output[1], 66);
+        });
+        it('should load bytecode and run array native length', function(){
+            vm.load("./fixtures/bytecode/array_length.json");
+
+            assert.equal(vm._output[0], 3);
+            assert.equal(vm._output[1], 4);
+        });
+
         it('should load bytecode and run hello object', function(){
             vm.load("./fixtures/bytecode/hello_object.json");
 

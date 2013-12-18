@@ -10,7 +10,9 @@ function start(items, numberOfItems, capacity) {
     for (var i = 0; i < numberOfItems; i++) {
         //pop first item
         var startWith = items.shift();
-        knapsack.addToKnapsack(capacity, [startWith], items.slice(), startWith.w, startWith.p, solution);
+        var newArray = [];
+        newArray.push(startWith);
+        knapsack.addToKnapsack(capacity, newArray, items.slice(), startWith.w, startWith.p, solution);
         //add item back to end and try pop another
         items.push(startWith);
     }
