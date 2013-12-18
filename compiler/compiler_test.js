@@ -184,4 +184,31 @@ describe('compiler', function() {
         );
     });
 
+    it('should compile for statement', function(){
+        var out = compiler.compile("function main(){for(var i=1; i<10;i++){}}");
+        assert.deepEqual(out, [{"name": "main",
+            "arguments": 0,
+            "localVariables": 1,
+            "instructions": [
+                // init i
+                "push 1",
+                "store 0",
+
+                // check condition
+                "load 0",
+                "push 10",
+                "less_jump 5", //jump to end
+
+                // empty body
+
+                // increment
+                "push 1",
+                "load 0",
+                "add",
+                "store 0",
+                "jump -7", //jump to condition
+
+                "return"
+            ]}])
+    });
 });
