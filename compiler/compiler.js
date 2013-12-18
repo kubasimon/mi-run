@@ -63,19 +63,12 @@ var compiler = (function(PEG, fs, undefined) {
     compiler.generateFunctionBody = function(elements, fnc, localVariables) {
         for (var i = 0; i < elements.length; i++) {
             var element = elements[i];
-            switch (element.type) {
-                case "VariableStatement":
-                    compiler.generateVariableDeclaration(element, fnc, localVariables);
-                    break;
-                case "FunctionCall":
-                    compiler.generateFunctionCall(element, fnc, localVariables);
-                    break;
-                case "ForStatement":
-                    compiler.generateForStatement(element, fnc, localVariables);
-                    break;
-                default:
-                    throw new Error ("Type '" + element.type + "' not implemented in function context!")
-            }
+            compiler.generateExpression(localVariables, element, fnc);
+//            switch (element.type) {
+//
+//                default:
+//                    throw new Error ("Type '" + element.type + "' not implemented in function context!")
+//            }
         }
 
         fnc.instructions.push("return");
@@ -170,16 +163,7 @@ var compiler = (function(PEG, fs, undefined) {
             //push arguments reverse order
             for (var i = 0; i < element.arguments.length; i++) {
                 var arg = element.arguments[i];
-                switch (arg.type) {
-                    case "NumericLiteral":
-                        fnc.instructions.push("push " + arg.value);
-                        break;
-                    case "Variable":
-                        compiler.loadVariable(localVariables, arg.name, fnc);
-                        break;
-                    default:
-                        throw new Error ("Value Type '" + arg.type + "' not implemented in call function argument!")
-                }
+                compiler.generateExpression(localVariables, arg ,fnc);
             }
             //invoke <name>
             fnc.instructions.push("invoke " + element.name.name);
@@ -220,13 +204,7 @@ var compiler = (function(PEG, fs, undefined) {
         //initializer
         var initializer = element.initializer;
         if (initializer != null) {
-            switch (initializer.type) {
-                case "VariableStatement":
-                    compiler.generateVariableDeclaration(element.initializer, fnc, localVariables);
-                    break;
-                default:
-                    throw new Error ("ForStatement initializer type '" + initializer.type + "' not implemented, only 'VariableStatement' allowed !")
-            }
+            compiler.generateExpression(localVariables, initializer, fnc);
         }
 
         var testInstructionStart = fnc.instructions.length;
@@ -240,6 +218,7 @@ var compiler = (function(PEG, fs, undefined) {
                     compiler.generateExpression(localVariables, test.left, fnc);
                     compiler.generateExpression(localVariables, test.right, fnc);
 
+                    // todo - make it 2 instruction? compare and conditional jump so we can extract it to compiler.generateExpression
                     switch (test.operator) {
                         case "<":
                             fnc.instructions.push("less_jump #");
@@ -261,41 +240,12 @@ var compiler = (function(PEG, fs, undefined) {
             }
         }
         // generate body
-        if (element.statement.type == "Block") {
-            for (var i = 0; i < element.statement.statements.length; i++) {
-                compiler.generateExpression(localVariables, element.statement.statements[i], fnc);
-            }
-        } else {
-            throw new Error ("ForStatement statement type '" + element.statement.type + "' not implemented, only 'Block' allowed !")
-        }
+
+        compiler.generateExpression(localVariables, element.statement, fnc);
 
         // counter
         if (element.counter) {
-            switch (element.counter.type) {
-                case "UnaryExpression":
-                case "PostfixExpression":
-                    fnc.instructions.push("push 1");
-                    if (element.counter.expression.type == "Variable") {
-                        compiler.loadVariable(localVariables, element.counter.expression.name, fnc);
-
-                    } else {
-                        throw new Error ("ForStatement counter expression type '" + element.counter.expression.type + "' not implemented, only 'Variable' allowed !")
-                    }
-                    switch(element.counter.operator) {
-                        case "++":
-                            fnc.instructions.push("add");
-                            break;
-                        case "--":
-                            fnc.instructions.push("subtract");
-                            break;
-                        default:
-                            throw new Error ("ForStatement counter operator '" + element.counter.operator + "' not implemented, only '++' or '--' allowed !")
-                    }
-                    compiler.storeVariable(localVariables, element.counter.expression.name, fnc); // store to i
-                    break;
-                default:
-                    throw new Error ("ForStatement counter type '" + element.counter.type + "' not implemented, only 'BinaryExpression' allowed !")
-            }
+            compiler.generateExpression(localVariables, element.counter, fnc);
         }
 
 
@@ -314,6 +264,7 @@ var compiler = (function(PEG, fs, undefined) {
             case "NumericLiteral":
                 fnc.instructions.push("push " + expression.value);
                 break;
+
             case "BinaryExpression":
                 //generate binary expression
                 // left first then right
@@ -344,8 +295,46 @@ var compiler = (function(PEG, fs, undefined) {
                     throw new Error ("AssignmentExpression left type'" +expression.left.type + "' not implemented, only 'Variable' allowed !")
                 }
                 break;
+            case "VariableStatement":
+                compiler.generateVariableDeclaration(expression, fnc, localVariables);
+                break;
+            case "FunctionCall":
+                compiler.generateFunctionCall(expression, fnc, localVariables);
+                break;
+            case "ForStatement":
+                compiler.generateForStatement(expression, fnc, localVariables);
+                break;
+            case "EmptyStatement":
+                //ignore
+                break;
+            case "Block":
+                for (var i = 0; i < expression.statements.length; i++) {
+                    compiler.generateExpression(localVariables, expression.statements[i], fnc);
+                }
+                break;
+            case "UnaryExpression":
+            case "PostfixExpression":
+                fnc.instructions.push("push 1");
+                if (expression.expression.type == "Variable") {
+                    compiler.loadVariable(localVariables, expression.expression.name, fnc);
+
+                } else {
+                    throw new Error ("ForStatement counter expression type '" + expression.expression.type + "' not implemented, only 'Variable' allowed !")
+                }
+                switch(expression.operator) {
+                    case "++":
+                        fnc.instructions.push("add");
+                        break;
+                    case "--":
+                        fnc.instructions.push("subtract");
+                        break;
+                    default:
+                        throw new Error ("ForStatement counter operator '" + expression.operator + "' not implemented, only '++' or '--' allowed !")
+                }
+                compiler.storeVariable(localVariables, expression.expression.name, fnc); // store to i
+                break;
             default:
-                throw new Error ("BinaryExpression type'" + expression.type + "' not implemented, only 'Variable', 'NumericLiteral' allowed !")
+                throw new Error ("Expression type'" + expression.type + "' not implemented!")
         }
 
     };
