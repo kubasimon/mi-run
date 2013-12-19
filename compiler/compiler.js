@@ -199,33 +199,9 @@ var compiler = (function(PEG, fs, undefined) {
         var test = element.test;
         var testJump = null;
         if (test != null) {
-            switch (test.type) {
-                case "BinaryExpression":
-                    //generate binary expression
-                    // left first then right
-                    compiler.generateExpression(localVariables, test.left, fnc);
-                    compiler.generateExpression(localVariables, test.right, fnc);
-
-                    // todo - make it 2 instruction? compare and conditional jump so we can extract it to compiler.generateExpression
-                    switch (test.operator) {
-                        case "<":
-                            fnc.instructions.push("less_jump #");
-                            break;
-                        case "<=":
-                            fnc.instructions.push("less_or_equal_jump #");
-                            break;
-                        case ">=":
-                            fnc.instructions.push("greater_or_equal_jump #");
-                            break;
-                        case ">":
-                            fnc.instructions.push("greater_jump #");
-                            break;
-                    }
-                    testJump = fnc.instructions.length - 1;
-                    break;
-                default:
-                    throw new Error ("ForStatement test type '" + test.type + "' not implemented, only 'BinaryExpression' allowed !")
-            }
+            compiler.generateExpression(localVariables, test , fnc);
+            fnc.instructions.push("conditional_jump #");
+            testJump = fnc.instructions.length - 1;
         }
         // generate body
 
@@ -270,6 +246,18 @@ var compiler = (function(PEG, fs, undefined) {
                         break;
                     case "-":
                         fnc.instructions.push("subtract");
+                        break;
+                    case "<":
+                        fnc.instructions.push("less");
+                        break;
+                    case "<=":
+                        fnc.instructions.push("less_or_equal");
+                        break;
+                    case ">=":
+                        fnc.instructions.push("greater_or_equal");
+                        break;
+                    case ">":
+                        fnc.instructions.push("greater");
                         break;
                     case "*":
                     case "/":

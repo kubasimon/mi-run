@@ -198,7 +198,8 @@ describe('compiler', function() {
                 // check condition
                 "load 0",
                 "push 10",
-                "less_jump 5", //jump to end
+                "less",
+                "conditional_jump 5", //jump to end
 
                 // empty body
 
@@ -207,7 +208,7 @@ describe('compiler', function() {
                 "load 0",
                 "add",
                 "store 0",
-                "jump -7", //jump to condition
+                "jump -8", //jump to condition
 
                 "return"
             ]}])
@@ -229,7 +230,8 @@ describe('compiler', function() {
                 // check condition
                 "load 1",
                 "push 10",
-                "less_or_equal_jump 9", //jump to end
+                "less_or_equal", //jump to end
+                "conditional_jump 9", //jump to end
 
                 // body
                 "load 0",
@@ -242,7 +244,7 @@ describe('compiler', function() {
                 "load 1",
                 "add",
                 "store 1",
-                "jump -11", //jump to condition
+                "jump -12", //jump to condition
 
                 "return"
             ]}])
