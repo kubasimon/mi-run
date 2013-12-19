@@ -322,4 +322,30 @@ describe('compiler', function() {
                 "return"
             ]}])
     });
+
+    it('should compile object retrieve ', function(){
+        var out = compiler.compile("function main(){var m = {a:1}; var b = m.a;}");
+        assert.deepEqual(out, [{"name": "main",
+            "arguments": 0,
+            "localVariables": 2,
+            "instructions": [
+                "new_object",
+                "store 0",
+
+                "push 1",
+                "load 0",
+                "object_store a",
+
+                "load 0",
+                "object_load a",
+
+                "store 1",
+
+                "return"
+            ]}])
+    });
+
+    it('should compile knapsack source code', function(){
+        var out = compiler.compileFile(__dirname + "/fixture/knapsack.js");
+    });
 });

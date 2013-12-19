@@ -12,7 +12,7 @@ function start(items, numberOfItems, capacity) {
         var startWith = items.shift();
         var newArray = [];
         newArray.push(startWith);
-        addToKnapsack(capacity, newArray, items.slice(), startWith.w, startWith.p, solution);
+        //addToKnapsack(capacity, newArray, items.slice(), startWith.w, startWith.p, solution);
         //add item back to end and try pop another
         items.push(startWith);
     }

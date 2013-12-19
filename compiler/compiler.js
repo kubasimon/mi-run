@@ -277,6 +277,10 @@ var compiler = (function(PEG, fs, undefined) {
                     throw new Error ("BinaryExpression operator '" + expression.operator + "' not implemented, only '+', '-' allowed !")
                 }
                 break;
+            case "PropertyAccess":
+                compiler.generateExpression(localVariables, expression.base, fnc);
+                fnc.instructions.push("object_load " + expression.name);
+                break;
             case "AssignmentExpression":
                 if (expression.left.type == "Variable") {
                     //generate right
