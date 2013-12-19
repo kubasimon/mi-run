@@ -236,7 +236,7 @@ var vm = (function(undefined) {
                     vm.interpreter.subtractInstruction();
                     break;
                 case 'compare':
-                    vm.interpreter.compareInstruction();
+                    vm.interpreter.equalInstruction();
                     break;
                 case 'conditional_jump':
                     jump = vm.interpreter.conditionalJumpInstruction(parseInt(instruction[1], 10));
@@ -255,6 +255,22 @@ var vm = (function(undefined) {
                     break;
                 case 'equal_jump':
                     jump = vm.interpreter.equalJumpInstruction(parseInt(instruction[1], 10));
+                    break;
+
+                case 'greater':
+                    jump = vm.interpreter.greaterInstruction();
+                    break;
+                case 'greater_or_equal':
+                    jump = vm.interpreter.greaterOrEqualInstruction();
+                    break;
+                case 'less':
+                    jump = vm.interpreter.lessInstruction();
+                    break;
+                case 'less_or_equal':
+                    jump = vm.interpreter.lessOrEqualInstruction();
+                    break;
+                case 'equal':
+                    jump = vm.interpreter.equalInstruction();
                     break;
                 case 'jump':
                     vm.interpreter.jumpInstruction(parseInt(instruction[1], 10));
@@ -337,16 +353,6 @@ var vm = (function(undefined) {
         vm.currentFrame().stack.push(val1 - val2)
     };
 
-    vm.interpreter.compareInstruction = function() {
-        var val1 = vm.currentFrame().stack.pop();
-        var val2 = vm.currentFrame().stack.pop();
-        var res = 0; // FALSE
-        if (val1 == val2) {
-            res = 1; // TRUE
-        }
-        vm.currentFrame().stack.push(res)
-    };
-
     vm.interpreter.conditionalJumpInstruction = function(relativeJump) {
         var condition = vm.currentFrame().stack.pop();
         if (condition != 0) {
@@ -404,6 +410,56 @@ var vm = (function(undefined) {
             return true
         }
         return false
+    };
+
+    vm.interpreter.greaterInstruction = function() {
+        var first = vm.currentFrame().stack.pop();
+        var second = vm.currentFrame().stack.pop();
+        if (first > second) {
+            vm.currentFrame().stack.push(1);
+        } else {
+            vm.currentFrame().stack.push(0);
+        }
+    };
+
+    vm.interpreter.greaterOrEqualInstruction = function() {
+        var first = vm.currentFrame().stack.pop();
+        var second = vm.currentFrame().stack.pop();
+        if (first >= second) {
+            vm.currentFrame().stack.push(1);
+        } else {
+            vm.currentFrame().stack.push(0);
+        }
+    };
+
+    vm.interpreter.lessInstruction = function() {
+        var first = vm.currentFrame().stack.pop();
+        var second = vm.currentFrame().stack.pop();
+        if (first < second) {
+            vm.currentFrame().stack.push(1);
+        } else {
+            vm.currentFrame().stack.push(0);
+        }
+    };
+
+    vm.interpreter.lessOrEqualInstruction = function() {
+        var first = vm.currentFrame().stack.pop();
+        var second = vm.currentFrame().stack.pop();
+        if (first <= second) {
+            vm.currentFrame().stack.push(1);
+        } else {
+            vm.currentFrame().stack.push(0);
+        }
+    };
+
+    vm.interpreter.equalInstruction = function() {
+        var first = vm.currentFrame().stack.pop();
+        var second = vm.currentFrame().stack.pop();
+        if (first == second) {
+            vm.currentFrame().stack.push(1);
+        } else {
+            vm.currentFrame().stack.push(0);
+        }
     };
 
     vm.interpreter.jumpInstruction = function(relativeJumpTo) {

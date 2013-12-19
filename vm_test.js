@@ -84,7 +84,7 @@ describe('vm', function(){
             assert.equal(vm.currentFrame().stack.size, 2);
 
             // do work
-            vm.interpreter.compareInstruction();
+            vm.interpreter.equalInstruction();
 
             assert.equal(vm.currentFrame().stack.size, 1);
             assert.equal(vm.currentFrame().stack._data[0], 0);
@@ -99,7 +99,7 @@ describe('vm', function(){
             assert.equal(vm.currentFrame().stack.size, 2);
 
             // do work
-            vm.interpreter.compareInstruction();
+            vm.interpreter.equalInstruction();
 
             assert.equal(vm.currentFrame().stack.size, 1);
             assert.equal(vm.currentFrame().stack._data[0], 1);
@@ -133,6 +133,151 @@ describe('vm', function(){
             assert.equal(vm.currentFrame().stack._data[0], 88);
             assert.equal(vm.currentFrame().stack._data[1], 66);
         });
+
+        it('should do (not) conditional jump with greater comparism', function(){
+            //set up
+            vm.start();
+            vm.addInstruction("push 1");
+            vm.addInstruction("push 0");
+            vm.addInstruction("greater");
+            vm.addInstruction("conditional_jump 2");
+            vm.addInstruction("push 88");
+            vm.addInstruction("push 66");
+
+
+            vm.interpreter.process();
+
+            assert.equal(vm.currentFrame().stack.size, 2);
+            assert.equal(vm.currentFrame().stack._data[0], 88);
+            assert.equal(vm.currentFrame().stack._data[1], 66);
+        });
+
+        it('should do  conditional jump with greater comparism', function(){
+            //set up
+            vm.start();
+            vm.addInstruction("push 0");
+            vm.addInstruction("push 1");
+            vm.addInstruction("greater");
+            vm.addInstruction("conditional_jump 2");
+            vm.addInstruction("push 88");
+            vm.addInstruction("push 66");
+
+
+            vm.interpreter.process();
+
+            assert.equal(vm.currentFrame().stack.size, 1);
+            assert.equal(vm.currentFrame().stack._data[0], 66);
+        });
+
+        it('should do (not) conditional jump with greater comparism', function(){
+            //set up
+            vm.start();
+            vm.addInstruction("push 1");
+            vm.addInstruction("push 0");
+            vm.addInstruction("greater_or_equal");
+            vm.addInstruction("conditional_jump 2");
+            vm.addInstruction("push 88");
+            vm.addInstruction("push 66");
+
+
+            vm.interpreter.process();
+
+            assert.equal(vm.currentFrame().stack.size, 2);
+            assert.equal(vm.currentFrame().stack._data[0], 88);
+            assert.equal(vm.currentFrame().stack._data[1], 66);
+        });
+
+        it('should do  conditional jump with greater or equal comparism', function(){
+            //set up
+            vm.start();
+            vm.addInstruction("push 1");
+            vm.addInstruction("push 1");
+            vm.addInstruction("greater_or_equal");
+            vm.addInstruction("conditional_jump 2");
+            vm.addInstruction("push 88");
+            vm.addInstruction("push 66");
+
+
+            vm.interpreter.process();
+
+            assert.equal(vm.currentFrame().stack.size, 1);
+            assert.equal(vm.currentFrame().stack._data[0], 66);
+        });
+
+        //===
+        it('should do (not) conditional jump with less comparism', function(){
+            //set up
+            vm.start();
+            vm.addInstruction("push 0");
+            vm.addInstruction("push 1");
+            vm.addInstruction("less");
+            vm.addInstruction("conditional_jump 2");
+            vm.addInstruction("push 88");
+            vm.addInstruction("push 66");
+
+
+            vm.interpreter.process();
+
+            assert.equal(vm.currentFrame().stack.size, 2);
+            assert.equal(vm.currentFrame().stack._data[0], 88);
+            assert.equal(vm.currentFrame().stack._data[1], 66);
+        });
+
+        it('should do conditional jump with less comparism', function(){
+            //set up
+            vm.start();
+            vm.addInstruction("push 1");
+            vm.addInstruction("push 0");
+            vm.addInstruction("less");
+            vm.addInstruction("conditional_jump 2");
+            vm.addInstruction("push 88");
+            vm.addInstruction("push 66");
+
+
+            vm.interpreter.process();
+
+            assert.equal(vm.currentFrame().stack.size, 1);
+            assert.equal(vm.currentFrame().stack._data[0], 66);
+        });
+
+        it('should do (not) conditional jump with less comparism', function(){
+            //set up
+            vm.start();
+            vm.addInstruction("push 0");
+            vm.addInstruction("push 1");
+            vm.addInstruction("less_or_equal");
+            vm.addInstruction("conditional_jump 2");
+            vm.addInstruction("push 88");
+            vm.addInstruction("push 66");
+
+
+            vm.interpreter.process();
+
+            assert.equal(vm.currentFrame().stack.size, 2);
+            assert.equal(vm.currentFrame().stack._data[0], 88);
+            assert.equal(vm.currentFrame().stack._data[1], 66);
+        });
+
+        it('should do  conditional jump with less or equal comparism', function(){
+            //set up
+            vm.start();
+            vm.addInstruction("push 1");
+            vm.addInstruction("push 1");
+            vm.addInstruction("less_or_equal");
+            vm.addInstruction("conditional_jump 2");
+            vm.addInstruction("push 88");
+            vm.addInstruction("push 66");
+
+
+            vm.interpreter.process();
+
+            assert.equal(vm.currentFrame().stack.size, 1);
+            assert.equal(vm.currentFrame().stack._data[0], 66);
+        });
+
+
+
+
 
         it('should  do conditional jump', function(){
             //set up

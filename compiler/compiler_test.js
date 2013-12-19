@@ -347,5 +347,6 @@ describe('compiler', function() {
 
     it('should compile knapsack source code', function(){
         var out = compiler.compileFile(__dirname + "/fixture/knapsack.js");
+        console.log(out);
     });
 });

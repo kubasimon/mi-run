@@ -8,8 +8,14 @@ store #index - ulozi do localni promenne hodnotu ze zasobniku
 add - secte hondnoty na zasobniku
 subtract - odecte hodnoty na zasobniku
 
-compare - porovna hodnoty na zasobniku
+compare - porovna hodnoty na zasobniku, deprecated
+greater - >
+greater_or_equal - >=
+less - <
+less_or_equal - <=
+equal - ==
 conditional_jump #instruction - pokud je na zasobniku > 1, tak skoci na danou instruci relativne
+
 jump #instruction- skoci na instrukci relativne
 greater_jump #instruction
 greater_or_equal_jump #instruction
