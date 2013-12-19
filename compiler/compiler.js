@@ -71,7 +71,9 @@ var compiler = (function(PEG, fs, undefined) {
 //            }
         }
 
-        fnc.instructions.push("return");
+        if (fnc.instructions.length == 0 || fnc.instructions[fnc.instructions.length - 1].indexOf("return") == -1) {
+            fnc.instructions.push("return");
+        }
         fnc.localVariables = localVariables.length;
     };
 
@@ -286,6 +288,15 @@ var compiler = (function(PEG, fs, undefined) {
                 break;
             case "EmptyStatement":
                 //ignore
+                break;
+            case "ReturnStatement":
+                //ignore
+                if (expression.value == null) {
+                    fnc.instructions.push("return");
+                } else {
+                    compiler.generateExpression(localVariables, expression.value, fnc);
+                    fnc.instructions.push("return_value");
+                }
                 break;
             case "Block":
                 for (var i = 0; i < expression.statements.length; i++) {
