@@ -30,7 +30,8 @@ var knapsack = {
         if (currentPrice + maxRestPrice < solution.bestPrice) {
             return;
         }
-        for(var i = 0; i < notUsedItems.length; i++) {
+        var len = notUsedItems.length;
+        for(var i = 0; i < len; i++) {
             var nextAdd = notUsedItems.shift();
             usedItems.push(nextAdd);
             if (currentWeight + nextAdd.w <= capacity) {

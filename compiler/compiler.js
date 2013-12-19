@@ -82,13 +82,18 @@ var compiler = (function(PEG, fs, undefined) {
             if (declaration.value) {
                 switch (declaration.value.type) {
                     case "ArrayLiteral":
-                        compiler.generateArrayDeclaration(declaration, fnc, index);
+                        compiler.generateExpression(localVariables, declaration.value, fnc);
+                        fnc.instructions.push("store " + index);
+                        compiler.generateArrayDeclarationElements(localVariables, declaration.value.elements, fnc, index);
                         break;
                     case "ObjectLiteral":
-                        compiler.generateObjectDeclaration(declaration, fnc, index);
+                        compiler.generateExpression(localVariables, declaration.value, fnc);
+                        fnc.instructions.push("store " + index);
+                        compiler.generateObjectDeclarationElements(localVariables, declaration.value.properties, fnc, index);
                         break;
                     case "NumericLiteral":
-                        compiler.generateNumericDeclaration(declaration, fnc, index);
+                        compiler.generateExpression(localVariables, declaration.value, fnc);
+                        fnc.instructions.push("store " + index);
                         break;
                     default:
                         throw new Error ("Value Type '" + declaration.value.type + "' not implemented in variable context!")
@@ -101,60 +106,30 @@ var compiler = (function(PEG, fs, undefined) {
         }
     };
 
-    compiler.generateNumericDeclaration = function(declaration, fnc, index) {
-        fnc.instructions.push("push " + declaration.value.value);
-        fnc.instructions.push("store " + index);
-    };
-
-    compiler.generateObjectDeclaration = function(declaration, fnc, index) {
-        // new_object
-        // store 0
-        fnc.instructions.push("new_object");
-        fnc.instructions.push("store " + index);
+    compiler.generateObjectDeclarationElements = function(localVariables, declaration, fnc, index) {
         // initialize
-        for (var i=0; i < declaration.value.properties.length; i++) {
-            var elem = declaration.value.properties[i];
+        for (var i=0; i<declaration.length; i++) {
+            var elem = declaration[i];
             switch (elem.type) {
                 case "PropertyAssignment":
-                    switch (elem.value.type) {
-                        case "NumericLiteral":
-                            // push value
-                            // load 0
-                            // invokenative push
-                            fnc.instructions.push("push " + elem.value.value);
-                            fnc.instructions.push("load " + index);
-                            fnc.instructions.push("object_store " + elem.name);
-                            break;
-                        default:
-                            throw new Error ("Value Type '" +elem.type + "' not implemented in object value variable initialization context!")
-                    }
+                    compiler.generateExpression(localVariables, elem.value, fnc);
+                    fnc.instructions.push("load " + index); // load array
+                    fnc.instructions.push("object_store " + elem.name);
                     break;
                 default:
                     throw new Error ("Value Type '" +elem.type + "' not implemented in object variable initialization context!")
             }
+
         }
     };
 
-    compiler.generateArrayDeclaration = function(declaration, fnc, index) {
-        // new_array
-        // store 0
-        fnc.instructions.push("new_array");
-        fnc.instructions.push("store " + index);
+    compiler.generateArrayDeclarationElements = function(localVariables, declaration, fnc, index) {
         // initialize
-        for (var i=0; i<declaration.value.elements.length; i++) {
-            var elem = declaration.value.elements[i];
-            switch (elem.type) {
-                case "NumericLiteral":
-                    // push value
-                    // load 0
-                    // invokenative push
-                    fnc.instructions.push("push " + elem.value);
-                    fnc.instructions.push("load " + index);
-                    fnc.instructions.push("invoke_native push");
-                    break;
-                default:
-                    throw new Error ("Value Type '" +elem.type + "' not implemented in array variable initialization context!")
-            }
+        for (var i=0; i<declaration.length; i++) {
+            var elem = declaration[i];
+            compiler.generateExpression(localVariables, elem, fnc);
+            fnc.instructions.push("load " + index); // load array
+            fnc.instructions.push("invoke_native push");
         }
     };
 
@@ -264,7 +239,12 @@ var compiler = (function(PEG, fs, undefined) {
             case "NumericLiteral":
                 fnc.instructions.push("push " + expression.value);
                 break;
-
+            case "ArrayLiteral":
+                fnc.instructions.push("new_array");
+                break;
+            case "ObjectLiteral":
+                fnc.instructions.push("new_object");
+                break;
             case "BinaryExpression":
                 //generate binary expression
                 // left first then right

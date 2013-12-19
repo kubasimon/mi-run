@@ -90,6 +90,7 @@ describe('compiler', function() {
 
     it('should compile object initialization 2x', function(){
         var out = compiler.compile("function main(){var o = {test: 66, rest: 99}}");
+
         assert.deepEqual(out, [{"name": "main",
             "arguments": 0,
             "localVariables": 1,
