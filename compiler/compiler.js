@@ -10,6 +10,12 @@ var compiler = (function(PEG, fs, undefined) {
         var grammar = fs.readFileSync(__dirname + '/javascript.pegjs', "utf-8");
         compiler.parser = PEG.buildParser(grammar);
     };
+
+    compiler.compileFile = function(fileName) {
+        var program = fs.readFileSync(fileName, "UTF-8");
+        return compiler.compile(program);
+    };
+
     compiler.compile = function(program) {
         var ast = compiler.buildAst(program);
         return compiler.createBytecode(ast);
@@ -93,12 +99,10 @@ var compiler = (function(PEG, fs, undefined) {
                         fnc.instructions.push("store " + index);
                         compiler.generateObjectDeclarationElements(localVariables, declaration.value.properties, fnc, index);
                         break;
-                    case "NumericLiteral":
+                    default:
                         compiler.generateExpression(localVariables, declaration.value, fnc);
                         fnc.instructions.push("store " + index);
-                        break;
-                    default:
-                        throw new Error ("Value Type '" + declaration.value.type + "' not implemented in variable context!")
+                        //throw new Error ("Value Type '" + declaration.value.type + "' not implemented in variable context!")
                 }
             } else {
                 throw new Error ("Empty declaration value! '" + declaration)
@@ -136,16 +140,23 @@ var compiler = (function(PEG, fs, undefined) {
     };
 
     compiler.generateFunctionCall = function(element, fnc, localVariables) {
-        if (element.name.type == "Variable") {
-            //push arguments reverse order
-            for (var i = 0; i < element.arguments.length; i++) {
-                var arg = element.arguments[i];
-                compiler.generateExpression(localVariables, arg ,fnc);
-            }
-            //invoke <name>
-            fnc.instructions.push("invoke " + element.name.name);
-        } else {
-            throw new Error ("Function name type '" + element.name.type + "' not implemented, only 'Variable' allowed !")
+        //push arguments reverse order
+        for (var i = 0; i < element.arguments.length; i++) {
+            var arg = element.arguments[i];
+            compiler.generateExpression(localVariables, arg, fnc);
+        }
+        switch (element.name.type) {
+            case "Variable":
+                //invoke <name>
+                fnc.instructions.push("invoke " + element.name.name);
+                break;
+            case "PropertyAccess":
+                compiler.generateExpression(localVariables, element.name.base, fnc);
+                fnc.instructions.push("invoke_native " + element.name.name);
+                break;
+            default:
+                throw new Error ("Function name type '" + element.name.type + "' not implemented, only 'Variable', 'PropertyAccess' allowed !")
+
         }
     };
 

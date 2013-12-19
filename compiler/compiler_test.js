@@ -305,4 +305,21 @@ describe('compiler', function() {
                 "return_value"
             ]}])
     });
+
+    it('should compile variable with function', function(){
+        var out = compiler.compile("function main(){var m = []; var a = m.shift();}");
+        assert.deepEqual(out, [{"name": "main",
+            "arguments": 0,
+            "localVariables": 2,
+            "instructions": [
+                "new_array",
+                "store 0",
+
+                "load 0",
+                "invoke_native shift",
+                "store 1",
+
+                "return"
+            ]}])
+    });
 });
