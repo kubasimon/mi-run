@@ -270,14 +270,25 @@ var compiler = (function(PEG, fs, undefined) {
                 fnc.instructions.push("object_load " + expression.name);
                 break;
             case "AssignmentExpression":
-                if (expression.left.type == "Variable") {
-                    //generate right
-                    compiler.generateExpression(localVariables, expression.right, fnc);
-                    // assign result to left variable
-                    compiler.storeVariable(localVariables, expression.left.name, fnc);
+                switch(expression.left.type) {
+                    case "Variable":
+                        //generate right
+                        compiler.generateExpression(localVariables, expression.right, fnc);
+                        // assign result to left variable
+                        compiler.storeVariable(localVariables, expression.left.name, fnc);
+                        break;
+                    case "PropertyAccess":
+                        //generate right
+                        compiler.generateExpression(localVariables, expression.right, fnc);
+                        // assign result to left
 
-                } else {
-                    throw new Error ("AssignmentExpression left type'" +expression.left.type + "' not implemented, only 'Variable' allowed !")
+                        // load base
+                        compiler.generateExpression(localVariables, expression.left.base, fnc);
+                        // store to object
+                        fnc.instructions.push("object_store " + expression.left.name);
+                        break;
+                    default:
+                        throw new Error ("AssignmentExpression left type'" +expression.left.type + "' not implemented, only 'Variable', 'PropertyExpression' allowed !")
                 }
                 break;
             case "VariableStatement":

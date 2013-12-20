@@ -29,7 +29,7 @@ function addToKnapsack(capacity, usedItems, notUsedItems, currentWeight, current
     if (currentPrice + maxRestPrice < solution.bestPrice) {
         return;
     }
-    var len = notUsedItems.length;
+    var len = notUsedItems.length();
     for(var i = 0; i < len; i++) {
         var nextAdd = notUsedItems.shift();
         usedItems.push(nextAdd);
@@ -41,9 +41,10 @@ function addToKnapsack(capacity, usedItems, notUsedItems, currentWeight, current
 }
 
 function sumPrice(items) {
+    var lenArray = items.slice();
     var tmp = 0;
-    for (var i = 0; i < items.length; i++) {
-        tmp += items[i].p
+    for (var i = 0; i < items.length(); i++) {
+        tmp += items.pop()
     }
     return tmp;
 }

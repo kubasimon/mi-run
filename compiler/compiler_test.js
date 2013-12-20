@@ -385,6 +385,40 @@ describe('compiler', function() {
             ]}])
     });
 
+    it('should compile assignment statement', function(){
+        var out = compiler.compile("function main(){var a = 5; a = 6}");
+        assert.deepEqual(out, [{"name": "main",
+            "arguments": 0,
+            "localVariables": 1,
+            "instructions": [
+                "push 5",
+                "store 0",
+
+                "push 6",
+                "store 0",
+
+                "return"
+            ]}])
+    });
+
+    it('should compile assignment to object property', function(){
+        var out = compiler.compile("function main(){var a = {}; a.test = 6}");
+        assert.deepEqual(out, [{"name": "main",
+            "arguments": 0,
+            "localVariables": 1,
+            "instructions": [
+                "new_object",
+                "store 0",
+
+
+                "push 6",
+                "load 0",
+                "object_store test",
+
+                "return"
+            ]}])
+    });
+
     it('should compile knapsack source code', function(){
         var out = compiler.compileFile(__dirname + "/fixture/knapsack.js");
         console.log(out);
