@@ -95,7 +95,7 @@ var compiler = (function(PEG, fs, undefined) {
                         compiler.generateArrayDeclarationElements(localVariables, declaration.value.elements, fnc, index);
                         break;
                     case "ObjectLiteral":
-                        compiler.generateExpression(localVariables, declaration.value, fnc);
+                        fnc.instructions.push("new_object");
                         fnc.instructions.push("store " + index);
                         compiler.generateObjectDeclarationElements(localVariables, declaration.value.properties, fnc, index);
                         break;
@@ -233,6 +233,17 @@ var compiler = (function(PEG, fs, undefined) {
                 break;
             case "ObjectLiteral":
                 fnc.instructions.push("new_object");
+                // generate properties
+                if (expression.properties.length) {
+                    //create temporary variable for object initialization
+                    var tmpIndex = localVariables.indexOf("$_temporary");
+                    if (tmpIndex == -1 ) {
+                        tmpIndex = localVariables.push("$_temporary") - 1;
+                    }
+                    fnc.instructions.push("store " + tmpIndex);
+                    compiler.generateObjectDeclarationElements(localVariables, expression.properties, fnc, tmpIndex);
+                    fnc.instructions.push("load " + tmpIndex);
+                }
                 break;
             case "BinaryExpression":
                 //generate binary expression

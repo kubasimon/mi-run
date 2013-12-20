@@ -146,6 +146,76 @@ describe('compiler', function() {
             ]}])
     });
 
+    it('should compile initialization of array with objects inside', function(){
+        var out = compiler.compile("function main(){var t = [{a:66, b:77}]}");
+        assert.deepEqual(out, [{"name": "main",
+            "arguments": 0,
+            "localVariables": 2,
+            "instructions": [
+                "new_array",
+                "store 0",
+
+                "new_object",
+                "store 1",
+
+                "push 66",
+                "load 1",
+                "object_store a",
+
+                "push 77",
+                "load 1",
+                "object_store b",
+
+                "load 1",
+                "load 0",
+                "invoke_native push",
+                "return"
+            ]}])
+    });
+
+    it('should compile initialization of array with objects inside', function(){
+        var out = compiler.compile("function main(){var t = [{a:66, b:77}, {a:55, b:44}]}");
+        assert.deepEqual(out, [{"name": "main",
+            "arguments": 0,
+            "localVariables": 2,
+            "instructions": [
+                "new_array",
+                "store 0",
+
+                "new_object",
+                "store 1",
+
+                "push 66",
+                "load 1",
+                "object_store a",
+
+                "push 77",
+                "load 1",
+                "object_store b",
+
+                "load 1",
+                "load 0",
+                "invoke_native push",
+
+                "new_object",
+                "store 1",
+
+                "push 55",
+                "load 1",
+                "object_store a",
+
+                "push 44",
+                "load 1",
+                "object_store b",
+
+                "load 1",
+                "load 0",
+                "invoke_native push",
+
+                "return"
+            ]}])
+    });
+
     it('should compile function call with variable arguments', function(){
         var out = compiler.compile("function main(){var test = []; test(test,67)}");
         assert.deepEqual(out, [{"name": "main",
