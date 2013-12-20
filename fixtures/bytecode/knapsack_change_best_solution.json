@@ -8,8 +8,8 @@
             "new_object",
             "store 0",
 
-            "load 0",
             "push 66",
+            "load 0",
             "object_store solution",
 
             "load 0",
@@ -32,8 +32,8 @@
             "object_load solution",
             "built_in 0",
 
-            "load 0",
             "push 99",
+            "load 0",
             "object_store solution",
             "return"
         ]

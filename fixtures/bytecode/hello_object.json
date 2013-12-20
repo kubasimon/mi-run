@@ -7,8 +7,8 @@
         "new_object",
         "store 0",
 
-        "load 0",
         "push 88",
+        "load 0",
 
         "object_store test",
 

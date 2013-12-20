@@ -10,8 +10,8 @@ var vm = (function(undefined) {
         vm.instructionPointer = 0;
         vm.table = [];
         vm.tableNative = [];
-        vm.createNewStackFrame(null, []);
         vm.heap = []; //vm.initializeHeap();
+        vm.createNewStackFrame(null, []);
         vm._output = [];
         vm.addNativeArrayFunctions();
     };
@@ -19,6 +19,7 @@ var vm = (function(undefined) {
     vm.load = function(file) {
         vm.start();
         var dataJSON = require(file);
+        //console.log(dataJSON);
         for(var i = 0; i < dataJSON.length; i++) {
             vm.addFunction(dataJSON[i])
         }
@@ -26,6 +27,9 @@ var vm = (function(undefined) {
         var startInstruction = vm.addInstruction("invoke main");
         vm.addInstruction("terminate");
         vm.instructionPointer = startInstruction;
+        for (i = 0; i < vm.instructions.length; i++) {
+            console.log("#" + i + ": " + vm.instructions[i]);
+        }
         vm.interpreter.process();
     };
 
@@ -38,7 +42,8 @@ var vm = (function(undefined) {
             throw new Error("StackOverflow, max stack frames level reached: " + this.maximumStackFrames);
         }
         var localVariables = [];
-        for (var i = 0; i <= arguments.length; i++) {
+        var len = arguments.length;
+        for (var i = 0; i < len; i++) {
             localVariables.push(arguments.pop())
         }
 
@@ -56,6 +61,9 @@ var vm = (function(undefined) {
                     this.size++;
                     if (this.size > this.maxStackSize) {
                         throw new Error("StackOverflow, max stack level reached: " + this.maxStackSize);
+                    }
+                    if (val == undefined) {
+                        throw new Error("Trying to push undefined to stack!");
                     }
                     return this._data.push(val)
                 },
@@ -139,7 +147,7 @@ var vm = (function(undefined) {
         vm.addNativeFunction({
             name: "array.shift",
             fn: function(array) {
-                array.data.shift()
+                vm.currentFrame().stack.push(array.data.shift())
             },
             arguments: 1
         });
@@ -148,7 +156,7 @@ var vm = (function(undefined) {
             fn: function(array) {
                 var address = vm.allocateArray();
                 // copy data
-                address.data = array.data;
+                vm.heap[address].data = array.data.slice();
                 vm.currentFrame().stack.push(address);
             },
             arguments: 1
@@ -193,9 +201,9 @@ var vm = (function(undefined) {
         }
     };
 
-    vm.allocateArray = function(size) {
+    vm.allocateArray = function() {
         // todo better allocation
-        return vm.heap.push({type: 'array', size: size, data: []}) - 1
+        return vm.heap.push({type: 'array', data: []}) - 1
     };
 
     vm.allocateObject = function() {
@@ -208,7 +216,7 @@ var vm = (function(undefined) {
     vm.interpreter.process = function() {
         while(vm.instructionPointer < vm.instructions.length) {
             var instruction = vm.instructions[vm.instructionPointer].split(" ");
-//            console.log("frame "+ vm.currentStackFrame + " #" + vm.currentFrame().instructionPointer + ": " + instruction);
+            console.log(Array(vm.currentStackFrame*4).join(" ") + "frame " + vm.currentStackFrame + " #" + vm.instructionPointer + ": " + instruction);
 //            console.log(vm.currentFrame().stack);
             if (instruction[0] == 'terminate') {
                 break;
@@ -337,7 +345,8 @@ var vm = (function(undefined) {
     };
 
     vm.interpreter.loadInstruction = function(localVariableIndex) {
-        vm.currentFrame().stack.push(vm.currentFrame().localVariables[localVariableIndex])
+        var val = vm.currentFrame().localVariables[localVariableIndex];
+        vm.currentFrame().stack.push(val)
     };
 
     vm.interpreter.storeInstruction = function(localVariableIndex) {
@@ -366,8 +375,8 @@ var vm = (function(undefined) {
     };
 
     vm.interpreter.greaterJumpInstruction = function(relativeJump) {
-        var first = vm.currentFrame().stack.pop();
         var second = vm.currentFrame().stack.pop();
+        var first = vm.currentFrame().stack.pop();
         if (first > second) {
             vm.instructionPointer = vm.instructionPointer + relativeJump;
             return true
@@ -376,8 +385,8 @@ var vm = (function(undefined) {
     };
 
     vm.interpreter.greaterOrEqualJumpInstruction = function(relativeJump) {
-        var first = vm.currentFrame().stack.pop();
         var second = vm.currentFrame().stack.pop();
+        var first = vm.currentFrame().stack.pop();
         if (first >= second) {
             vm.instructionPointer = vm.instructionPointer + relativeJump;
             return true
@@ -386,8 +395,8 @@ var vm = (function(undefined) {
     };
 
     vm.interpreter.lessJumpInstruction = function(relativeJump) {
-        var first = vm.currentFrame().stack.pop();
         var second = vm.currentFrame().stack.pop();
+        var first = vm.currentFrame().stack.pop();
         if (first < second) {
             vm.instructionPointer = vm.instructionPointer + relativeJump;
             return true
@@ -396,8 +405,8 @@ var vm = (function(undefined) {
     };
 
     vm.interpreter.lessOrEqualJumpInstruction = function(relativeJump) {
-        var first = vm.currentFrame().stack.pop();
         var second = vm.currentFrame().stack.pop();
+        var first = vm.currentFrame().stack.pop();
         if (first <= second) {
             vm.instructionPointer = vm.instructionPointer + relativeJump;
             return true
@@ -406,8 +415,8 @@ var vm = (function(undefined) {
     };
 
     vm.interpreter.equalJumpInstruction = function(relativeJump) {
-        var first = vm.currentFrame().stack.pop();
         var second = vm.currentFrame().stack.pop();
+        var first = vm.currentFrame().stack.pop();
         if (first == second) {
             vm.instructionPointer = vm.instructionPointer + relativeJump;
             return true
@@ -416,8 +425,8 @@ var vm = (function(undefined) {
     };
 
     vm.interpreter.greaterInstruction = function() {
-        var first = vm.currentFrame().stack.pop();
         var second = vm.currentFrame().stack.pop();
+        var first = vm.currentFrame().stack.pop();
         if (first > second) {
             vm.currentFrame().stack.push(1);
         } else {
@@ -426,8 +435,8 @@ var vm = (function(undefined) {
     };
 
     vm.interpreter.greaterOrEqualInstruction = function() {
-        var first = vm.currentFrame().stack.pop();
         var second = vm.currentFrame().stack.pop();
+        var first = vm.currentFrame().stack.pop();
         if (first >= second) {
             vm.currentFrame().stack.push(1);
         } else {
@@ -436,8 +445,8 @@ var vm = (function(undefined) {
     };
 
     vm.interpreter.lessInstruction = function() {
-        var first = vm.currentFrame().stack.pop();
         var second = vm.currentFrame().stack.pop();
+        var first = vm.currentFrame().stack.pop();
         if (first < second) {
             vm.currentFrame().stack.push(1);
         } else {
@@ -446,8 +455,8 @@ var vm = (function(undefined) {
     };
 
     vm.interpreter.lessOrEqualInstruction = function() {
-        var first = vm.currentFrame().stack.pop();
         var second = vm.currentFrame().stack.pop();
+        var first = vm.currentFrame().stack.pop();
         if (first <= second) {
             vm.currentFrame().stack.push(1);
         } else {
@@ -456,8 +465,8 @@ var vm = (function(undefined) {
     };
 
     vm.interpreter.equalInstruction = function() {
-        var first = vm.currentFrame().stack.pop();
         var second = vm.currentFrame().stack.pop();
+        var first = vm.currentFrame().stack.pop();
         if (first == second) {
             vm.currentFrame().stack.push(1);
         } else {
@@ -506,6 +515,7 @@ var vm = (function(undefined) {
     };
 
     vm.interpreter.returnValueInstruction = function() {
+        console.log(vm.currentFrame().stack)
         var value = vm.currentFrame().stack.pop();
         var returnAddress = vm.currentFrame().returnAddress;
         vm.deleteStackFrame();
@@ -568,8 +578,8 @@ var vm = (function(undefined) {
     };
 
     vm.interpreter.objectStoreInstruction = function(fieldName) {
-        var value = vm.currentFrame().stack.pop();
         var address = vm.currentFrame().stack.pop();
+        var value = vm.currentFrame().stack.pop();
         if (! address in vm.heap) {
             throw new Error('Address "' + address + '" not found on heap !');
         }
@@ -610,6 +620,9 @@ var vm = (function(undefined) {
     };
 
     vm.interpreter.objectLoadInstruction = function(fieldName) {
+        if (vm.currentFrame().stack.length == 0) {
+            throw new Error('Empty stack, object address expected!');
+        }
         var address = vm.currentFrame().stack.pop();
         if (! address in vm.heap) {
             throw new Error('Address "' + address + '" not found on heap !');
@@ -646,7 +659,6 @@ var vm = (function(undefined) {
         switch (index) {
             case 0:
                 var output = vm.currentFrame().stack.pop();
-                console.log(output);
                 vm._output.push(output);
                 break;
             default:

@@ -161,8 +161,8 @@ describe('vm', function(){
         it('should do (not) conditional jump with greater comparism', function(){
             //set up
             vm.start();
-            vm.addInstruction("push 1");
             vm.addInstruction("push 0");
+            vm.addInstruction("push 1");
             vm.addInstruction("greater");
             vm.addInstruction("conditional_jump 2");
             vm.addInstruction("push 88");
@@ -179,8 +179,8 @@ describe('vm', function(){
         it('should do  conditional jump with greater comparism', function(){
             //set up
             vm.start();
-            vm.addInstruction("push 0");
             vm.addInstruction("push 1");
+            vm.addInstruction("push 0");
             vm.addInstruction("greater");
             vm.addInstruction("conditional_jump 2");
             vm.addInstruction("push 88");
@@ -196,8 +196,8 @@ describe('vm', function(){
         it('should do (not) conditional jump with greater comparism', function(){
             //set up
             vm.start();
-            vm.addInstruction("push 1");
             vm.addInstruction("push 0");
+            vm.addInstruction("push 1");
             vm.addInstruction("greater_or_equal");
             vm.addInstruction("conditional_jump 2");
             vm.addInstruction("push 88");
@@ -232,8 +232,8 @@ describe('vm', function(){
         it('should do (not) conditional jump with less comparism', function(){
             //set up
             vm.start();
-            vm.addInstruction("push 0");
             vm.addInstruction("push 1");
+            vm.addInstruction("push 0");
             vm.addInstruction("less");
             vm.addInstruction("conditional_jump 2");
             vm.addInstruction("push 88");
@@ -250,8 +250,8 @@ describe('vm', function(){
         it('should do conditional jump with less comparism', function(){
             //set up
             vm.start();
-            vm.addInstruction("push 1");
             vm.addInstruction("push 0");
+            vm.addInstruction("push 1");
             vm.addInstruction("less");
             vm.addInstruction("conditional_jump 2");
             vm.addInstruction("push 88");
@@ -267,8 +267,8 @@ describe('vm', function(){
         it('should do (not) conditional jump with less comparism', function(){
             //set up
             vm.start();
-            vm.addInstruction("push 0");
             vm.addInstruction("push 1");
+            vm.addInstruction("push 0");
             vm.addInstruction("less_or_equal");
             vm.addInstruction("conditional_jump 2");
             vm.addInstruction("push 88");
@@ -696,6 +696,13 @@ describe('vm', function(){
 
             assert.equal(vm._output[0], 88);
             assert.equal(vm._output[1], 888);
+        });
+
+        it('should work with knapsack program!', function(){
+            vm.load("./compiler/fixture/knapsack.json");
+//
+//            assert.equal(vm._output[0], 88);
+//            assert.equal(vm._output[1], 888);
         });
     });
 });

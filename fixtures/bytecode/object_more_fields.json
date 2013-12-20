@@ -7,13 +7,13 @@
         "new_object",
         "store 0",
 
-        "load 0",
         "push 88",
+        "load 0",
 
         "object_store test",
 
-        "load 0",
         "push 89",
+        "load 0",
 
         "object_store test2",
 
@@ -27,8 +27,8 @@
 
         "built_in 0",
 
-        "load 0",
         "push 87",
+        "load 0",
 
         "object_store test2",
 

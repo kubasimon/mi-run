@@ -1,5 +1,5 @@
 function main() {
-    var items = [];       // TODO load from file
+    var items = [{w:18, p:114},  {w:42, p:136},  {w:88, p:192},  {w:3, p:223}];       // TODO load from file
     start(items, 4, 100);
 }
 
@@ -12,7 +12,8 @@ function start(items, numberOfItems, capacity) {
         var startWith = items.shift();
         var newArray = [];
         newArray.push(startWith);
-        addToKnapsack(capacity, newArray, items.slice(), startWith.w, startWith.p, solution);
+        var notUsed = items.slice();
+        addToKnapsack(capacity, newArray, notUsed, startWith.w, startWith.p, solution);
         //add item back to end and try pop another
         items.push(startWith);
     }
@@ -25,10 +26,11 @@ function addToKnapsack(capacity, usedItems, notUsedItems, currentWeight, current
         solution.bestPrice = currentPrice;
     }
 
-    var maxRestPrice = sumPrice(notUsedItems);
-    if (currentPrice + maxRestPrice < solution.bestPrice) {
-        return;
-    }
+//    optimalization
+//    var maxRestPrice = sumPrice(notUsedItems);
+//    if (currentPrice + maxRestPrice < solution.bestPrice) {
+//        return;
+//    }
     var len = notUsedItems.length();
     for(var i = 0; i < len; i++) {
         var nextAdd = notUsedItems.shift();
@@ -44,7 +46,7 @@ function sumPrice(items) {
     var lenArray = items.slice();
     var tmp = 0;
     for (var i = 0; i < items.length(); i++) {
-        tmp += items.pop()
+        tmp += lenArray.pop()
     }
     return tmp;
 }

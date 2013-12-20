@@ -11,9 +11,13 @@ var compiler = (function(PEG, fs, undefined) {
         compiler.parser = PEG.buildParser(grammar);
     };
 
-    compiler.compileFile = function(fileName) {
+    compiler.compileFile = function(fileName, outputFile) {
         var program = fs.readFileSync(fileName, "UTF-8");
-        return compiler.compile(program);
+        var out = compiler.compile(program);
+        if (outputFile) {
+            fs.writeFileSync(outputFile, JSON.stringify(out));
+        }
+        return out;
     };
 
     compiler.compile = function(program) {
@@ -200,8 +204,8 @@ var compiler = (function(PEG, fs, undefined) {
         var testJump = null;
         if (test != null) {
             compiler.generateExpression(localVariables, test , fnc);
-            fnc.instructions.push("conditional_jump #");
-            testJump = fnc.instructions.length - 1;
+            fnc.instructions.push("negate");
+            testJump = fnc.instructions.push("conditional_jump #") - 1;
         }
         // generate body
 
@@ -216,7 +220,7 @@ var compiler = (function(PEG, fs, undefined) {
         // jump back to test
         fnc.instructions.push("jump " + (testInstructionStart - fnc.instructions.length));
         // replace # in test condition to jump after this "jump loop"
-        fnc.instructions[testJump] = fnc.instructions[testJump].replace("#",  fnc.instructions.length - testJump - 1);
+        fnc.instructions[testJump] = fnc.instructions[testJump].replace("#",  fnc.instructions.length - testJump);
 
     };
 

@@ -269,7 +269,8 @@ describe('compiler', function() {
                 "load 0",
                 "push 10",
                 "less",
-                "conditional_jump 5", //jump to end
+                "negate",
+                "conditional_jump 6", //jump to end
 
                 // empty body
 
@@ -278,13 +279,13 @@ describe('compiler', function() {
                 "load 0",
                 "add",
                 "store 0",
-                "jump -8", //jump to condition
+                "jump -9", //jump to condition
 
                 "return"
             ]}])
     });
 
-    it('should compile for statement', function(){
+    it('should compile for statement 2', function(){
         var out = compiler.compile("function main(){var j = 0; for(var i=1; i<=10;i++){j = j + 1}}");
         assert.deepEqual(out, [{"name": "main",
             "arguments": 0,
@@ -301,7 +302,8 @@ describe('compiler', function() {
                 "load 1",
                 "push 10",
                 "less_or_equal", //jump to end
-                "conditional_jump 9", //jump to end
+                "negate",
+                "conditional_jump 10", //jump to end
 
                 // body
                 "load 0",
@@ -314,7 +316,7 @@ describe('compiler', function() {
                 "load 1",
                 "add",
                 "store 1",
-                "jump -12", //jump to condition
+                "jump -13", //jump to condition
 
                 "return"
             ]}])
@@ -490,7 +492,7 @@ describe('compiler', function() {
     });
 
     it('should compile knapsack source code', function(){
-        var out = compiler.compileFile(__dirname + "/fixture/knapsack.js");
+        var out = compiler.compileFile(__dirname + "/fixture/knapsack.js", __dirname + "/fixture/knapsack.json");
         console.log(out);
     });
 });
