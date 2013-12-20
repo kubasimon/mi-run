@@ -347,6 +347,44 @@ describe('compiler', function() {
             ]}])
     });
 
+    it('should compile if statement', function(){
+        var out = compiler.compile("function main(){if (1) {var a = 5}}");
+        assert.deepEqual(out, [{"name": "main",
+            "arguments": 0,
+            "localVariables": 1,
+            "instructions": [
+                "push 1",
+                "negate",
+                "conditional_jump 3",
+
+                "push 5",
+                "store 0",
+
+                "return"
+            ]}])
+    });
+
+    it('should compile if else statement', function(){
+        var out = compiler.compile("function main(){if (1) {var a = 5} else {var b = 5}}");
+        assert.deepEqual(out, [{"name": "main",
+            "arguments": 0,
+            "localVariables": 2,
+            "instructions": [
+                "push 1",
+                "negate",
+                "conditional_jump 4",
+
+                "push 5",
+                "store 0",
+                "jump 3",
+
+                "push 5",
+                "store 1",
+
+                "return"
+            ]}])
+    });
+
     it('should compile knapsack source code', function(){
         var out = compiler.compileFile(__dirname + "/fixture/knapsack.js");
         console.log(out);

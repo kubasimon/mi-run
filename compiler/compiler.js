@@ -289,6 +289,27 @@ var compiler = (function(PEG, fs, undefined) {
             case "ForStatement":
                 compiler.generateForStatement(expression, fnc, localVariables);
                 break;
+            case "IfStatement":
+                compiler.generateExpression(localVariables, expression.condition, fnc);
+                // if condition not fulfilled, jump to else branch or to end
+                fnc.instructions.push("negate");
+                var startInstruction = fnc.instructions.push("conditional_jump #") - 1;
+                // generate if statement
+                compiler.generateExpression(localVariables, expression.ifStatement, fnc);
+
+                if (expression.elseStatement) {
+                    // jump from if statement to end, e.g skipping else
+                    var endOfIf = fnc.instructions.push("jump #") - 1;
+                    fnc.instructions[startInstruction] = fnc.instructions[startInstruction].replace("#",  fnc.instructions.length - startInstruction);
+                    //generate else
+                    compiler.generateExpression(localVariables, expression.elseStatement, fnc);
+                    fnc.instructions[endOfIf] = fnc.instructions[endOfIf].replace("#",  fnc.instructions.length - endOfIf);
+                } else {
+                    // no additional jump after if branch
+                    fnc.instructions[startInstruction] = fnc.instructions[startInstruction].replace("#",  fnc.instructions.length - startInstruction);
+                }
+
+                break;
             case "EmptyStatement":
                 //ignore
                 break;
