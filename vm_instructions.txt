@@ -24,6 +24,7 @@ less_or_equal_jump #instruction
 equal_jump #instruction
 
 duplicate - duplikuje vrchol zasobniku
+negate - neguje vrchol zasobniku, 0 -> 1, ostatni -> 0
 return_value - vyskoci z funkce a vrati hodnotu ze zasobniku
 return - vyskoci z funkce
 terminate - konec programu:)

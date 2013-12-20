@@ -105,6 +105,30 @@ describe('vm', function(){
             assert.equal(vm.currentFrame().stack._data[0], 1);
         });
 
+        it('should work with negate instruction', function(){
+            //set up
+            vm.start();
+            vm.addInstruction("push 1");
+            vm.addInstruction("negate");
+
+            vm.interpreter.process();
+
+            assert.equal(vm.currentFrame().stack.size, 1);
+            assert.equal(vm.currentFrame().stack._data[0], 0);
+        });
+
+        it('should work with negate instruction', function(){
+            //set up
+            vm.start();
+            vm.addInstruction("push 0");
+            vm.addInstruction("negate");
+
+            vm.interpreter.process();
+
+            assert.equal(vm.currentFrame().stack.size, 1);
+            assert.equal(vm.currentFrame().stack._data[0], 1);
+        });
+
         it('should add instruction manually and call add', function(){
             //set up
             vm.start();

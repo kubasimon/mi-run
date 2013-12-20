@@ -294,6 +294,9 @@ var vm = (function(undefined) {
                 case 'duplicate':
                     vm.interpreter.duplicateInstruction();
                     break;
+                case 'negate':
+                    vm.interpreter.negateInstruction();
+                    break;
                 case 'new_array':
                     vm.interpreter.newArrayInstruction(parseInt(instruction[1], 10));
                     break;
@@ -514,6 +517,15 @@ var vm = (function(undefined) {
         var value = vm.currentFrame().stack.pop();
         vm.currentFrame().stack.push(value);
         vm.currentFrame().stack.push(value);
+    };
+
+    vm.interpreter.negateInstruction = function() {
+        var value = vm.currentFrame().stack.pop();
+        if (value == 0) {
+            vm.currentFrame().stack.push(1);
+        } else {
+            vm.currentFrame().stack.push(0);
+        }
     };
 
     vm.interpreter.newArrayInstruction = function(size) {
