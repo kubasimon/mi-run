@@ -142,6 +142,19 @@ describe('vm', function(){
             assert.equal(vm.currentFrame().stack._data[0], 3);
         });
 
+        it('should add instruction manually and call add', function(){
+            //set up
+            vm.start();
+            vm.addInstruction("push 4");
+            vm.addInstruction("push 2");
+            vm.addInstruction("times");
+
+            vm.interpreter.process();
+
+            assert.equal(vm.currentFrame().stack.size, 1);
+            assert.equal(vm.currentFrame().stack._data[0], 8);
+        });
+
         it('should (not) do conditional jump', function(){
             //set up
             vm.start();

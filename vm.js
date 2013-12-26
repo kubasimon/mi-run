@@ -161,6 +161,30 @@ var vm = (function(undefined) {
             },
             arguments: 1
         });
+        vm.addNativeFunction({
+            name: "file.read_line",
+            fn: function(file) {
+                // simplified :)
+                var data = fs.readFileSync(file.fileName, "utf-8").split("\n");
+                if (data.length > file.currentLine) {
+                    var line = data[file.currentLine];
+                    file.currentLine++;
+                    var lineAddress = vm.allocateString(line);
+                    vm.currentFrame().stack.push(lineAddress)
+                } else {
+                    throw new Error("Unexpected EOF in file " + file.fileName + ", line: " + file.currentLine)
+                }
+
+            },
+            arguments: 1
+        });
+        vm.addNativeFunction({
+            name: "file.close",
+            fn: function(file) {
+                //??
+            },
+            arguments: 1
+        });
     };
 
     vm.retrieveHeapObject = function(address) {
@@ -177,6 +201,14 @@ var vm = (function(undefined) {
             throw new Error('No array on address "' + arrayAddress + '"! Heap data: ' + array );
         }
         return array;
+    };
+
+    vm.retrieveString = function(stringAddress) {
+        var string = vm.retrieveHeapObject(stringAddress);
+        if (string.type != 'string') {
+            throw new Error('No string on address "' + stringAddress + '"! Heap data: ' + string );
+        }
+        return string;
     };
 
     vm.addInstruction = function(instruction) {
@@ -204,6 +236,17 @@ var vm = (function(undefined) {
     vm.allocateArray = function() {
         // todo better allocation
         return vm.heap.push({type: 'array', data: []}) - 1
+    };
+
+    vm.allocateString = function(string) {
+        // todo better allocation
+        string = string.replace(/^'|'$/gm, '');
+        return vm.heap.push({type: 'string', data: string}) - 1
+    };
+
+    vm.allocateFile = function(fileName) {
+        // todo better allocation
+        return vm.heap.push({type: 'file', fileName: fileName, currentLine: 0}) - 1
     };
 
     vm.allocateObject = function() {
@@ -242,6 +285,9 @@ var vm = (function(undefined) {
                     break;
                 case 'subtract':
                     vm.interpreter.subtractInstruction();
+                    break;
+                case 'times':
+                    vm.interpreter.timesInstruction();
                     break;
                 case 'compare':
                     vm.interpreter.equalInstruction();
@@ -308,6 +354,9 @@ var vm = (function(undefined) {
                 case 'new_array':
                     vm.interpreter.newArrayInstruction(parseInt(instruction[1], 10));
                     break;
+                case 'new_string':
+                    vm.interpreter.newStringInstruction(instruction[1]);
+                    break;
                 case 'array_store':
                     vm.interpreter.arrayStoreInstruction();
                     break;
@@ -363,6 +412,12 @@ var vm = (function(undefined) {
         var val1 = vm.currentFrame().stack.pop();
         var val2 = vm.currentFrame().stack.pop();
         vm.currentFrame().stack.push(val1 - val2)
+    };
+
+    vm.interpreter.timesInstruction = function() {
+        var val1 = vm.currentFrame().stack.pop();
+        var val2 = vm.currentFrame().stack.pop();
+        vm.currentFrame().stack.push(val1 * val2)
     };
 
     vm.interpreter.conditionalJumpInstruction = function(relativeJump) {
@@ -543,6 +598,11 @@ var vm = (function(undefined) {
         vm.currentFrame().stack.push(address);
     };
 
+    vm.interpreter.newStringInstruction = function(string) {
+        var address = vm.allocateString(string);
+        vm.currentFrame().stack.push(address);
+    };
+
     vm.interpreter.arrayStoreInstruction = function() {
         var value = vm.currentFrame().stack.pop();
         var index = vm.currentFrame().stack.pop();
@@ -660,6 +720,22 @@ var vm = (function(undefined) {
             case 0:
                 var output = vm.currentFrame().stack.pop();
                 vm._output.push(output);
+                break;
+            case 1:
+                var fileNameAddress = vm.currentFrame().stack.pop();
+                var fileName = vm.retrieveString(fileNameAddress);
+                // open file, allocate file
+                var fileAddress = vm.allocateFile(fileName.data);
+                vm.currentFrame().stack.push(fileAddress);
+                break;
+
+            case 3:
+                var stringAddress = vm.currentFrame().stack.pop();
+                var string = vm.retrieveString(stringAddress);
+
+                // open file, allocate file
+                var integer = parseInt(string.data, 10);
+                vm.currentFrame().stack.push(integer);
                 break;
             default:
                 throw new Error("No built-in function on index [" + index + "]!")

@@ -491,6 +491,62 @@ describe('compiler', function() {
             ]}])
     });
 
+    it('should compile string literal', function(){
+        var out = compiler.compile("function main(){'x'}");
+        assert.deepEqual(out, [{"name": "main",
+            "arguments": 0,
+            "localVariables": 0,
+            "instructions": [
+                "new_string 'x'",
+                "return"
+            ]}])
+    });
+
+    it('should compile read from file', function(){
+        var out = compiler.compile("function main(){var f = fs_open_file('path'); f.close()}");
+        assert.deepEqual(out, [{"name": "main",
+            "arguments": 0,
+            "localVariables": 1,
+            "instructions": [
+                "new_string 'path'",
+                "built_in 1",
+                "store 0",
+                "load 0",
+                "invoke_native close",
+                "return"
+            ]}])
+    });
+
+    it('should compile write to file', function(){
+        var out = compiler.compile("function main(){var f = fs_open_file('path'); f.write('content'); f.close()}");
+        assert.deepEqual(out, [{"name": "main",
+            "arguments": 0,
+            "localVariables": 1,
+            "instructions": [
+                "new_string 'path'",
+                "built_in 1",
+                "store 0",
+                "new_string 'content'",
+                "load 0",
+                "invoke_native write",
+                "load 0",
+                "invoke_native close",
+                "return"
+            ]}])
+    });
+
+    it('should compile write to file', function(){
+        var out = compiler.compile("function main(){parseInt('10')}");
+        assert.deepEqual(out, [{"name": "main",
+            "arguments": 0,
+            "localVariables": 0,
+            "instructions": [
+                "new_string '10'",
+                "built_in 3",
+                "return"
+            ]}])
+    });
+
     it('should compile knapsack source code', function(){
         var out = compiler.compileFile(__dirname + "/fixture/knapsack.js", __dirname + "/fixture/knapsack.json");
         console.log(out);

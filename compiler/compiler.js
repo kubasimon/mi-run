@@ -151,8 +151,22 @@ var compiler = (function(PEG, fs, undefined) {
         }
         switch (element.name.type) {
             case "Variable":
-                //invoke <name>
-                fnc.instructions.push("invoke " + element.name.name);
+                // check special functions!
+                switch(element.name.name) {
+                    case "print":
+                        fnc.instructions.push("built_in 0");
+                        break;
+                    case "fs_open_file":
+                        fnc.instructions.push("built_in 1");
+                        break;
+                    case "parseInt":
+                        fnc.instructions.push("built_in 3");
+                        break;
+                    default:
+                        //invoke <name>
+                        fnc.instructions.push("invoke " + element.name.name);
+                }
+
                 break;
             case "PropertyAccess":
                 compiler.generateExpression(localVariables, element.name.base, fnc);
@@ -262,6 +276,9 @@ var compiler = (function(PEG, fs, undefined) {
                     case "-":
                         fnc.instructions.push("subtract");
                         break;
+                    case "*":
+                        fnc.instructions.push("times");
+                        break;
                     case "<":
                         fnc.instructions.push("less");
                         break;
@@ -274,7 +291,6 @@ var compiler = (function(PEG, fs, undefined) {
                     case ">":
                         fnc.instructions.push("greater");
                         break;
-                    case "*":
                     case "/":
                     default:
                     throw new Error ("BinaryExpression operator '" + expression.operator + "' not implemented, only '+', '-' allowed !")
@@ -338,6 +354,9 @@ var compiler = (function(PEG, fs, undefined) {
                 break;
             case "EmptyStatement":
                 //ignore
+                break;
+            case "StringLiteral":
+                fnc.instructions.push("new_string '"+ expression.value + "'");
                 break;
             case "ReturnStatement":
                 //ignore

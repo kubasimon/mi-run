@@ -2,9 +2,22 @@ function main() {
     //var items = [{w:18, p:114},  {w:42, p:136},  {w:88, p:192},  {w:3, p:223}];       // TODO load from file
 //    var items = [{w:55, p:29},  {w:81, p:64},  {w:14, p:104},  {w:52, p:222}];       // TODO load from file
 //    var items = [{w:89, p:196},  {w:18, p:62},  {w:57, p:34},  {w:69, p:112}];       // TODO load from file
-    var items = [{w:34, p:169},  {w:23, p:152},  {w:62, p:44},  {w:2, p:224}];       // TODO load from file
+    var file = fs_open_file("compiler/fixture/knapsack.in.1.dat");
+    var numberOfItems = file.read_line();
+    var capacity = file.read_line();
+    var items2 = [];
+    for(var i = 0; i < numberOfItems * 2; i++) {
+        var weight = file.read_line();
+        var price = file.read_line();
+        var obj = {w: parseInt(weight), p: parseInt(price)};
+        items2.push(obj)
+    }
+    file.close();
+
+    //var items = [{w:34, p:169},  {w:23, p:152},  {w:62, p:44},  {w:2, p:224}];       // TODO load from file
     //
-    start(items, 4, 100);
+    var solution = start(items2, 4, 100);
+    // todo write to file!
 }
 
 function start(items, numberOfItems, capacity) {
