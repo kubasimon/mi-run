@@ -15,7 +15,7 @@ var compiler = (function(PEG, fs, undefined) {
         var program = fs.readFileSync(fileName, "UTF-8");
         var out = compiler.compile(program);
         if (outputFile) {
-            fs.writeFileSync(outputFile, JSON.stringify(out));
+            fs.writeFileSync(outputFile, JSON.stringify(out,null,'\t'));
         }
         return out;
     };
