@@ -2,9 +2,9 @@
     "name": "main",
     "arguments": 0,
     "localVariables": 0,
-    "constantPool": [ "hello_world", "Hello World"],
+    "constantPool": [ "hello_world"],
     "instructions": [
-        "push_c #1",
+        "new_string 'Hello World'",
         "built_in 0",
         "return"
     ]

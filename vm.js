@@ -156,7 +156,8 @@ var vm = (function(undefined) {
             fn: function(array) {
                 var address = vm.allocateArray();
                 // copy data
-                vm.heap[address].data = array.data.slice();
+                var arrayObject = vm.retrieveArray(address);
+                arrayObject.data = array.data.slice();
                 vm.currentFrame().stack.push(address);
             },
             arguments: 1
@@ -181,14 +182,35 @@ var vm = (function(undefined) {
         vm.addNativeFunction({
             name: "file.close",
             fn: function(file) {
-                //??
+                // todo ??
             },
             arguments: 1
         });
+        vm.addNativeFunction({
+            name: "file.write",
+            fn: function(file, content) {
+                //dereference string
+                // TODO pointer?!?
+                var data = content;
+                if (vm.isPointer(content)) {
+                     data = vm.retrieveHeapObject(content).data;
+                }
+                fs.writeFileSync(file.fileName, data, "utf-8")
+            },
+            arguments: 2
+        });
     };
 
+    vm.isPointer = function (address) {
+        return typeof address == 'string' && address.indexOf("p") === 0;
+    }
+
     vm.retrieveHeapObject = function(address) {
-        //TODO address isPointer?
+        if (!vm.isPointer(address)) {
+            throw new Error('Address "' + address + '" is not a pointer !');
+        }
+        address = address.replace('p', '');
+
         if (! address in vm.heap) {
             throw new Error('Address "' + address + '" not found on heap !');
         }
@@ -235,30 +257,38 @@ var vm = (function(undefined) {
 
     vm.allocateArray = function() {
         // todo better allocation
-        return vm.heap.push({type: 'array', data: []}) - 1
+        var address = vm.heap.push({type: 'array', data: []}) - 1;
+        address = "p" + address;
+        return address;
     };
 
     vm.allocateString = function(string) {
         // todo better allocation
         string = string.replace(/^'|'$/gm, '');
-        return vm.heap.push({type: 'string', data: string}) - 1
+        var address =  vm.heap.push({type: 'string', data: string}) - 1;
+        address = "p" + address;
+        return address;
     };
 
     vm.allocateFile = function(fileName) {
         // todo better allocation
-        return vm.heap.push({type: 'file', fileName: fileName, currentLine: 0}) - 1
+        var address =  vm.heap.push({type: 'file', fileName: fileName, currentLine: 0}) - 1;
+        address = "p" + address;
+        return address;
     };
 
     vm.allocateObject = function() {
         // todo better allocation
-        return vm.heap.push({type: 'object', data: []}) - 1
+        var address = vm.heap.push({type: 'object', data: []}) - 1;
+        address = "p" + address;
+        return address;
     };
 
     vm.interpreter = {};
 
     vm.interpreter.process = function() {
         while(vm.instructionPointer < vm.instructions.length) {
-            var instruction = vm.instructions[vm.instructionPointer].split(" ");
+            var instruction = vm.instructions[vm.instructionPointer].replace(/\s+/, '\x01').split('\x01');
             console.log(Array(vm.currentStackFrame*4).join(" ") + "frame " + vm.currentStackFrame + " #" + vm.instructionPointer + ": " + instruction);
 //            console.log(vm.currentFrame().stack);
             if (instruction[0] == 'terminate') {
@@ -640,10 +670,7 @@ var vm = (function(undefined) {
     vm.interpreter.objectStoreInstruction = function(fieldName) {
         var address = vm.currentFrame().stack.pop();
         var value = vm.currentFrame().stack.pop();
-        if (! address in vm.heap) {
-            throw new Error('Address "' + address + '" not found on heap !');
-        }
-        var object = vm.heap[address];
+        var object = vm.retrieveHeapObject(address);
         if (object.type != 'object') {
             throw new Error('No object on address "' + object + '"! Heap data: ' + object );
         }
@@ -684,10 +711,7 @@ var vm = (function(undefined) {
             throw new Error('Empty stack, object address expected!');
         }
         var address = vm.currentFrame().stack.pop();
-        if (! address in vm.heap) {
-            throw new Error('Address "' + address + '" not found on heap !');
-        }
-        var object = vm.heap[address];
+        var object = vm.retrieveHeapObject(address);
         if (object.type != 'object') {
             throw new Error('No object on address "' + object + '"! Heap data: ' + object );
         }
@@ -719,7 +743,14 @@ var vm = (function(undefined) {
         switch (index) {
             case 0:
                 var output = vm.currentFrame().stack.pop();
-                vm._output.push(output);
+                if (vm.isPointer(output)) {
+                    var data = vm.retrieveHeapObject(output).data;
+                    vm._output.push(data);
+                    console.log("out: " + data)
+                } else {
+                    vm._output.push(output);
+                    console.log("out: " +output)
+                }
                 break;
             case 1:
                 var fileNameAddress = vm.currentFrame().stack.pop();
