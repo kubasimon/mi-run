@@ -650,19 +650,19 @@ describe('vm', function(){
         });
 
         it('should load bytecode and run hello world', function(){
-            vm.load("./fixtures/bytecode/hello_world.json");
+            vm.load("./fixture/hello_world.json");
 
             assert.equal(vm._output[0], "Hello World");
         });
 
         it('should load bytecode and run array sum', function(){
-            vm.load("./fixtures/bytecode/array_sum.json");
+            vm.load("./fixture/array_sum.json");
 
             assert.equal(vm._output[0], 10);
         });
 
         it('should load bytecode and run array native functions', function(){
-            vm.load("./fixtures/bytecode/array_functions.json");
+            vm.load("./fixture/array_functions.json");
 
             assert.equal(vm._output[0], 2);
             assert.equal(vm._output[1], 4);
@@ -671,26 +671,26 @@ describe('vm', function(){
         });
 
         it('should load bytecode and run array native slice', function(){
-            vm.load("./fixtures/bytecode/array_slice.json");
+            vm.load("./fixture/array_slice.json");
 
             assert.equal(vm._output[0], 99);
             assert.equal(vm._output[1], 66);
         });
         it('should load bytecode and run array native length', function(){
-            vm.load("./fixtures/bytecode/array_length.json");
+            vm.load("./fixture/array_length.json");
 
             assert.equal(vm._output[0], 3);
             assert.equal(vm._output[1], 4);
         });
 
         it('should load bytecode and run hello object', function(){
-            vm.load("./fixtures/bytecode/hello_object.json");
+            vm.load("./fixture/hello_object.json");
 
             assert.equal(vm._output[0], 88);
         });
 
         it('should work with more field', function(){
-            vm.load("./fixtures/bytecode/object_more_fields.json");
+            vm.load("./fixture/object_more_fields.json");
 
             assert.equal(vm._output[0], 88);
             assert.equal(vm._output[1], 89);
@@ -698,21 +698,21 @@ describe('vm', function(){
         });
 
         it('should work with passing object to functions', function(){
-            vm.load("./fixtures/bytecode/knapsack_change_best_solution.json");
+            vm.load("./fixture/knapsack_change_best_solution.json");
 
             assert.equal(vm._output[0], 66);
             assert.equal(vm._output[1], 99);
         });
 
         it('should work with object in array', function(){
-            vm.load("./fixtures/bytecode/object_in_array.json");
+            vm.load("./fixture/object_in_array.json");
 
             assert.equal(vm._output[0], 88);
             assert.equal(vm._output[1], 888);
         });
 
         it('should work with knapsack program!', function(){
-            vm.load("./compiler/fixture/knapsack.json");
+            vm.load("../compiler/fixture/knapsack.json");
 //
 //            assert.equal(vm._output[0], 88);
 //            assert.equal(vm._output[1], 888);

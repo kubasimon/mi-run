@@ -1,2 +1,2 @@
 test:
-    mocha vm_test.js knapsack_test.js compiler\compiler_test.js
+    mocha compiler\compiler_test.js vm\vm_test.js knapsack\knapsack_test.js integration_test.js

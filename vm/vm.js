@@ -18,8 +18,8 @@ var vm = (function(undefined) {
 
     vm.load = function(file) {
         vm.start();
+        console.log(file);
         var dataJSON = require(file);
-        //console.log(dataJSON);
         for(var i = 0; i < dataJSON.length; i++) {
             vm.addFunction(dataJSON[i])
         }
@@ -189,10 +189,9 @@ var vm = (function(undefined) {
         vm.addNativeFunction({
             name: "file.write",
             fn: function(file, content) {
-                //dereference string
-                // TODO pointer?!?
                 var data = content;
                 if (vm.isPointer(content)) {
+                    //dereference
                      data = vm.retrieveHeapObject(content).data;
                 }
                 fs.writeFileSync(file.fileName, data, "utf-8")
