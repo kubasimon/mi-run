@@ -5,7 +5,7 @@ var vm = (function(undefined) {
     vm.start = function() {
         vm.stackFrames = [];
         vm.currentStackFrame = 0;
-        vm.maximumStackFrames = 10;
+        vm.maximumStackFrames = 50;
         vm.instructions = [];
         vm.instructionPointer = 0;
         vm.table = [];
@@ -203,7 +203,7 @@ var vm = (function(undefined) {
 
     vm.isPointer = function (address) {
         return typeof address == 'string' && address.indexOf("p") === 0;
-    }
+    };
 
     vm.retrieveHeapObject = function(address) {
         if (!vm.isPointer(address)) {
@@ -255,7 +255,7 @@ var vm = (function(undefined) {
         }
     };
 
-    vm.allocateArray = function() {
+    vm.allocateArray = function(size) {
         // todo better allocation
         var address = vm.heap.push({type: 'array', data: []}) - 1;
         address = "p" + address;
@@ -289,7 +289,7 @@ var vm = (function(undefined) {
     vm.interpreter.process = function() {
         while(vm.instructionPointer < vm.instructions.length) {
             var instruction = vm.instructions[vm.instructionPointer].replace(/\s+/, '\x01').split('\x01');
-            console.log(Array(vm.currentStackFrame*4).join(" ") + "frame " + vm.currentStackFrame + " #" + vm.instructionPointer + ": " + instruction);
+           // console.log(Array(vm.currentStackFrame*4).join(" ") + "frame " + vm.currentStackFrame + " #" + vm.instructionPointer + ": " + instruction);
 //            console.log(vm.currentFrame().stack);
             if (instruction[0] == 'terminate') {
                 break;
@@ -600,7 +600,6 @@ var vm = (function(undefined) {
     };
 
     vm.interpreter.returnValueInstruction = function() {
-        console.log(vm.currentFrame().stack)
         var value = vm.currentFrame().stack.pop();
         var returnAddress = vm.currentFrame().returnAddress;
         vm.deleteStackFrame();
@@ -676,8 +675,7 @@ var vm = (function(undefined) {
         }
 
         var index = 0;
-        var last = null;
-        var next = null;
+        var last;
         if (object.data[index] != null) {
             while(true) {
                 last = index;
@@ -717,8 +715,7 @@ var vm = (function(undefined) {
         }
 
         var index = 0;
-        var last = null;
-        var next = null;
+        var last;
         var debugFields = [];
         if (object.data[index] == null) {
                 throw new Error("Field '" + fieldName + "' not found.  No fields defined");
