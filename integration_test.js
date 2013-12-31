@@ -13,6 +13,7 @@ describe('vm', function(){
         it('should work with knapsack program!', function(){
             compiler.compileFile("./compiler/fixture/knapsack.js", "./compiler/fixture/knapsack.json");
             vm.load("../compiler/fixture/knapsack.json");
+            console.log(vm.heap.length)
         });
     });
 });

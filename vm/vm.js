@@ -6,14 +6,27 @@ var vm = (function(undefined) {
         vm.stackFrames = [];
         vm.currentStackFrame = 0;
         vm.maximumStackFrames = 50;
+        vm.heapSize = 50;
         vm.instructions = [];
         vm.instructionPointer = 0;
         vm.table = [];
         vm.tableNative = [];
-        vm.heap = []; //vm.initializeHeap();
+        vm.heap = [];
+        vm.initializeHeap();
         vm.createNewStackFrame(null, []);
         vm._output = [];
         vm.addNativeArrayFunctions();
+    };
+
+    vm.initializeHeap = function() {
+        vm.heap = new Array(vm.heapSize);
+        for (var i = 0; i < vm.heap.length; i++) {
+            vm.heap[i] = null;
+        }
+    };
+
+    vm.currentHeapSize = function() {
+        return vm.heap.filter(function(val){ return val != null}).length;
     };
 
     vm.load = function(file) {
@@ -35,6 +48,75 @@ var vm = (function(undefined) {
 
     vm.currentFrame = function() {
         return vm.stackFrames[vm.currentStackFrame];
+    };
+
+    vm.gc = {};
+
+    vm.gc.run = function() {
+        //get all heap references from stack frames local variables and theirs stacks
+        var references = [];
+        console.log("gc start");
+
+        vm.gc.mark(references);
+        console.log("gc marked: " + references.length);
+        vm.gc.sweep(references);
+        console.log("gc swept");
+    };
+
+    vm.gc.sweep = function(references) {
+        // do something
+        for(var i = 0; i < vm.heap.length; i++) {
+            if (references.indexOf(i) == -1) {
+                vm.heap[i] = null;
+            }
+        }
+    };
+
+    vm.gc.mark = function(references) {
+        for (var i = 0; i <= vm.currentStackFrame; i++) {
+//            console.log("Frame: "+i);
+            var address;
+            for (var j = 0; j < vm.stackFrames[i].localVariables.length; j++) {
+                address = vm.stackFrames[i].localVariables[j];
+                if (vm.isPointer(address)) {
+                    references.push(parseInt(address.replace('p', '')));
+                    vm.gc.markAddress(address, references);
+//                    console.log(Array(i).join(" ") +  "Local: %d %j", j , address);
+                }
+            }
+            for (j = 0; j < vm.stackFrames[i].stack._data.length; j++) {
+                address = vm.stackFrames[i].stack._data[j];
+                if (vm.isPointer(address)) {
+                    references.push(parseInt(address.replace('p', '')));
+                    vm.gc.markAddress(address, references);
+//                    console.log(Array(i).join(" ") + "Stack: %d %j", j , address);
+                }
+            }
+        }
+    };
+
+    vm.gc.markAddress = function(address, references) {
+        var obj = vm.retrieveHeapObject(address);
+        switch (obj.type) {
+            case "array":
+                for(var i = 0; i < obj.data.length; i++) {
+                    address = obj.data[i];
+                    if (vm.isPointer(address) && references.indexOf(parseInt(address.replace('p', ''))) == -1) {
+                        references.push(parseInt(address.replace('p', '')));
+                        vm.gc.markAddress(address, references);
+//                        console.log(Array(i).join(" ") + "Ref: %j", address);
+                    }
+                }
+                break;
+            case "object":
+            case "string":
+            case "file":
+                // do nothing
+                break;
+
+            default:
+                throw new Error ("GC error, unknown type " + obj.type + " on heap");
+        }
     };
 
     vm.createNewStackFrame = function(returnAddress, arguments, constantPool) {
@@ -213,6 +295,10 @@ var vm = (function(undefined) {
         if (! address in vm.heap) {
             throw new Error('Address "' + address + '" not found on heap !');
         }
+
+        if (vm.heap[address] === null) {
+            throw new Error('Null on address "' + address + '"!');
+        }
         return vm.heap[address];
     };
 
@@ -254,33 +340,39 @@ var vm = (function(undefined) {
         }
     };
 
+    vm.allocate = function(obj) {
+        if (vm.currentHeapSize() > vm.heapSize/2) {
+            if (Math.random() > 0.5) {
+                vm.gc.run();
+            }
+        }
+        var index = vm.heap.indexOf(null);
+        if (index == -1) {
+            vm.gc.run();
+            index = vm.heap.indexOf(null);
+            if (index == -1) {
+                throw new Error("Not enough space on heap!");
+            }
+        }
+        vm.heap[index] = obj;
+        return "p" + index;
+    };
+
     vm.allocateArray = function(size) {
-        // todo better allocation
-        var address = vm.heap.push({type: 'array', data: []}) - 1;
-        address = "p" + address;
-        return address;
+        return vm.allocate({type: 'array', data: []})
     };
 
     vm.allocateString = function(string) {
-        // todo better allocation
         string = string.replace(/^'|'$/gm, '');
-        var address =  vm.heap.push({type: 'string', data: string}) - 1;
-        address = "p" + address;
-        return address;
+        return vm.allocate({type: 'string', data: string});
     };
 
     vm.allocateFile = function(fileName) {
-        // todo better allocation
-        var address =  vm.heap.push({type: 'file', fileName: fileName, currentLine: 0}) - 1;
-        address = "p" + address;
-        return address;
+        return vm.allocate({type: 'file', fileName: fileName, currentLine: 0});
     };
 
     vm.allocateObject = function() {
-        // todo better allocation
-        var address = vm.heap.push({type: 'object', data: []}) - 1;
-        address = "p" + address;
-        return address;
+        return vm.allocate({type: 'object', data: []});
     };
 
     vm.interpreter = {};
@@ -288,7 +380,7 @@ var vm = (function(undefined) {
     vm.interpreter.process = function() {
         while(vm.instructionPointer < vm.instructions.length) {
             var instruction = vm.instructions[vm.instructionPointer].replace(/\s+/, '\x01').split('\x01');
-           // console.log(Array(vm.currentStackFrame*4).join(" ") + "frame " + vm.currentStackFrame + " #" + vm.instructionPointer + ": " + instruction);
+//           console.log(Array(vm.currentStackFrame*4).join(" ") + "frame " + vm.currentStackFrame + " #" + vm.instructionPointer + ": " + instruction);
 //            console.log(vm.currentFrame().stack);
             if (instruction[0] == 'terminate') {
                 break;
@@ -670,7 +762,8 @@ var vm = (function(undefined) {
         var value = vm.currentFrame().stack.pop();
         var object = vm.retrieveHeapObject(address);
         if (object.type != 'object') {
-            throw new Error('No object on address "' + object + '"! Heap data: ' + object );
+            console.log(object);
+            throw new Error('No object on address "' + address + '"! Heap data:' + object);
         }
 
         var index = 0;
@@ -708,9 +801,12 @@ var vm = (function(undefined) {
             throw new Error('Empty stack, object address expected!');
         }
         var address = vm.currentFrame().stack.pop();
+//        console.log(address);
+//        console.log(vm.heap[address]);
         var object = vm.retrieveHeapObject(address);
         if (object.type != 'object') {
-            throw new Error('No object on address "' + object + '"! Heap data: ' + object );
+            console.log(object);
+            throw new Error('No object on address "' + address + '"! Heap data:' + object);
         }
 
         var index = 0;
