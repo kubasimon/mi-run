@@ -11,7 +11,7 @@
     },
     "dependencies": {
         "mocha" : "*",
-        "pegjs" : "*"
+        "pegjs" : "~0.7.0"
     },
     "devDependencies": {
         "grunt": "~0.4.1",
