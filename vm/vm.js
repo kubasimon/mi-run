@@ -31,7 +31,7 @@ var vm = (function(undefined) {
 
     vm.load = function(file) {
         vm.start();
-        console.log(file);
+//        console.log(file);
         var dataJSON = require(file);
         for(var i = 0; i < dataJSON.length; i++) {
             vm.addFunction(dataJSON[i])
@@ -40,9 +40,9 @@ var vm = (function(undefined) {
         var startInstruction = vm.addInstruction("invoke main");
         vm.addInstruction("terminate");
         vm.instructionPointer = startInstruction;
-        for (i = 0; i < vm.instructions.length; i++) {
-            console.log("#" + i + ": " + vm.instructions[i]);
-        }
+//        for (i = 0; i < vm.instructions.length; i++) {
+//            console.log("#" + i + ": " + vm.instructions[i]);
+//        }
         vm.interpreter.process();
     };
 
@@ -55,12 +55,12 @@ var vm = (function(undefined) {
     vm.gc.run = function() {
         //get all heap references from stack frames local variables and theirs stacks
         var references = [];
-        console.log("gc start");
+//        console.log("gc start");
 
         vm.gc.mark(references);
-        console.log("gc marked: " + references.length);
+//        console.log("gc marked: " + references.length);
         vm.gc.sweep(references);
-        console.log("gc swept");
+//        console.log("gc swept");
     };
 
     vm.gc.sweep = function(references) {
@@ -264,7 +264,7 @@ var vm = (function(undefined) {
         vm.addNativeFunction({
             name: "file.close",
             fn: function(file) {
-                // todo ??
+                // nothing
             },
             arguments: 1
         });
