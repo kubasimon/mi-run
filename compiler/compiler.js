@@ -3,7 +3,8 @@ fs = require("fs");
 
 var compiler = (function(PEG, fs, undefined) {
     var compiler = {
-        parser: {}
+        parser: {},
+        bytecode: []
     };
 
     compiler.initialize = function() {
@@ -32,14 +33,14 @@ var compiler = (function(PEG, fs, undefined) {
     compiler.createBytecode = function(ast) {
 //        console.log("creating bytecode");
 //        console.log(ast);
-        var bytecode = [];
+        compiler.bytecode = [];
         if (ast.type == "Program") {
             for(var i = 0; i < ast.elements.length; i++) {
 //                console.log(ast.elements[i]);
                 var elem = ast.elements[i];
                 switch(elem.type) {
                     case "Function":
-                        compiler.generateFunction(elem, bytecode);
+                        compiler.generateFunction(elem, compiler.bytecode);
                         break;
                     case "EmptyStatement":
                         //ignore
@@ -51,29 +52,43 @@ var compiler = (function(PEG, fs, undefined) {
         } else {
             throw new Error ("Unknown type '" + ast.type + "', should be Program!")
         }
-        return bytecode;
+        return compiler.bytecode;
     };
 
-    compiler.generateFunction = function(elem, bytecode) {
+    compiler.generateFunction = function(elem, bytecode, parentLocalVariables) {
         var fnc = {
             "name": elem.name,
             "arguments": elem.params.length,
-            "localVariables": 0, // TODO
-            "instructions": [] // TODO
+            "localVariables": 0,
+            "instructions": []
         };
         var localVariables = [];
         // add arguments as local variables
         for(var i=0; i < elem.params.length; i++) {
             localVariables.push(elem.params[i]);
         }
-        compiler.generateFunctionBody(elem.elements, fnc, localVariables);
+        if (parentLocalVariables) {
+            for(i=0; i < parentLocalVariables.length; i++) {
+                localVariables.push(parentLocalVariables[i]);
+            }
+        }
+
+        compiler.generateFunctionBody(elem.elements, fnc, localVariables, elem.name);
         bytecode.push(fnc);
     };
 
-    compiler.generateFunctionBody = function(elements, fnc, localVariables) {
+    compiler.generateFunctionBody = function(elements, fnc, localVariables, functionName) {
         for (var i = 0; i < elements.length; i++) {
             var element = elements[i];
-            compiler.generateExpression(localVariables, element, fnc);
+            if (element.type == "Function") {
+                // inner function
+                // change name
+                fnc.instructions.push("create_inner " + element.name);
+                element.name = functionName + "#" + element.name;
+                compiler.generateFunction(element, compiler.bytecode, localVariables)
+            } else {
+                compiler.generateExpression(localVariables, element, fnc);
+            }
 //            switch (element.type) {
 //
 //                default:
@@ -393,6 +408,7 @@ var compiler = (function(PEG, fs, undefined) {
                 }
                 compiler.storeVariable(localVariables, expression.expression.name, fnc); // store to i
                 break;
+
             default:
                 throw new Error ("Expression type'" + expression.type + "' not implemented!")
         }

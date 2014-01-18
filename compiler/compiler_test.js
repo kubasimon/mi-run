@@ -255,6 +255,35 @@ describe('compiler', function() {
         );
     });
 
+    it('should compile nested function', function(){
+        var out = compiler.compile("function main(){var a = 1; function test() {return a+1}; return test() }");
+        assert.deepEqual(out,
+            [
+                {"name": "main#test",
+                    "arguments": 0,
+                    "localVariables": 1,
+                    "instructions": [
+                        "load 0",
+                        "push 1",
+                        "add",
+                        "return_value"
+                    ]
+                },
+                {"name": "main",
+                    "arguments": 0,
+                    "localVariables": 1,
+                    "instructions": [
+                        "push 1",
+                        "store 0",
+                        "create_inner test",
+                        "invoke test",
+                        "return_value"
+                    ]
+                }
+            ]
+        );
+    });
+
     it('should compile for statement', function(){
         var out = compiler.compile("function main(){for(var i=1; i<10;i++){}}");
         assert.deepEqual(out, [{"name": "main",
