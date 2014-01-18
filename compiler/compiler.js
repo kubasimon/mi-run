@@ -60,6 +60,7 @@ var compiler = (function(PEG, fs, undefined) {
             "name": elem.name,
             "arguments": elem.params.length,
             "localVariables": 0,
+            "anonymousFunctionCounter": 0,
             "instructions": []
         };
         var localVariables = [];
@@ -185,6 +186,17 @@ var compiler = (function(PEG, fs, undefined) {
             case "PropertyAccess":
                 compiler.generateExpression(localVariables, element.name.base, fnc);
                 fnc.instructions.push("invoke_native " + element.name.name);
+                break;
+
+            case "Function":
+                // anonymous function
+                // generate anon name
+                element.name.name = fnc.name + "#anonymous_" + fnc.anonymousFunctionCounter;
+                fnc.anonymousFunctionCounter ++;
+                // generate anon function
+                compiler.generateFunction(element.name, compiler.bytecode, localVariables);
+                // invoke it
+                fnc.instructions.push("invoke " + element.name.name);
                 break;
             default:
                 throw new Error ("Function name type '" + element.name.type + "' not implemented, only 'Variable', 'PropertyAccess' allowed !")

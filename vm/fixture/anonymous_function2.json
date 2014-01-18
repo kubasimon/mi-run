@@ -1,0 +1,24 @@
+[
+    {"name": "main#anonymous_0",
+        "arguments": 1,
+        "localVariables": 2,
+        "anonymousFunctionCounter": 0, "instructions": [
+        "load 0",
+        "load 1",
+        "times",
+        "return_value"
+    ]
+    },
+    {"name": "main",
+        "arguments": 0,
+        "localVariables": 1,
+        "anonymousFunctionCounter": 1, "instructions": [
+        "push 10",
+        "store 0",
+        "push 20",
+        "invoke main#anonymous_0",
+        "built_in 0",
+        "return"
+    ]
+    }
+]

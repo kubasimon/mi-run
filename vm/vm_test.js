@@ -724,6 +724,17 @@ describe('vm', function(){
             assert.equal(vm._output[0], 50);
         });
 
+        it('should work with anonymous function', function(){
+            vm.load("./fixture/anonymous_function.json");
+
+            assert.equal(vm._output[0], 10);
+        });
+        it('should work with anonymous function with outer variable', function(){
+            vm.load("./fixture/anonymous_function2.json");
+
+            assert.equal(vm._output[0], 200);
+        });
+
         it('should work with knapsack program!', function(){
             vm.load("../compiler/fixture/knapsack.json");
 //

@@ -13,7 +13,7 @@ describe('compiler', function() {
         assert.deepEqual(out, [{"name": "main",
             "arguments": 0,
             "localVariables": 0,
-            "instructions": ["return"]}])
+            "anonymousFunctionCounter": 0, "instructions": ["return"]}])
     });
 
     it('should compile array definition', function(){
@@ -21,7 +21,7 @@ describe('compiler', function() {
         assert.deepEqual(out, [{"name": "main",
             "arguments": 0,
             "localVariables": 1,
-            "instructions": [
+            "anonymousFunctionCounter": 0, "instructions": [
                 "new_array",
                 "store 0",
                 "return"
@@ -33,7 +33,7 @@ describe('compiler', function() {
         assert.deepEqual(out, [{"name": "main",
             "arguments": 0,
             "localVariables": 1,
-            "instructions": [
+            "anonymousFunctionCounter": 0, "instructions": [
                 "new_array",
                 "store 0",
                 "push 1",
@@ -48,7 +48,7 @@ describe('compiler', function() {
         assert.deepEqual(out, [{"name": "main",
             "arguments": 0,
             "localVariables": 1,
-            "instructions": [
+            "anonymousFunctionCounter": 0, "instructions": [
                 "new_array",
                 "store 0",
                 "push 85",
@@ -66,7 +66,7 @@ describe('compiler', function() {
         assert.deepEqual(out, [{"name": "main",
             "arguments": 0,
             "localVariables": 1,
-            "instructions": [
+            "anonymousFunctionCounter": 0, "instructions": [
                 "new_object",
                 "store 0",
                 "return"
@@ -78,7 +78,7 @@ describe('compiler', function() {
         assert.deepEqual(out, [{"name": "main",
             "arguments": 0,
             "localVariables": 1,
-            "instructions": [
+            "anonymousFunctionCounter": 0, "instructions": [
                 "new_object",
                 "store 0",
                 "push 66",
@@ -94,7 +94,7 @@ describe('compiler', function() {
         assert.deepEqual(out, [{"name": "main",
             "arguments": 0,
             "localVariables": 1,
-            "instructions": [
+            "anonymousFunctionCounter": 0, "instructions": [
                 "new_object",
                 "store 0",
                 "push 66",
@@ -112,7 +112,7 @@ describe('compiler', function() {
         assert.deepEqual(out, [{"name": "main",
             "arguments": 0,
             "localVariables": 2,
-            "instructions": [
+            "anonymousFunctionCounter": 0, "instructions": [
                 "new_object",
                 "store 0",
                 "push 66",
@@ -138,7 +138,7 @@ describe('compiler', function() {
         assert.deepEqual(out, [{"name": "main",
             "arguments": 0,
             "localVariables": 0,
-            "instructions": [
+            "anonymousFunctionCounter": 0, "instructions": [
                 "push 66",
                 "push 67",
                 "invoke test",
@@ -151,7 +151,7 @@ describe('compiler', function() {
         assert.deepEqual(out, [{"name": "main",
             "arguments": 0,
             "localVariables": 2,
-            "instructions": [
+            "anonymousFunctionCounter": 0, "instructions": [
                 "new_array",
                 "store 0",
 
@@ -178,7 +178,7 @@ describe('compiler', function() {
         assert.deepEqual(out, [{"name": "main",
             "arguments": 0,
             "localVariables": 2,
-            "instructions": [
+            "anonymousFunctionCounter": 0, "instructions": [
                 "new_array",
                 "store 0",
 
@@ -221,7 +221,7 @@ describe('compiler', function() {
         assert.deepEqual(out, [{"name": "main",
             "arguments": 0,
             "localVariables": 1,
-            "instructions": [
+            "anonymousFunctionCounter": 0, "instructions": [
                 "new_array",
                 "store 0",
                 "load 0",
@@ -236,7 +236,7 @@ describe('compiler', function() {
         assert.deepEqual(out, [{"name": "main",
             "arguments": 1,
             "localVariables": 2,
-            "instructions": [
+            "anonymousFunctionCounter": 0, "instructions": [
                 "new_array",
                 "store 1",
                 "load 1",
@@ -262,7 +262,7 @@ describe('compiler', function() {
                 {"name": "main#test",
                     "arguments": 0,
                     "localVariables": 1,
-                    "instructions": [
+                    "anonymousFunctionCounter": 0, "instructions": [
                         "load 0",
                         "push 1",
                         "add",
@@ -272,7 +272,7 @@ describe('compiler', function() {
                 {"name": "main",
                     "arguments": 0,
                     "localVariables": 1,
-                    "instructions": [
+                    "anonymousFunctionCounter": 0, "instructions": [
                         "push 1",
                         "store 0",
                         "invoke test",
@@ -291,7 +291,7 @@ describe('compiler', function() {
                 {"name": "main#test",
                     "arguments": 1,
                     "localVariables": 2,
-                    "instructions": [
+                    "anonymousFunctionCounter": 0, "instructions": [
                         "load 1",
                         "load 0",
                         "subtract",
@@ -301,7 +301,7 @@ describe('compiler', function() {
                 {"name": "main",
                     "arguments": 0,
                     "localVariables": 1,
-                    "instructions": [
+                    "anonymousFunctionCounter": 0, "instructions": [
                         "push 60",
                         "store 0",
                         "push 10",
@@ -314,12 +314,68 @@ describe('compiler', function() {
         );
     });
 
+    it('should compile anonymous function', function(){
+        var out = compiler.compile("function main(){print((function(x) {return x})(10)) }");
+        assert.deepEqual(out,
+            [
+                {"name": "main#anonymous_0",
+                    "arguments": 1,
+                    "localVariables": 1,
+                    "anonymousFunctionCounter": 0, "instructions": [
+                        "load 0",
+                        "return_value"
+                    ]
+                },
+                {"name": "main",
+                    "arguments": 0,
+                    "localVariables": 0,
+                    "anonymousFunctionCounter": 1, "instructions": [
+                        "push 10",
+                        "invoke main#anonymous_0",
+                        "built_in 0",
+                        "return"
+                    ]
+                }
+            ]
+        );
+    });
+
+    it('should compile anonymous function with outer variable', function(){
+        var out = compiler.compile("function main(){var y = 10; print((function(x) {return x*y})(10)) }");
+        assert.deepEqual(out,
+            [
+                {"name": "main#anonymous_0",
+                    "arguments": 1,
+                    "localVariables": 2,
+                    "anonymousFunctionCounter": 0, "instructions": [
+                    "load 0",
+                    "load 1",
+                    "times",
+                    "return_value"
+                ]
+                },
+                {"name": "main",
+                    "arguments": 0,
+                    "localVariables": 1,
+                    "anonymousFunctionCounter": 1, "instructions": [
+                    "push 10",
+                    "store 0",
+                    "push 10",
+                    "invoke main#anonymous_0",
+                    "built_in 0",
+                    "return"
+                ]
+                }
+            ]
+        );
+    });
+
     it('should compile for statement', function(){
         var out = compiler.compile("function main(){for(var i=1; i<10;i++){}}");
         assert.deepEqual(out, [{"name": "main",
             "arguments": 0,
             "localVariables": 1,
-            "instructions": [
+            "anonymousFunctionCounter": 0, "instructions": [
                 // init i
                 "push 1",
                 "store 0",
@@ -349,7 +405,7 @@ describe('compiler', function() {
         assert.deepEqual(out, [{"name": "main",
             "arguments": 0,
             "localVariables": 2,
-            "instructions": [
+            "anonymousFunctionCounter": 0, "instructions": [
                 "push 0",
                 "store 0",
 
@@ -386,7 +442,7 @@ describe('compiler', function() {
         assert.deepEqual(out, [{"name": "main",
             "arguments": 0,
             "localVariables": 0,
-            "instructions": [
+            "anonymousFunctionCounter": 0, "instructions": [
                 "push 1",
                 "return_value"
             ]}])
@@ -396,7 +452,7 @@ describe('compiler', function() {
         assert.deepEqual(out, [{"name": "main",
             "arguments": 0,
             "localVariables": 1,
-            "instructions": [
+            "anonymousFunctionCounter": 0, "instructions": [
                 "push 1",
                 "store 0",
                 "load 0",
@@ -408,7 +464,7 @@ describe('compiler', function() {
         assert.deepEqual(out, [{"name": "main",
             "arguments": 0,
             "localVariables": 0,
-            "instructions": [
+            "anonymousFunctionCounter": 0, "instructions": [
                 "return"
             ]}])
     });
@@ -418,7 +474,7 @@ describe('compiler', function() {
         assert.deepEqual(out, [{"name": "main",
             "arguments": 0,
             "localVariables": 1,
-            "instructions": [
+            "anonymousFunctionCounter": 0, "instructions": [
                 "new_array",
                 "store 0",
                 "load 0",
@@ -431,7 +487,7 @@ describe('compiler', function() {
         assert.deepEqual(out, [{"name": "main",
             "arguments": 0,
             "localVariables": 1,
-            "instructions": [
+            "anonymousFunctionCounter": 0, "instructions": [
                 "new_object",
                 "store 0",
                 "load 0",
@@ -444,7 +500,7 @@ describe('compiler', function() {
         assert.deepEqual(out, [{"name": "main",
             "arguments": 0,
             "localVariables": 2,
-            "instructions": [
+            "anonymousFunctionCounter": 0, "instructions": [
                 "new_array",
                 "store 0",
 
@@ -461,7 +517,7 @@ describe('compiler', function() {
         assert.deepEqual(out, [{"name": "main",
             "arguments": 0,
             "localVariables": 2,
-            "instructions": [
+            "anonymousFunctionCounter": 0, "instructions": [
                 "new_object",
                 "store 0",
 
@@ -483,7 +539,7 @@ describe('compiler', function() {
         assert.deepEqual(out, [{"name": "main",
             "arguments": 0,
             "localVariables": 1,
-            "instructions": [
+            "anonymousFunctionCounter": 0, "instructions": [
                 "push 1",
                 "negate",
                 "conditional_jump 3",
@@ -500,7 +556,7 @@ describe('compiler', function() {
         assert.deepEqual(out, [{"name": "main",
             "arguments": 0,
             "localVariables": 2,
-            "instructions": [
+            "anonymousFunctionCounter": 0, "instructions": [
                 "push 1",
                 "negate",
                 "conditional_jump 4",
@@ -521,7 +577,7 @@ describe('compiler', function() {
         assert.deepEqual(out, [{"name": "main",
             "arguments": 0,
             "localVariables": 1,
-            "instructions": [
+            "anonymousFunctionCounter": 0, "instructions": [
                 "push 5",
                 "store 0",
 
@@ -537,7 +593,7 @@ describe('compiler', function() {
         assert.deepEqual(out, [{"name": "main",
             "arguments": 0,
             "localVariables": 1,
-            "instructions": [
+            "anonymousFunctionCounter": 0, "instructions": [
                 "new_object",
                 "store 0",
 
@@ -555,7 +611,7 @@ describe('compiler', function() {
         assert.deepEqual(out, [{"name": "main",
             "arguments": 0,
             "localVariables": 0,
-            "instructions": [
+            "anonymousFunctionCounter": 0, "instructions": [
                 "new_string 'x'",
                 "return"
             ]}])
@@ -566,7 +622,7 @@ describe('compiler', function() {
         assert.deepEqual(out, [{"name": "main",
             "arguments": 0,
             "localVariables": 1,
-            "instructions": [
+            "anonymousFunctionCounter": 0, "instructions": [
                 "new_string 'path'",
                 "built_in 1",
                 "store 0",
@@ -581,7 +637,7 @@ describe('compiler', function() {
         assert.deepEqual(out, [{"name": "main",
             "arguments": 0,
             "localVariables": 1,
-            "instructions": [
+            "anonymousFunctionCounter": 0, "instructions": [
                 "new_string 'path'",
                 "built_in 1",
                 "store 0",
@@ -599,7 +655,7 @@ describe('compiler', function() {
         assert.deepEqual(out, [{"name": "main",
             "arguments": 0,
             "localVariables": 0,
-            "instructions": [
+            "anonymousFunctionCounter": 0, "instructions": [
                 "new_string '10'",
                 "built_in 3",
                 "return"
