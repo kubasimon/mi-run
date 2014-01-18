@@ -83,7 +83,6 @@ var compiler = (function(PEG, fs, undefined) {
             if (element.type == "Function") {
                 // inner function
                 // change name
-                fnc.instructions.push("create_inner " + element.name);
                 element.name = functionName + "#" + element.name;
                 compiler.generateFunction(element, compiler.bytecode, localVariables)
             } else {

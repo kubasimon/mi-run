@@ -65,8 +65,8 @@ describe('vm', function(){
             //set up
             vm.start();
 
-            vm.interpreter.pushIntInstruction(1);
             vm.interpreter.pushIntInstruction(5);
+            vm.interpreter.pushIntInstruction(1);
             assert.equal(vm.currentFrame().stack.size, 2);
 
             // do work
@@ -487,8 +487,8 @@ describe('vm', function(){
             vm.addInstruction("invoke twoargument");
             vm.addInstruction("terminate");
             vm.addFunction({ name: "twoargument", instructions: [
-                'load 0',
                 'load 1',
+                'load 0',
                 'subtract',
                 'return_value'
             ], arguments: 2, localVariables:2 });
@@ -506,8 +506,8 @@ describe('vm', function(){
             vm.addInstruction("invoke twoargument");
             vm.addInstruction("terminate");
             vm.addFunction({ name: "twoargument", instructions: [
-                'load 0',
                 'load 1',
+                'load 0',
                 'subtract',
                 'return_value'
             ], arguments: 2, localVariables:2 });
@@ -710,6 +710,18 @@ describe('vm', function(){
 
             assert.equal(vm._output[0], 88);
             assert.equal(vm._output[1], 888);
+        });
+
+        it('should work with inner function', function(){
+            vm.load("./fixture/inner_function.json");
+
+            assert.equal(vm._output[0], 89);
+        });
+
+        it('should work with inner function with arg', function(){
+            vm.load("./fixture/inner_function_with_arg.json");
+
+            assert.equal(vm._output[0], 50);
         });
 
         it('should work with knapsack program!', function(){

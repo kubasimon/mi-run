@@ -1,0 +1,23 @@
+[
+    {"name": "main#test",
+        "arguments": 0,
+        "localVariables": 1,
+        "instructions": [
+            "load 0",
+            "push 1",
+            "add",
+            "return_value"
+        ]
+    },
+    {"name": "main",
+        "arguments": 0,
+        "localVariables": 1,
+        "instructions": [
+            "push 88",
+            "store 0",
+            "invoke test",
+            "built_in 0",
+            "return"
+        ]
+    }
+]

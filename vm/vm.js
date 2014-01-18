@@ -120,7 +120,7 @@ var vm = (function(undefined) {
         }
     };
 
-    vm.createNewStackFrame = function(returnAddress, arguments, constantPool) {
+    vm.createNewStackFrame = function(returnAddress, arguments, constantPool, name) {
         if (vm.stackFrames.length + 1 > vm.maximumStackFrames) {
             throw new Error("StackOverflow, max stack frames level reached: " + this.maximumStackFrames);
         }
@@ -130,12 +130,21 @@ var vm = (function(undefined) {
             localVariables.push(arguments.pop())
         }
 
+        if (name && name.indexOf("#") !== 0) {
+            // inner function, push all current local after arguments
+            var parentLocals = vm.currentFrame().localVariables;
+            for (i = 0; i < parentLocals.length; i++) {
+                localVariables.push(parentLocals[i]);
+            }
+        }
+
         var constPool = constantPool || [];
 
         var frame = {
             returnAddress: returnAddress,
             localVariables: localVariables,
             constantPool: constPool,
+            name: name,
             stack: {
                 _data: [],
                 size: 0,
@@ -187,10 +196,17 @@ var vm = (function(undefined) {
             startAddress: startAddress,
             arguments: funct.arguments,
             localVariables: funct.localVariables,
-            constantPool: funct.constantPool}
+            constantPool: funct.constantPool,
+            name: funct.name}
     };
 
     vm.lookUpFunction = function(name) {
+        var innerName = vm.currentFrame().name + "#" + name;
+        // look first for inner functions
+        if (innerName in vm.table) {
+            return vm.table[innerName];
+        }
+        // now global
         if (name in vm.table) {
             return vm.table[name];
         }
@@ -514,6 +530,9 @@ var vm = (function(undefined) {
                 case 'built_in':
                     vm.interpreter.builtInInstruction(parseInt(instruction[1], 10));
                     break;
+                case 'create_inner':
+                    vm.interpreter.createInnerFunctionInstruction(instruction[1]);
+                    break;
                 default :
                     throw new Error('unknown instruction: ' + instruction.join(" "))
             }
@@ -556,13 +575,13 @@ var vm = (function(undefined) {
     vm.interpreter.subtractInstruction = function() {
         var val1 = vm.currentFrame().stack.pop();
         var val2 = vm.currentFrame().stack.pop();
-        vm.currentFrame().stack.push(val1 - val2)
+        vm.currentFrame().stack.push(val2 - val1)
     };
 
     vm.interpreter.timesInstruction = function() {
         var val1 = vm.currentFrame().stack.pop();
         var val2 = vm.currentFrame().stack.pop();
-        vm.currentFrame().stack.push(val1 * val2)
+        vm.currentFrame().stack.push(val2 * val1)
     };
 
     vm.interpreter.conditionalJumpInstruction = function(relativeJump) {
@@ -687,8 +706,12 @@ var vm = (function(undefined) {
         for (var i = 0; i < fnc.arguments; i++) {
             arguments.push(vm.currentFrame().stack.pop())
         }
-        vm.createNewStackFrame(returnAddress, arguments, fnc.constantPool);
+        vm.createNewStackFrame(returnAddress, arguments, fnc.constantPool, fnc.name);
         vm.instructionPointer = fnc.startAddress;
+
+    };
+
+    vm.interpreter.createInnerFunctionInstruction = function (functionName) {
 
     };
 

@@ -256,7 +256,7 @@ describe('compiler', function() {
     });
 
     it('should compile nested function', function(){
-        var out = compiler.compile("function main(){var a = 1; function test() {return a+1}; return test() }");
+        var out = compiler.compile("function main(){var a = 1; function test() {return a+1}; print(test()) }");
         assert.deepEqual(out,
             [
                 {"name": "main#test",
@@ -275,9 +275,39 @@ describe('compiler', function() {
                     "instructions": [
                         "push 1",
                         "store 0",
-                        "create_inner test",
                         "invoke test",
+                        "built_in 0",
+                        "return"
+                    ]
+                }
+            ]
+        );
+    });
+
+    it('should compile nested function with 1 argument', function(){
+        var out = compiler.compile("function main(){var a = 60; function test(x) {return a-x}; print(test(10)) }");
+        assert.deepEqual(out,
+            [
+                {"name": "main#test",
+                    "arguments": 1,
+                    "localVariables": 2,
+                    "instructions": [
+                        "load 1",
+                        "load 0",
+                        "subtract",
                         "return_value"
+                    ]
+                },
+                {"name": "main",
+                    "arguments": 0,
+                    "localVariables": 1,
+                    "instructions": [
+                        "push 60",
+                        "store 0",
+                        "push 10",
+                        "invoke test",
+                        "built_in 0",
+                        "return"
                     ]
                 }
             ]
