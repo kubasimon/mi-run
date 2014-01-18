@@ -110,6 +110,7 @@ var vm = (function(undefined) {
                 break;
             case "object":
             case "string":
+            case "int":
             case "file":
                 // do nothing
                 break;
@@ -286,6 +287,16 @@ var vm = (function(undefined) {
         return typeof address == 'string' && address.indexOf("p") === 0;
     };
 
+    vm.intPointer = function (address) {
+        if (vm.isPointer(address)) {
+            var obj = vm.retrieveHeapObject(address);
+            if (obj.type == "int") {
+                return obj;
+            }
+        }
+        return false;
+    };
+
     vm.retrieveHeapObject = function(address) {
         if (!vm.isPointer(address)) {
             throw new Error('Address "' + address + '" is not a pointer !');
@@ -356,6 +367,10 @@ var vm = (function(undefined) {
         }
         vm.heap[index] = obj;
         return "p" + index;
+    };
+
+    vm.allocateInt = function(value) {
+        return vm.allocate({type: 'int', data: value});
     };
 
     vm.allocateArray = function(size) {
@@ -516,11 +531,20 @@ var vm = (function(undefined) {
 
     vm.interpreter.loadInstruction = function(localVariableIndex) {
         var val = vm.currentFrame().localVariables[localVariableIndex];
-        vm.currentFrame().stack.push(val)
+        var intPointer = vm.intPointer(val);
+        if (intPointer !== false) {
+            val = intPointer.data;
+        }
+        vm.currentFrame().stack.push(val);
     };
 
     vm.interpreter.storeInstruction = function(localVariableIndex) {
-        vm.currentFrame().localVariables[localVariableIndex] = vm.currentFrame().stack.pop();
+        var value = vm.currentFrame().stack.pop();
+        if (! vm.isPointer(value)) {
+          //not pointer, int value
+            value = vm.allocateInt(value);
+        }
+        vm.currentFrame().localVariables[localVariableIndex] = value;
     };
 
     vm.interpreter.addInstruction = function() {

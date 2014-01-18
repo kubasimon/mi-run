@@ -31,7 +31,8 @@ describe('vm', function(){
             vm.interpreter.storeInstruction(1);
 
             assert.equal(vm.currentFrame().stack.size, 0);
-            assert.equal(vm.currentFrame().localVariables[1], 1);
+            assert.equal(vm.currentFrame().localVariables[1], "p0");
+            assert.equal(vm.heap[0].data, 1);
         });
 
         it('should store push int value to stack ', function(){
