@@ -108,6 +108,16 @@ var vm = (function(undefined) {
                     }
                 }
                 break;
+            case "closure":
+                for(var j = 0; j < obj.localVariables.length; j++) {
+                    address = obj.localVariables[j];
+                    if (vm.isPointer(address) && references.indexOf(parseInt(address.replace('p', ''))) == -1) {
+                        references.push(parseInt(address.replace('p', '')));
+                        vm.gc.markAddress(address, references);
+//                        console.log(Array(i).join(" ") + "Ref: %j", address);
+                    }
+                }
+                break;
             case "object":
             case "string":
             case "int":
@@ -120,7 +130,7 @@ var vm = (function(undefined) {
         }
     };
 
-    vm.createNewStackFrame = function(returnAddress, arguments, constantPool, name) {
+    vm.createNewStackFrame = function(returnAddress, arguments, fnc) {
         if (vm.stackFrames.length + 1 > vm.maximumStackFrames) {
             throw new Error("StackOverflow, max stack frames level reached: " + this.maximumStackFrames);
         }
@@ -130,7 +140,7 @@ var vm = (function(undefined) {
             localVariables.push(arguments.pop())
         }
 
-        if (name && name.indexOf("#") !== 0) {
+        if (fnc && fnc.name && fnc.name.indexOf("#") !== 0) {
             // inner function, push all current local after arguments
             var parentLocals = vm.currentFrame().localVariables;
             for (i = 0; i < parentLocals.length; i++) {
@@ -138,13 +148,27 @@ var vm = (function(undefined) {
             }
         }
 
-        var constPool = constantPool || [];
+        if (fnc && fnc.closure) {
+            // inner function, push all current local after arguments
+            var closureLocals = fnc.closure.localVariables;
+            for (i = 0; i < closureLocals.length; i++) {
+                localVariables.push(closureLocals[i]);
+            }
+        }
+
+        var constPool;
+        if (fnc) {
+            constPool = fnc.constantPool
+        } else {
+            constPool = [];
+        }
+
 
         var frame = {
             returnAddress: returnAddress,
             localVariables: localVariables,
             constantPool: constPool,
-            name: name,
+            name: fnc ? fnc.name : "",
             stack: {
                 _data: [],
                 size: 0,
@@ -345,6 +369,14 @@ var vm = (function(undefined) {
         return string;
     };
 
+    vm.retrieveClosure = function(closureAddress) {
+        var closure = vm.retrieveHeapObject(closureAddress);
+        if (closure.type != 'closure') {
+            throw new Error('No closure on address "' + closureAddress + '"! Heap data: ' + closure );
+        }
+        return closure;
+    };
+
     vm.addInstruction = function(instruction) {
         return vm.instructions.push(instruction) - 1
     };
@@ -404,6 +436,10 @@ var vm = (function(undefined) {
 
     vm.allocateObject = function() {
         return vm.allocate({type: 'object', data: []});
+    };
+
+    vm.allocateClosure = function(localVariables, functionName) {
+        return vm.allocate({type: 'closure', localVariables: localVariables, name: functionName });
     };
 
     vm.interpreter = {};
@@ -530,8 +566,8 @@ var vm = (function(undefined) {
                 case 'built_in':
                     vm.interpreter.builtInInstruction(parseInt(instruction[1], 10));
                     break;
-                case 'create_inner':
-                    vm.interpreter.createInnerFunctionInstruction(instruction[1]);
+                case 'create_closure':
+                    vm.interpreter.createClosureInstruction(instruction[1]);
                     break;
                 default :
                     throw new Error('unknown instruction: ' + instruction.join(" "))
@@ -698,7 +734,17 @@ var vm = (function(undefined) {
     };
 
     vm.interpreter.invokeInstruction = function(functionName) {
-        var fnc = vm.lookUpFunction(functionName);
+
+        var fnc;
+        // check if name is local variable & closure?!
+        if (!isNaN(parseInt(functionName, 10))) {
+            var closure = vm.retrieveClosure(vm.currentFrame().localVariables[functionName]);
+            fnc = vm.lookUpFunction(closure.name);
+            fnc.closure = closure;
+        } else {
+            fnc = vm.lookUpFunction(functionName);
+        }
+
         // jump to next instruction
         var returnAddress = vm.instructionPointer + 1;
         // load arguments
@@ -706,13 +752,15 @@ var vm = (function(undefined) {
         for (var i = 0; i < fnc.arguments; i++) {
             arguments.push(vm.currentFrame().stack.pop())
         }
-        vm.createNewStackFrame(returnAddress, arguments, fnc.constantPool, fnc.name);
+        vm.createNewStackFrame(returnAddress, arguments, fnc);
         vm.instructionPointer = fnc.startAddress;
 
     };
 
-    vm.interpreter.createInnerFunctionInstruction = function (functionName) {
-
+    vm.interpreter.createClosureInstruction = function (functionName) {
+        //allocate closure
+        var address = vm.allocateClosure(vm.currentFrame().localVariables, functionName);
+        vm.currentFrame().stack.push(address);
     };
 
     vm.interpreter.invokeNativeInstruction = function(functionName) {

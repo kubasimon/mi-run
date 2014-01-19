@@ -118,6 +118,12 @@ var compiler = (function(PEG, fs, undefined) {
                         fnc.instructions.push("store " + index);
                         compiler.generateObjectDeclarationElements(localVariables, declaration.value.properties, fnc, index);
                         break;
+                    case "Function":
+                        // closure
+                        compiler.createAnonymousFunction(declaration.value, fnc, localVariables, true);
+                        fnc.instructions.push("create_closure " + declaration.value.name);
+                        fnc.instructions.push("store " + index);
+                        break;
                     default:
                         compiler.generateExpression(localVariables, declaration.value, fnc);
                         fnc.instructions.push("store " + index);
@@ -179,7 +185,17 @@ var compiler = (function(PEG, fs, undefined) {
                         break;
                     default:
                         //invoke <name>
-                        fnc.instructions.push("invoke " + element.name.name);
+                        var found = false;
+                        for (var j = 0; j < localVariables.length; j++) {
+                            if (localVariables[j] == element.name.name) {
+                                fnc.instructions.push("invoke " + j);
+                                found = true;
+                                break;
+                            }
+                        }
+                        if (! found ) {
+                            fnc.instructions.push("invoke " + element.name.name);
+                        }
                 }
 
                 break;
@@ -190,11 +206,7 @@ var compiler = (function(PEG, fs, undefined) {
 
             case "Function":
                 // anonymous function
-                // generate anon name
-                element.name.name = fnc.name + "#anonymous_" + fnc.anonymousFunctionCounter;
-                fnc.anonymousFunctionCounter ++;
-                // generate anon function
-                compiler.generateFunction(element.name, compiler.bytecode, localVariables);
+                compiler.createAnonymousFunction(element.name, fnc, localVariables);
                 // invoke it
                 fnc.instructions.push("invoke " + element.name.name);
                 break;
@@ -202,6 +214,18 @@ var compiler = (function(PEG, fs, undefined) {
                 throw new Error ("Function name type '" + element.name.type + "' not implemented, only 'Variable', 'PropertyAccess' allowed !")
 
         }
+    };
+
+    compiler.createAnonymousFunction = function(element, fnc, localVariables, closure) {
+        // generate anon name
+        if (closure) {
+            element.name = fnc.name + "$anonymous_" + fnc.anonymousFunctionCounter;
+        } else {
+            element.name = fnc.name + "#anonymous_" + fnc.anonymousFunctionCounter;
+        }
+        fnc.anonymousFunctionCounter ++;
+        // generate anon function
+        compiler.generateFunction(element, compiler.bytecode, localVariables);
     };
 
     compiler.loadVariable = function(localVariables, name, fnc) {
@@ -330,7 +354,13 @@ var compiler = (function(PEG, fs, undefined) {
                 switch(expression.left.type) {
                     case "Variable":
                         //generate right
-                        compiler.generateExpression(localVariables, expression.right, fnc);
+                        if (expression.right.type == "Function") {
+                            // closure
+                            compiler.createAnonymousFunction(expression.right, fnc, localVariables, true);
+                            fnc.instructions.push("create_closure " + expression.right.name);
+                        } else {
+                            compiler.generateExpression(localVariables, expression.right, fnc);
+                        }
                         // assign result to left variable
                         compiler.storeVariable(localVariables, expression.left.name, fnc);
                         break;

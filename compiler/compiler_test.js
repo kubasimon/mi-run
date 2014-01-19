@@ -217,7 +217,7 @@ describe('compiler', function() {
     });
 
     it('should compile function call with variable arguments', function(){
-        var out = compiler.compile("function main(){var test = []; test(test,67)}");
+        var out = compiler.compile("function main(){var test = []; test1(test,67)}");
         assert.deepEqual(out, [{"name": "main",
             "arguments": 0,
             "localVariables": 1,
@@ -226,7 +226,7 @@ describe('compiler', function() {
                 "store 0",
                 "load 0",
                 "push 67",
-                "invoke test",
+                "invoke test1",
                 "return"
             ]}])
     });
@@ -363,6 +363,66 @@ describe('compiler', function() {
                     "push 10",
                     "invoke main#anonymous_0",
                     "built_in 0",
+                    "return"
+                ]
+                }
+            ]
+        );
+    });
+
+    it('should compile closure with variable statement', function(){
+        var out = compiler.compile("function main(){var a = function(x) {return x+1}; a(10)}");
+        assert.deepEqual(out,
+            [
+                {"name": "main$anonymous_0",
+                    "arguments": 1,
+                    "localVariables": 2,
+                    "anonymousFunctionCounter": 0, "instructions": [
+                    "load 0",
+                    "push 1",
+                    "add",
+                    "return_value"
+                ]
+                },
+                {"name": "main",
+                    "arguments": 0,
+                    "localVariables": 1,
+                    "anonymousFunctionCounter": 1, "instructions": [
+                    "create_closure main$anonymous_0",
+                    "store 0",
+                    "push 10",
+                    "invoke 0",
+                    "return"
+                ]
+                }
+            ]
+        );
+    });
+
+    it('should compile closure with assignment statement', function(){
+        var out = compiler.compile("function main(){var a = 1; a = function(x) {return x+1}; a(10)}");
+        assert.deepEqual(out,
+            [
+                {"name": "main$anonymous_0",
+                    "arguments": 1,
+                    "localVariables": 2,
+                    "anonymousFunctionCounter": 0, "instructions": [
+                    "load 0",
+                    "push 1",
+                    "add",
+                    "return_value"
+                ]
+                },
+                {"name": "main",
+                    "arguments": 0,
+                    "localVariables": 1,
+                    "anonymousFunctionCounter": 1, "instructions": [
+                    "push 1",
+                    "store 0",
+                    "create_closure main$anonymous_0",
+                    "store 0",
+                    "push 10",
+                    "invoke 0",
                     "return"
                 ]
                 }

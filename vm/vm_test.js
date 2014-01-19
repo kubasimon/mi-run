@@ -729,10 +729,17 @@ describe('vm', function(){
 
             assert.equal(vm._output[0], 10);
         });
+
         it('should work with anonymous function with outer variable', function(){
             vm.load("./fixture/anonymous_function2.json");
 
             assert.equal(vm._output[0], 200);
+        });
+
+        it('should work with closure', function(){
+            vm.load("./fixture/closure.json");
+
+            assert.equal(vm._output[0], 11);
         });
 
         it('should work with knapsack program!', function(){
