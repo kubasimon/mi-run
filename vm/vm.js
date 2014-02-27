@@ -140,8 +140,8 @@ var vm = (function(undefined) {
             localVariables.push(arguments.pop())
         }
 
-        if (fnc && fnc.name && fnc.name.indexOf("#") !== 0) {
-            // inner function, push all current local after arguments
+        if (fnc && fnc.name && fnc.name.indexOf("#") !== 0 && !fnc.closure) {
+            // inner function, push all current local after arguments, not closure defined elsewhere
             var parentLocals = vm.currentFrame().localVariables;
             for (i = 0; i < parentLocals.length; i++) {
                 localVariables.push(parentLocals[i]);

@@ -34,6 +34,8 @@ VM
 * simple mark & sweep GC
 
 
+TODO closures, vnorene funkce, anonymni funkce
+
 
 
 

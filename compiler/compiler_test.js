@@ -399,6 +399,33 @@ describe('compiler', function() {
         );
     });
 
+    it('should compile closure with high order function', function(){
+        var out = compiler.compile("function main(){return function(x) {return x+1};}");
+        assert.deepEqual(out,
+            [
+                {"name": "main$anonymous_0",
+                    "arguments": 1,
+                    "localVariables": 1,
+                    "anonymousFunctionCounter": 0, "instructions": [
+                    "load 0",
+                    "push 1",
+                    "add",
+                    "return_value"
+                ]
+                },
+                {"name": "main",
+                    "arguments": 0,
+                    "localVariables": 0,
+                    "anonymousFunctionCounter": 1, "instructions": [
+                    "create_closure main$anonymous_0",
+                    "return_value"
+                ]
+                }
+            ]
+        );
+
+    });
+
     it('should compile closure with assignment statement', function(){
         var out = compiler.compile("function main(){var a = 1; a = function(x) {return x+1}; a(10)}");
         assert.deepEqual(out,

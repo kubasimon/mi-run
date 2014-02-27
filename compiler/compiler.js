@@ -419,7 +419,12 @@ var compiler = (function(PEG, fs, undefined) {
                 if (expression.value == null) {
                     fnc.instructions.push("return");
                 } else {
-                    compiler.generateExpression(localVariables, expression.value, fnc);
+                    if (expression.value.type == "Function") {
+                        compiler.createAnonymousFunction(expression.value, fnc, localVariables, true);
+                        fnc.instructions.push("create_closure " + expression.value.name);
+                    } else {
+                        compiler.generateExpression(localVariables, expression.value, fnc);
+                    }
                     fnc.instructions.push("return_value");
                 }
                 break;
@@ -451,7 +456,7 @@ var compiler = (function(PEG, fs, undefined) {
                 break;
 
             default:
-                throw new Error ("Expression type'" + expression.type + "' not implemented!")
+                throw new Error ("Expression type '" + expression.type + "' not implemented!")
         }
 
     };
