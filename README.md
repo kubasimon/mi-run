@@ -25,6 +25,49 @@ Language design:
 
  * array: push, pop, length, slice, shift
  * file: read_line, write
+ 
+* inner functions
+ 
+~~~~ JavaScript
+function main(){
+    var a = 1; 
+    function foo() {
+        return a + 1
+    } 
+    print(test())
+}
+~~~~
+
+* anonymous functions
+
+~~~~ JavaScript
+function main(){
+    var a = 1; 
+    function foo() {
+        return a + 1
+    } 
+    print(test())
+}
+~~~~
+
+* closures
+
+~~~~ JavaScript
+function main() {
+    var add5 = makeAdder(5);
+    var add10 = makeAdder(10);
+    print (add5(2)); //7
+    print (add10(2)); // 12
+
+}
+
+function makeAdder(x) {
+    return function(y) {
+        return x + y;
+    };
+}
+~~~~
+ 
 
 VM
 --
@@ -32,11 +75,5 @@ VM
 * instructions - see vm_instructions.txt
 * semi-implemented heap - "basic slots" but not for array/object data + etc..
 * simple mark & sweep GC
-
-
-TODO closures, vnorene funkce, anonymni funkce
-
-
-
 
 
