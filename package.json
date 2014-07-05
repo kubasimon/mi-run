@@ -10,7 +10,7 @@
         "url": "https://github.com/tenerd/mi-run.git"
     },
     "dependencies": {
-        "mocha" : "*",
+        "mocha" : "~1.14",
         "pegjs" : "~0.7.0"
     },
     "devDependencies": {
