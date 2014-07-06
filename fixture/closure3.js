@@ -1,5 +1,5 @@
 function main() {
-    var sayAlert = function() { print(num); };
     var num = 666;
+    var sayAlert = function() { print(num); };
     sayAlert();
 }

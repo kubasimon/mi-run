@@ -6,6 +6,8 @@ Prerequisites: nodejs (http://nodejs.org/), npm (https://npmjs.org/)
 * First run `npm install` to install all dependencies.
 * Optionally `npm test` to run all (unit) tests.
 
+[![Build Status](https://travis-ci.org/tenerd/mi-run.svg?branch=master)](https://travis-ci.org/tenerd/mi-run)
+
 Sample file:
 knapsack.js
 
@@ -67,6 +69,17 @@ function makeAdder(x) {
     };
 }
 ~~~~
+
+* this does not currently work:
+
+~~~~ JavaScript
+function main() {
+    var num = 666;
+    var sayAlert = function() { print(num); };
+    sayAlert();
+}
+~~~~ 
+
  
 
 VM
