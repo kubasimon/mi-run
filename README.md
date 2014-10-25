@@ -1,11 +1,11 @@
-MI-RUN 2012/2013/2014/2015
-==
-Compiler & VM for JavaScript subset called 'Domino'
+# MI-RUN 2012/2013/2014/2015
+
+## Compiler & VM for JavaScript subset called 'Domino'
 
 [![Build Status](https://travis-ci.org/tenerd/mi-run.svg?branch=master)](https://travis-ci.org/tenerd/mi-run)
 
-How to start
----
+## How to start
+
 Prerequisites: nodejs (http://nodejs.org/), npm (https://npmjs.org/)
 
 * First run `npm install` inside source directory to install all dependencies.
@@ -22,8 +22,8 @@ Example of output: <a href="compiler/fixture/knapsack.out.10.dat">knapsack.out.1
 
     - plain text file with line endings "\n"
 
-Running programs in my language:
---
+## Running programs in my language:
+
 Compile:  `node domino.js compile <filename>` 
     - to bytecode <filename>.json
 
@@ -32,17 +32,23 @@ Compile & run: `node domino.js run <filename>`
 
 Example knapsack program: `node domino.js run knapsack.js`
 
-Language design:
+## Language design:
 --
-* JavaScript syntax with minimal features: 
-* functions, array, object, string, int, object inside array
-* special functions: fs_open_file (create file handle), print (print to out), parseInt (converting string to int)
-* "native" functions on "objects":
-
- * array: push, pop, length, slice, shift
- * file: read_line, write
+* JavaScript syntax with minimal features:
  
-* inner functions
+ 
+### Functions
+
+#### Simple function & call
+
+~~~~ JavaScript
+function add1(a){     
+    return a + 1;
+}
+add1(2)
+~~~~
+
+#### Inner functions
  
 ~~~~ JavaScript
 function main(){
@@ -50,30 +56,27 @@ function main(){
     function foo() {
         return a + 1
     } 
-    print(test())
+    print(test())    // outputs 2
 }
 ~~~~
 
-* anonymous functions
+#### Anonymous functions
 
 ~~~~ JavaScript
 function main(){
     var a = 1; 
-    function foo() {
-        return a + 1
-    } 
-    print(test())
+    print((function(x) {return x + a})(10) // outputs 11     
 }
 ~~~~
 
-* closures
+### Closures
 
 ~~~~ JavaScript
 function main() {
     var add5 = makeAdder(5);
     var add10 = makeAdder(10);
-    print (add5(2)); //7
-    print (add10(2)); // 12
+    print (add5(2)); // outputs 7
+    print (add10(2)); // outputs 12
 
 }
 
@@ -84,15 +87,25 @@ function makeAdder(x) {
 }
 ~~~~
 
-* this does not currently work:
+* with exception: this does not work: 
+(when closure variable is defined after function which uses it) 
 
 ~~~~ JavaScript
 function main() {
-    var num = 666;
     var sayAlert = function() { print(num); };
+    var num = 666;
     sayAlert();
 }
-~~~~ 
+~~~~
+
+
+*  array, object, string, int, object inside array
+* special functions: fs_open_file (create file handle), print (print to out), parseInt (converting string to int)
+* "native" functions on "objects":
+
+ * array: push, pop, length, slice, shift
+ * file: read_line, write
+ 
 
  
 
