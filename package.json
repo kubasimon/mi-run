@@ -3,7 +3,7 @@
     "version": "1.0.0",
     "author": "Jakub Simon <simonja3@fit.cvut.cz>",
     "scripts" : {
-        "test": "mocha compiler\\compiler_test.js vm\\vm_test.js knapsack\\knapsack_test.js integration_test.js"
+        "test": "mocha compiler\\compiler_test.js && mocha vm\\vm_test.js && mocha knapsack\\knapsack_test.js && mocha integration_test.js"
     },
     "repository" : {
         "type": "git",
