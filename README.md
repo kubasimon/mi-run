@@ -16,11 +16,11 @@ Sample file: <a href="knapsack.js">knapsack.js</a>
 
 Example of input: <a href="compiler/fixture/knapsack.in.10.dat">knapsack.in.10.dat</a>
 
-* plain text file with line endings "\n" 
+* utf8 file with line endings "\n" 
     
 Example of output: <a href="compiler/fixture/knapsack.out.10.dat">knapsack.out.10.dat</a>
 
-* plain text file with line endings "\n"
+* utf8 file with line endings "\n"
 
 ## Running programs in my language:
 
@@ -116,10 +116,10 @@ function main() {
 ~~~~ JavaScript
 var arr  = [1, 2, 3]        // ok
 var arr2 = ["a", 1]         // heterogeneous array
-var arr3 = [{a:66, b:77}]}  //arrays with object inside 
+var arr3 = [{ a : 66, b : 77 }]  // arrays with object inside 
 ~~~~
 
-* Not implemented
+* **Not implemented**
 ~~~~ JavaScript
 var arr = [1, 2, 3]
 arr[0] // array access with index
@@ -138,7 +138,7 @@ print(length)                 // output 5
 
 ~~~~ JavaScript
 var arr = [1, 2, 3]
-var last = arr.pop()          // return last element and remove it from array
+var last = arr.pop()        // return last element and remove it from array
 print(last)                 // output 3
 ~~~~
 
@@ -170,16 +170,54 @@ newarray.push(3)                // newarray is now [1, 2, 3, 4]
 
 ### Objects
 
+~~~~ JavaScript
+var object = {test:"123", test2:123}; // define object
+print(object.test)                    // access object property, output "123"
+object.test3 = 666                    // add new property
+print(object.test3)                   // output 666
+~~~~
 
-* object inside array
-* special functions: fs_open_file (create file handle), print (print to out), parseInt (converting string to int)
-* "native" functions on "objects":
+* **Not implemented**
+~~~~ JavaScript
+var object = {fn: function(){return 1}}; // function as object value
+var object2 = {test:"123", test2:123}; 
+print(object2['test'])                   // access object property by bracket notation
+~~~~
 
- * array: push, pop, length, slice, shift
- * file: read_line, write
+### Special functions
+
+#### print
+
+~~~~ JavaScript 
+print(123)                   // output 123 
+~~~~
+
+#### parseInt
+~~~~ JavaScript
+var str = "123"
+var num = parseInt("123")
+print(num + 4)              // output 127                  
+print(str + 4)              // output rubbish (in JS it will output 1234)                  
+~~~~
+
+#### fs_open_file
+
+file.txt
+~~~~
+first\n
+second\n
+third\n
+~~~~
+
+~~~~ JavaScript
+var handle = fs_open_file('/path/to/file.txt') // creates handle to filename
+var firstLine = handle.read_line() // it contains 'first', reads whole file (not optimal)                   
+var secondLine = handle.read_line() // it contains 'second'                   
+var thirdLine = handle.read_line() // it contains 'third'
+print(handle.length())                // output number of lines                   
+~~~~
  
 
- 
 
 VM
 --

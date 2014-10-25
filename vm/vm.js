@@ -310,6 +310,15 @@ var vm = (function(undefined) {
             arguments: 1
         });
         vm.addNativeFunction({
+            name: "file.length",
+            fn: function(file) {
+                // simplified
+                var data = fs.readFileSync(file.fileName, "utf-8").split("\n");
+                vm.currentFrame().stack.push(data.length);
+            },
+            arguments: 1
+        });
+        vm.addNativeFunction({
             name: "file.write",
             fn: function(file, content) {
                 var data = content;

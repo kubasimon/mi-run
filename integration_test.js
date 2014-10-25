@@ -40,6 +40,12 @@ describe('vm', function(){
             vm.load("../fixture/add.js.json");
             assert.equal(vm._output[0], 21);
         });
+
+        it('should work with file lenght', function(){
+            compiler.compileFile("./fixture/file-length.js", "./fixture/file-length.js.json");
+            vm.load("../fixture/file-length.js.json");
+            assert.equal(vm._output[0], 11);
+        });
     });
 });
 
