@@ -14,11 +14,11 @@ Prerequisites: nodejs (http://nodejs.org/), npm (https://npmjs.org/)
 
 Sample file: <a href="knapsack.js">knapsack.js</a>
 
-Example of input: <a href="compiler/knapsack.in.10.dat">knapsack.in.10.dat</a>
+Example of input: <a href="compiler/fixture/knapsack.in.10.dat">knapsack.in.10.dat</a>
 
     - plain text file with line endings "\n" 
     
-Example of output: <a href="compiler/knapsack.out.10.dat">knapsack.out.10.dat</a>
+Example of output: <a href="compiler/fixture/knapsack.out.10.dat">knapsack.out.10.dat</a>
 
     - plain text file with line endings "\n"
 
