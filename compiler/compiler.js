@@ -130,7 +130,7 @@ var compiler = (function(PEG, fs, undefined) {
                         //throw new Error ("Value Type '" + declaration.value.type + "' not implemented in variable context!")
                 }
             } else {
-                throw new Error ("Empty declaration value! '" + declaration)
+                throw new Error ("Empty declaration value! Variable: '" + declaration.name)
             }
         } else {
             throw new Error ("Only one declaration allowed! '" + element)

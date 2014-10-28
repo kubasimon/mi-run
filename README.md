@@ -218,11 +218,50 @@ print(handle.length())                // output number of lines
 ~~~~
  
 
+## Under the hood
 
-VM
---
-* stack-vm
-* instructions - see vm_instructions.txt
+### Compiler
+
+#### Parsing
+<a href="http://pegjs.majda.cz/>PEGjs</a> and its example grammar 
+- <a href="https://github.com/dmajda/pegjs/blob/master/examples/javascript.pegjs">javascript.pegjs</a> is used to generate parser and output AST
+
+#### Generate code
+
+ Top-down generating for stack vm with some semantic analysis:
+ 
+######  Not defined variables:
+ 
+~~~~ JavaScript
+    function main() {
+        var b = 1;
+        print(a)
+    } 
+~~~~
+
+~~~~
+Error: Variable 'a' not defined! Defined variables: b
+~~~~
+
+###### Variable definition without value
+
+~~~~ JavaScript
+    function main() {
+        var b = 1;
+        print(a)
+    } 
+~~~~
+
+~~~~
+Error: Variable 'a' not defined! Defined variables: b
+~~~~
+
+
+###  VM
+
+* Stack based virtual machine, "inspired" by JVM
+* Generates bytecode as JSON - see example <a href="compiler/fixture/knapsack.json">knapsack.json</a>
+* Instructions - see <a href="vm_instructions.md">vm_instructions.md</a>
 * semi-implemented heap - "basic slots" but not for array/object data + etc..
 * simple mark & sweep GC
 
