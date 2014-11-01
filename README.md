@@ -307,16 +307,12 @@ This "function" object contains properties:
     |    3     | return_value |
         
 * **Function look up table** (FT) unique function name -> function structure with properties
-    * startAddress - index form IL of first instruction
-    * arguments - number of function arguments
-    * localVariables - number of local variables
-    * constantPool - constant pool of function - not really implemented
-    * name - name of function 
-    
-    
-*[IL]: Instruction list
-*[FT]: Function look up table
-    
+    * **startAddress** - index form IL of first instruction
+    * **arguments** - number of function arguments
+    * **localVariables** - number of local variables
+    * **constantPool** - constant pool of function - not really implemented
+    * **name** - name of function 
+           
      
 * Load bytecode in memory - process all "function" objects
     1. Load all instructions function by function to IL
@@ -325,19 +321,40 @@ This "function" object contains properties:
         * `invoke main` - invokes entry point, function main()
         * `terminate`   - terminates program when main function is finished
             
-        
-         
+                 
 #### StackFrame
 
+* VM holds information about all active stack frames
+* For each invoked function is created new stack frame with its own stack and these properties:
+    * **returnAddress** - index in IL to continue after end of called function
+    * **localVariable** - local variables for current function
+    * **constantPool** - contanct pool for current function - *not really used*
+    * **name** - name of called function
 
 #### Look up function
 
-1. When instruction `invoke functionName` is invoked, VM tries to look up first inner functions (prepend with 'actual function name' + #
+1. When instruction `invoke functionName` is invoked, VM tries to look up first inner functions (prepend with `'actual function name' + #`)
 2. Otherwise it lookup in global space
 3. Anonymous functions are generated to global space
 
 #### Heap      
-* Naive heap - "basic slots" but not for array/object data + etc..
+* Naive heap - "basic slots" but not for array/object data
+
+    | heap slot | data  |
+    |-----------|-------|
+    |    0      | p1    |   --> p1 = "string"
+    |    1      | p4    |   --> p4 = 123
+    |    2      | p2    |   --> p2 = { a:123, b:"str"}
+    |    3      | null  |
+    |    4      | null  |
+    |    5      | null  |
+    |    6      | null  |
+    |    7      | null  |
+    |    8      | null  |
+    |    9      | null  |
+    |    10     | null  |
+     
+     
 
 #### Garbage collection
  
