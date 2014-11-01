@@ -222,6 +222,8 @@ print(handle.length())                // output number of lines
 
 ### Compiler
 
+Written in JavaScript. Main source <a href="compiler/compiler.js">compiler.js</a>, tests: <a href="compiler/compiler_test.js">compiler_test.js</a>  
+
 #### Parsing
 <a href="http://pegjs.majda.cz/>PEGjs</a> and its example grammar 
 - <a href="https://github.com/dmajda/pegjs/blob/master/examples/javascript.pegjs">javascript.pegjs</a> is used to generate parser and output AST
@@ -256,13 +258,48 @@ Error: Variable 'a' not defined! Defined variables: b
 Error: Variable 'a' not defined! Defined variables: b
 ~~~~
 
+### Bytecode
+* Compiler generates bytecode as JSON - see example <a href="compiler/fixture/knapsack.json">knapsack.json</a>
+* Instructions - see <a href="vm_instructions.md">vm_instructions.md</a>
+
+#### Structure
+
+Byte code is in fact JSON. It contains array of objects - for each defined function.
+This "function" object contains properties:
+
+ * **name** - name of function. For *inner functions* is used notation *{parentName}#{innerName}*, for *anonymous function* is used *{parentName}#anonymous_{counter}*
+ * arguments - number of function arguments
+ * localVariables - number of local variables used in function
+ * anonymousFunctionCounter - counter for anonymous functions to generate & call them correctly
+ * instructions - list of instructions   
+
+~~~~ JavaScript
+[
+    {
+        "name": "main",
+        "arguments": 0,
+ 		"localVariables": 10,
+ 		"anonymousFunctionCounter": 0,
+        "instructions": [
+            "return"
+        ]
+    } 
+]    
+~~~~
 
 ###  VM
 
 * Stack based virtual machine, "inspired" by JVM
-* Generates bytecode as JSON - see example <a href="compiler/fixture/knapsack.json">knapsack.json</a>
-* Instructions - see <a href="vm_instructions.md">vm_instructions.md</a>
-* semi-implemented heap - "basic slots" but not for array/object data + etc..
-* simple mark & sweep GC
+* Written in JavaScript Main source <a href="vm/vm.js">vm.js</a>, tests: <a href="vm/vm_test.js">vm_test.js</a>
+* StackFrame
+* LookUpTable
+* Naive heap - "basic slots" but not for array/object data + etc..
+
+#### Garbage collection
+ 
+* Simple mark & sweep GC - goes through heap and mark all referenced pointers, then sweep everything else  
+* Run with 50% chance when heap is half full or when heap is full
+    
+
 
 
