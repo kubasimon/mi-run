@@ -340,19 +340,19 @@ This "function" object contains properties:
 #### Heap      
 * Naive heap - "basic slots" but not for array/object data
 
-    | heap slot | data  |
-    |-----------|-------|
-    |    0      | p1    |   --> p1 = "string"
-    |    1      | p4    |   --> p4 = 123
-    |    2      | p2    |   --> p2 = { a:123, b:"str"}
-    |    3      | null  |
-    |    4      | null  |
-    |    5      | null  |
-    |    6      | null  |
-    |    7      | null  |
-    |    8      | null  |
-    |    9      | null  |
-    |    10     | null  |
+    | heap slot | data  |  referenced data              |
+    |-----------|-------|-------------------------------|
+    |    0      | p1    |   --> p1 = "string"           |
+    |    1      | p4    |   --> p4 = 123                |
+    |    2      | p2    |   --> p2 = { a:123, b:"str"}  |
+    |    3      | null  |                               |
+    |    4      | null  |                               |
+    |    5      | null  |                               |
+    |    6      | null  |                               |
+    |    7      | null  |                               |
+    |    8      | null  |                               |
+    |    9      | null  |                               |
+    |    10     | null  |                               |
      
      
 
