@@ -225,8 +225,9 @@ print(handle.length())                // output number of lines
 Written in JavaScript. Main source <a href="compiler/compiler.js">compiler.js</a>, tests: <a href="compiler/compiler_test.js">compiler_test.js</a>  
 
 #### Parsing
-<a href="http://pegjs.majda.cz/>PEGjs</a> and its example grammar 
-- <a href="https://github.com/dmajda/pegjs/blob/master/examples/javascript.pegjs">javascript.pegjs</a> is used to generate parser and output AST
+
+<a href="http://pegjs.majda.cz/">PEGjs</a> and its example grammar 
+<a href="https://github.com/dmajda/pegjs/blob/master/examples/javascript.pegjs">javascript.pegjs</a> is used to generate parser and output AST
 
 #### Generate code
 
@@ -267,11 +268,13 @@ Error: Variable 'a' not defined! Defined variables: b
 Byte code is in fact JSON. It contains array of objects - for each defined function.
 This "function" object contains properties:
 
- * **name** - name of function. For *inner functions* is used notation *{parentName}#{innerName}*, for *anonymous function* is used *{parentName}#anonymous_{counter}*
- * arguments - number of function arguments
- * localVariables - number of local variables used in function
- * anonymousFunctionCounter - counter for anonymous functions to generate & call them correctly
- * instructions - list of instructions   
+ * **name** - name of function
+    * For *inner functions* is used notation *{parentName}#{innerName}*
+    * For *anonymous function* is used *{parentName}#anonymous_{counter}*
+ * **arguments** - number of function arguments
+ * **localVariables** - number of local variables used in function
+ * **anonymousFunctionCounter** - counter for anonymous functions to generate & call them correctly
+ * **instructions** - list of instructions   
 
 ~~~~ JavaScript
 [
