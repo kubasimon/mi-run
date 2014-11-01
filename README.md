@@ -294,8 +294,49 @@ This "function" object contains properties:
 
 * Stack based virtual machine, "inspired" by JVM
 * Written in JavaScript Main source <a href="vm/vm.js">vm.js</a>, tests: <a href="vm/vm_test.js">vm_test.js</a>
-* StackFrame
-* LookUpTable
+
+#### VM data structures:
+
+* **Instruction list** (IL) index -> instruction   
+ 
+    | #address | instruction  |
+    |----------|--------------|
+    |    0     | load  0      |
+    |    1     | push 1       |
+    |    2     | add          |
+    |    3     | return_value |
+        
+* **Function look up table** (FT) unique function name -> function structure with properties
+    * startAddress - index form IL of first instruction
+    * arguments - number of function arguments
+    * localVariables - number of local variables
+    * constantPool - constant pool of function - not really implemented
+    * name - name of function 
+    
+    
+*[IL]: Instruction list
+*[FT]: Function look up table
+    
+     
+* Load bytecode in memory - process all "function" objects
+    1. Load all instructions function by function to IL
+    2. For each function mark first instruction add record to FT
+    3. Insert 2 instruction to the end:
+        * `invoke main` - invokes entry point, function main()
+        * `terminate`   - terminates program when main function is finished
+            
+        
+         
+#### StackFrame
+
+
+#### Look up function
+
+1. When instruction `invoke functionName` is invoked, VM tries to look up first inner functions (prepend with 'actual function name' + #
+2. Otherwise it lookup in global space
+3. Anonymous functions are generated to global space
+
+#### Heap      
 * Naive heap - "basic slots" but not for array/object data + etc..
 
 #### Garbage collection
