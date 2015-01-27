@@ -435,6 +435,7 @@ var vm = (function(undefined) {
     };
 
     vm.allocateString = function(string) {
+        // remove ' from start and end
         string = string.replace(/^'|'$/gm, '');
         return vm.allocate({type: 'string', data: string});
     };

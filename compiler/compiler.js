@@ -1,44 +1,44 @@
 PEG = require("pegjs");
 fs = require("fs");
 
-var compiler = (function(PEG, fs, undefined) {
+var compiler = (function (PEG, fs, undefined) {
     var compiler = {
         parser: {},
         bytecode: []
     };
 
-    compiler.initialize = function() {
+    compiler.initialize = function () {
         var grammar = fs.readFileSync(__dirname + '/javascript.pegjs', "utf-8");
         compiler.parser = PEG.buildParser(grammar);
     };
 
-    compiler.compileFile = function(fileName, outputFile) {
+    compiler.compileFile = function (fileName, outputFile) {
         var program = fs.readFileSync(fileName, "UTF-8");
         var out = compiler.compile(program);
         if (outputFile) {
-            fs.writeFileSync(outputFile, JSON.stringify(out,null,'\t'));
+            fs.writeFileSync(outputFile, JSON.stringify(out, null, '\t'));
         }
         return out;
     };
 
-    compiler.compile = function(program) {
+    compiler.compile = function (program) {
         var ast = compiler.buildAst(program);
         return compiler.createBytecode(ast);
     };
 
-    compiler.buildAst = function(program) {
-       return compiler.parser.parse(program);
+    compiler.buildAst = function (program) {
+        return compiler.parser.parse(program);
     };
 
-    compiler.createBytecode = function(ast) {
+    compiler.createBytecode = function (ast) {
 //        console.log("creating bytecode");
 //        console.log(ast);
         compiler.bytecode = [];
         if (ast.type == "Program") {
-            for(var i = 0; i < ast.elements.length; i++) {
+            for (var i = 0; i < ast.elements.length; i++) {
 //                console.log(ast.elements[i]);
                 var elem = ast.elements[i];
-                switch(elem.type) {
+                switch (elem.type) {
                     case "Function":
                         compiler.generateFunction(elem, compiler.bytecode);
                         break;
@@ -46,16 +46,16 @@ var compiler = (function(PEG, fs, undefined) {
                         //ignore
                         break;
                     default:
-                        throw new Error ("Type '" + elem.type + "' not implemented in top context!")
+                        throw new Error("Type '" + elem.type + "' not implemented in top context!")
                 }
             }
         } else {
-            throw new Error ("Unknown type '" + ast.type + "', should be Program!")
+            throw new Error("Unknown type '" + ast.type + "', should be Program!")
         }
         return compiler.bytecode;
     };
 
-    compiler.generateFunction = function(elem, bytecode, parentLocalVariables) {
+    compiler.generateFunction = function (elem, bytecode, parentLocalVariables) {
         var fnc = {
             "name": elem.name,
             "arguments": elem.params.length,
@@ -65,11 +65,11 @@ var compiler = (function(PEG, fs, undefined) {
         };
         var localVariables = [];
         // add arguments as local variables
-        for(var i=0; i < elem.params.length; i++) {
+        for (var i = 0; i < elem.params.length; i++) {
             localVariables.push(elem.params[i]);
         }
         if (parentLocalVariables) {
-            for(i=0; i < parentLocalVariables.length; i++) {
+            for (i = 0; i < parentLocalVariables.length; i++) {
                 localVariables.push(parentLocalVariables[i]);
             }
         }
@@ -78,7 +78,7 @@ var compiler = (function(PEG, fs, undefined) {
         bytecode.push(fnc);
     };
 
-    compiler.generateFunctionBody = function(elements, fnc, localVariables, functionName) {
+    compiler.generateFunctionBody = function (elements, fnc, localVariables, functionName) {
         for (var i = 0; i < elements.length; i++) {
             var element = elements[i];
             if (element.type == "Function") {
@@ -102,7 +102,7 @@ var compiler = (function(PEG, fs, undefined) {
         fnc.localVariables = localVariables.length;
     };
 
-    compiler.generateVariableDeclaration = function(element, fnc, localVariables) {
+    compiler.generateVariableDeclaration = function (element, fnc, localVariables) {
         if (element.declarations.length == 1) {
             var declaration = element.declarations[0];
             var index = localVariables.push(declaration.name) - 1;
@@ -127,19 +127,19 @@ var compiler = (function(PEG, fs, undefined) {
                     default:
                         compiler.generateExpression(localVariables, declaration.value, fnc);
                         fnc.instructions.push("store " + index);
-                        //throw new Error ("Value Type '" + declaration.value.type + "' not implemented in variable context!")
+                    //throw new Error ("Value Type '" + declaration.value.type + "' not implemented in variable context!")
                 }
             } else {
-                throw new Error ("Empty declaration value! Variable: '" + declaration.name)
+                throw new Error("Empty declaration value! Variable: '" + declaration.name)
             }
         } else {
-            throw new Error ("Only one declaration allowed! '" + element)
+            throw new Error("Only one declaration allowed! '" + element)
         }
     };
 
-    compiler.generateObjectDeclarationElements = function(localVariables, declaration, fnc, index) {
+    compiler.generateObjectDeclarationElements = function (localVariables, declaration, fnc, index) {
         // initialize
-        for (var i=0; i<declaration.length; i++) {
+        for (var i = 0; i < declaration.length; i++) {
             var elem = declaration[i];
             switch (elem.type) {
                 case "PropertyAssignment":
@@ -148,15 +148,15 @@ var compiler = (function(PEG, fs, undefined) {
                     fnc.instructions.push("object_store " + elem.name);
                     break;
                 default:
-                    throw new Error ("Value Type '" +elem.type + "' not implemented in object variable initialization context!")
+                    throw new Error("Value Type '" + elem.type + "' not implemented in object variable initialization context!")
             }
 
         }
     };
 
-    compiler.generateArrayDeclarationElements = function(localVariables, declaration, fnc, index) {
+    compiler.generateArrayDeclarationElements = function (localVariables, declaration, fnc, index) {
         // initialize
-        for (var i=0; i<declaration.length; i++) {
+        for (var i = 0; i < declaration.length; i++) {
             var elem = declaration[i];
             compiler.generateExpression(localVariables, elem, fnc);
             fnc.instructions.push("load " + index); // load array
@@ -164,7 +164,7 @@ var compiler = (function(PEG, fs, undefined) {
         }
     };
 
-    compiler.generateFunctionCall = function(element, fnc, localVariables) {
+    compiler.generateFunctionCall = function (element, fnc, localVariables) {
         //push arguments reverse order
         for (var i = 0; i < element.arguments.length; i++) {
             var arg = element.arguments[i];
@@ -173,7 +173,7 @@ var compiler = (function(PEG, fs, undefined) {
         switch (element.name.type) {
             case "Variable":
                 // check special functions!
-                switch(element.name.name) {
+                switch (element.name.name) {
                     case "print":
                         fnc.instructions.push("built_in 0");
                         break;
@@ -193,7 +193,7 @@ var compiler = (function(PEG, fs, undefined) {
                                 break;
                             }
                         }
-                        if (! found ) {
+                        if (!found) {
                             fnc.instructions.push("invoke " + element.name.name);
                         }
                 }
@@ -211,24 +211,24 @@ var compiler = (function(PEG, fs, undefined) {
                 fnc.instructions.push("invoke " + element.name.name);
                 break;
             default:
-                throw new Error ("Function name type '" + element.name.type + "' not implemented, only 'Variable', 'PropertyAccess' allowed !")
+                throw new Error("Function name type '" + element.name.type + "' not implemented, only 'Variable', 'PropertyAccess' allowed !")
 
         }
     };
 
-    compiler.createAnonymousFunction = function(element, fnc, localVariables, closure) {
+    compiler.createAnonymousFunction = function (element, fnc, localVariables, closure) {
         // generate anon name
         if (closure) {
             element.name = fnc.name + "$anonymous_" + fnc.anonymousFunctionCounter;
         } else {
             element.name = fnc.name + "#anonymous_" + fnc.anonymousFunctionCounter;
         }
-        fnc.anonymousFunctionCounter ++;
+        fnc.anonymousFunctionCounter++;
         // generate anon function
         compiler.generateFunction(element, compiler.bytecode, localVariables);
     };
 
-    compiler.loadVariable = function(localVariables, name, fnc) {
+    compiler.loadVariable = function (localVariables, name, fnc) {
         var found = false;
         for (var j = 0; j < localVariables.length; j++) {
             if (localVariables[j] == name) {
@@ -237,12 +237,12 @@ var compiler = (function(PEG, fs, undefined) {
                 break;
             }
         }
-        if (! found ) {
-            throw new Error ("Variable '" + name + "' not defined! Defined variables: " + localVariables);
+        if (!found) {
+            throw new Error("Variable '" + name + "' not defined! Defined variables: " + localVariables);
         }
     };
 
-    compiler.storeVariable = function(localVariables, name, fnc) {
+    compiler.storeVariable = function (localVariables, name, fnc) {
         var found = false;
         for (var j = 0; j < localVariables.length; j++) {
             if (localVariables[j] == name) {
@@ -251,12 +251,12 @@ var compiler = (function(PEG, fs, undefined) {
                 break;
             }
         }
-        if (! found ) {
-            throw new Error ("Variable '" + name + "' not defined! Defined variables: " + localVariables);
+        if (!found) {
+            throw new Error("Variable '" + name + "' not defined! Defined variables: " + localVariables);
         }
     };
 
-    compiler.generateForStatement = function(element, fnc, localVariables) {
+    compiler.generateForStatement = function (element, fnc, localVariables) {
         //initializer
         var initializer = element.initializer;
         if (initializer != null) {
@@ -267,7 +267,7 @@ var compiler = (function(PEG, fs, undefined) {
         var test = element.test;
         var testJump = null;
         if (test != null) {
-            compiler.generateExpression(localVariables, test , fnc);
+            compiler.generateExpression(localVariables, test, fnc);
             fnc.instructions.push("negate");
             testJump = fnc.instructions.push("conditional_jump #") - 1;
         }
@@ -284,12 +284,12 @@ var compiler = (function(PEG, fs, undefined) {
         // jump back to test
         fnc.instructions.push("jump " + (testInstructionStart - fnc.instructions.length));
         // replace # in test condition to jump after this "jump loop"
-        fnc.instructions[testJump] = fnc.instructions[testJump].replace("#",  fnc.instructions.length - testJump);
+        fnc.instructions[testJump] = fnc.instructions[testJump].replace("#", fnc.instructions.length - testJump);
 
     };
 
-    compiler.generateExpression = function(localVariables, expression, fnc) {
-        switch(expression.type) {
+    compiler.generateExpression = function (localVariables, expression, fnc) {
+        switch (expression.type) {
             case "Variable":
                 compiler.loadVariable(localVariables, expression.name, fnc);
                 break;
@@ -305,7 +305,7 @@ var compiler = (function(PEG, fs, undefined) {
                 if (expression.properties.length) {
                     //create temporary variable for object initialization
                     var tmpIndex = localVariables.indexOf("$_temporary");
-                    if (tmpIndex == -1 ) {
+                    if (tmpIndex == -1) {
                         tmpIndex = localVariables.push("$_temporary") - 1;
                     }
                     fnc.instructions.push("store " + tmpIndex);
@@ -343,7 +343,7 @@ var compiler = (function(PEG, fs, undefined) {
                         break;
                     case "/":
                     default:
-                    throw new Error ("BinaryExpression operator '" + expression.operator + "' not implemented, only '+', '-' allowed !")
+                        throw new Error("BinaryExpression operator '" + expression.operator + "' not implemented, only '+', '-' allowed !")
                 }
                 break;
             case "PropertyAccess":
@@ -351,7 +351,7 @@ var compiler = (function(PEG, fs, undefined) {
                 fnc.instructions.push("object_load " + expression.name);
                 break;
             case "AssignmentExpression":
-                switch(expression.left.type) {
+                switch (expression.left.type) {
                     case "Variable":
                         //generate right
                         if (expression.right.type == "Function") {
@@ -375,7 +375,7 @@ var compiler = (function(PEG, fs, undefined) {
                         fnc.instructions.push("object_store " + expression.left.name);
                         break;
                     default:
-                        throw new Error ("AssignmentExpression left type'" +expression.left.type + "' not implemented, only 'Variable', 'PropertyExpression' allowed !")
+                        throw new Error("AssignmentExpression left type'" + expression.left.type + "' not implemented, only 'Variable', 'PropertyExpression' allowed !")
                 }
                 break;
             case "VariableStatement":
@@ -398,13 +398,13 @@ var compiler = (function(PEG, fs, undefined) {
                 if (expression.elseStatement) {
                     // jump from if statement to end, e.g skipping else
                     var endOfIf = fnc.instructions.push("jump #") - 1;
-                    fnc.instructions[startInstruction] = fnc.instructions[startInstruction].replace("#",  fnc.instructions.length - startInstruction);
+                    fnc.instructions[startInstruction] = fnc.instructions[startInstruction].replace("#", fnc.instructions.length - startInstruction);
                     //generate else
                     compiler.generateExpression(localVariables, expression.elseStatement, fnc);
-                    fnc.instructions[endOfIf] = fnc.instructions[endOfIf].replace("#",  fnc.instructions.length - endOfIf);
+                    fnc.instructions[endOfIf] = fnc.instructions[endOfIf].replace("#", fnc.instructions.length - endOfIf);
                 } else {
                     // no additional jump after if branch
-                    fnc.instructions[startInstruction] = fnc.instructions[startInstruction].replace("#",  fnc.instructions.length - startInstruction);
+                    fnc.instructions[startInstruction] = fnc.instructions[startInstruction].replace("#", fnc.instructions.length - startInstruction);
                 }
 
                 break;
@@ -412,7 +412,7 @@ var compiler = (function(PEG, fs, undefined) {
                 //ignore
                 break;
             case "StringLiteral":
-                fnc.instructions.push("new_string '"+ expression.value + "'");
+                fnc.instructions.push("new_string '" + expression.value + "'");
                 break;
             case "ReturnStatement":
                 //ignore
@@ -440,9 +440,9 @@ var compiler = (function(PEG, fs, undefined) {
                     compiler.loadVariable(localVariables, expression.expression.name, fnc);
 
                 } else {
-                    throw new Error ("ForStatement counter expression type '" + expression.expression.type + "' not implemented, only 'Variable' allowed !")
+                    throw new Error("ForStatement counter expression type '" + expression.expression.type + "' not implemented, only 'Variable' allowed !")
                 }
-                switch(expression.operator) {
+                switch (expression.operator) {
                     case "++":
                         fnc.instructions.push("add");
                         break;
@@ -450,13 +450,13 @@ var compiler = (function(PEG, fs, undefined) {
                         fnc.instructions.push("subtract");
                         break;
                     default:
-                        throw new Error ("ForStatement counter operator '" + expression.operator + "' not implemented, only '++' or '--' allowed !")
+                        throw new Error("ForStatement counter operator '" + expression.operator + "' not implemented, only '++' or '--' allowed !")
                 }
                 compiler.storeVariable(localVariables, expression.expression.name, fnc); // store to i
                 break;
 
             default:
-                throw new Error ("Expression type '" + expression.type + "' not implemented!")
+                throw new Error("Expression type '" + expression.type + "' not implemented!")
         }
 
     };
